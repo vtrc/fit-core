@@ -82,7 +82,7 @@ import { RoutinesService } from './routines.service';
                     <div><p>Series</p><strong>{{ displayMetric(exercise.plannedSets) }}</strong></div>
                     <div><p>Repeticiones</p><strong>{{ displayMetric(exercise.plannedRepetitions) }}</strong></div>
                     <div><p>Peso</p><strong>{{ displayMetric(exercise.plannedWeight) }}</strong></div>
-                    <div><p>Rest (sec)</p><strong>{{ displayMetric(exercise.restSeconds) }}</strong></div>
+                    <div><p>Descanso</p><strong>{{ formatRest(exercise.restSeconds) }}</strong></div>
                   } @else {
                     <div><p>Duración (seg.)</p><strong>{{ displayMetric(exercise.plannedDurationSeconds) }}</strong></div>
                     <div><p>Distancia</p><strong>{{ displayMetric(exercise.plannedDistance) }}</strong></div>
@@ -192,6 +192,13 @@ export class RoutineDetailPage {
 
   protected formatDate(value: string): string {
     return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+  }
+
+  protected formatRest(restSeconds: number | null): string {
+    if (restSeconds === null) return '—';
+    const min = Math.floor(restSeconds / 60);
+    const sec = restSeconds % 60;
+    return min > 0 ? `${min} min ${sec} s` : `${sec} s`;
   }
 
   protected displayMetric(value: number | null): string | number {

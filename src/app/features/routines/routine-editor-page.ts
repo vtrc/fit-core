@@ -34,8 +34,7 @@ type NumericField =
   | 'plannedRepetitions'
   | 'plannedWeight'
   | 'plannedDurationSeconds'
-  | 'plannedDistance'
-  | 'restSeconds';
+  | 'plannedDistance';
 
 @Component({
   selector: 'app-routine-editor-page',
@@ -122,10 +121,52 @@ type NumericField =
 
                       @if (item.exercise.type === 'strength') {
                         <div class="metrics">
-                          <label class="field"><span>Series</span><input type="number" [ngModel]="displayNumber(item.plannedSets)" (ngModelChange)="updateExerciseNumber($index, 'plannedSets', $event)" /></label>
-                          <label class="field"><span>Repeticiones</span><input type="number" [ngModel]="displayNumber(item.plannedRepetitions)" (ngModelChange)="updateExerciseNumber($index, 'plannedRepetitions', $event)" /></label>
-                          <label class="field"><span>Peso</span><input type="number" step="0.5" [ngModel]="displayNumber(item.plannedWeight)" (ngModelChange)="updateExerciseNumber($index, 'plannedWeight', $event)" /></label>
-                           <label class="field"><span>Descanso (seg.)</span><input type="number" [ngModel]="displayNumber(item.restSeconds)" (ngModelChange)="updateExerciseNumber($index, 'restSeconds', $event)" /></label>
+                          <label class="field">
+                            <span>Series</span>
+                            <select [ngModel]="displayNumber(item.plannedSets)" (ngModelChange)="updateExerciseNumber($index, 'plannedSets', $event)">
+                              <option value="">—</option>
+                              @for (v of seriesOptions; track v) {
+                                <option [value]="v">{{ v }}</option>
+                              }
+                            </select>
+                          </label>
+                          <label class="field">
+                            <span>Repeticiones</span>
+                            <select [ngModel]="displayNumber(item.plannedRepetitions)" (ngModelChange)="updateExerciseNumber($index, 'plannedRepetitions', $event)">
+                              <option value="">—</option>
+                              @for (v of repOptions; track v) {
+                                <option [value]="v">{{ v }}</option>
+                              }
+                            </select>
+                          </label>
+                          <label class="field">
+                            <span>Peso (kg)</span>
+                            <select [ngModel]="displayNumber(item.plannedWeight)" (ngModelChange)="updateExerciseNumber($index, 'plannedWeight', $event)">
+                              <option value="">—</option>
+                              @for (v of pesoOptions; track v) {
+                                <option [value]="v">{{ v }}</option>
+                              }
+                            </select>
+                          </label>
+                          <label class="field">
+                            <span>Descanso</span>
+                            <div class="rest-group">
+                              <select [ngModel]="restMinutes(item.restSeconds)" (ngModelChange)="updateRestMinutes($index, $event)">
+                                <option value="">—</option>
+                                @for (v of restMinOptions; track v) {
+                                  <option [value]="v">{{ v }}</option>
+                                }
+                              </select>
+                              <span class="rest-unit">min</span>
+                              <select [ngModel]="restSecondsPart(item.restSeconds)" (ngModelChange)="updateRestSeconds($index, $event)">
+                                <option value="">—</option>
+                                @for (v of restSecOptions; track v) {
+                                  <option [value]="v">{{ v.toString().padStart(2, '0') }}</option>
+                                }
+                              </select>
+                              <span class="rest-unit">seg</span>
+                            </div>
+                          </label>
                         </div>
                       } @else {
                         <div class="metrics">
@@ -186,6 +227,9 @@ type NumericField =
     .exercise-header h3, .exercise-header p { overflow-wrap: anywhere; }
     .stack { display: grid; gap: .5rem; flex: 0 0 auto; }
     .actions { align-items: start; }
+    .rest-group { display: flex; gap: .35rem; align-items: center; }
+    .rest-group select, .rest-group input { width: 5.5rem; }
+    .rest-unit { color: #617064; font-size: .82rem; }
     .icon-button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; font-size: 1.25rem; line-height: 1; }
     .icon-button:disabled { opacity: .35; cursor: not-allowed; }
     .metrics { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); margin: 1rem 0; }
@@ -215,7 +259,7 @@ type NumericField =
       .actions button { flex: 0 0 2.75rem; }
       .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
       .metrics .field { min-width: 0; margin-bottom: .5rem; }
-      .metrics input { padding: .7rem .65rem; }
+      .metrics input, .metrics select { padding: .7rem .65rem; }
       .form-actions { display: block; }
       .form-actions button { width: 100%; }
     }
@@ -246,6 +290,12 @@ export class RoutineEditarorPage {
   protected readonly validationErrors = computed(() => validateRoutineInput(this.toInput(this.draft())));
 
   protected readonly selectedCatalogIds = computed(() => new Set(this.draft().exercises.map((e) => e.exercise.id)));
+
+  protected readonly seriesOptions = Array.from({ length: 20 }, (_, i) => i + 1);
+  protected readonly repOptions = Array.from({ length: 50 }, (_, i) => i + 1);
+  protected readonly pesoOptions = Array.from({ length: 76 }, (_, i) => i + 45);
+  protected readonly restMinOptions = Array.from({ length: 35 }, (_, i) => i + 1);
+  protected readonly restSecOptions = Array.from({ length: 60 }, (_, i) => i);
 
   constructor() {
     const routineId = this.routineId();
@@ -315,6 +365,42 @@ export class RoutineEditarorPage {
         currentIndex === index ? { ...exercise, notes: value } : exercise,
       ),
     }));
+  }
+
+  protected restMinutes(restSeconds: number | null): string | number {
+    return restSeconds !== null ? Math.floor(restSeconds / 60) : '';
+  }
+
+  protected restSecondsPart(restSeconds: number | null): string | number {
+    return restSeconds !== null ? restSeconds % 60 : '';
+  }
+
+  protected updateRestMinutes(index: number, rawValue: string | number): void {
+    const minutes = this.toNullableNumber(rawValue) ?? 0;
+    this.draft.update((draft) => {
+      const sec = draft.exercises[index].restSeconds ?? 0;
+      const total = minutes * 60 + (sec % 60);
+      return {
+        ...draft,
+        exercises: draft.exercises.map((ex, i) =>
+          i === index ? { ...ex, restSeconds: total > 0 ? total : null } : ex,
+        ),
+      };
+    });
+  }
+
+  protected updateRestSeconds(index: number, rawValue: string | number): void {
+    const remainingSec = this.toNullableNumber(rawValue) ?? 0;
+    this.draft.update((draft) => {
+      const sec = draft.exercises[index].restSeconds ?? 0;
+      const total = Math.floor(sec / 60) * 60 + remainingSec;
+      return {
+        ...draft,
+        exercises: draft.exercises.map((ex, i) =>
+          i === index ? { ...ex, restSeconds: total > 0 ? total : null } : ex,
+        ),
+      };
+    });
   }
 
   protected displayNumber(value: number | null): string | number {
