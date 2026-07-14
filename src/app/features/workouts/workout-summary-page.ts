@@ -190,13 +190,17 @@ export class WorkoutSummaryPage {
       }
 
       if (session) {
-        this.notesModel.set({ notes: session.notes });
+        if (this.notesModel().notes !== session.notes) {
+          this.notesModel.set({ notes: session.notes });
+        }
       }
     });
 
     effect(() => {
       const notes = this.notesModel().notes;
-      this.workoutsService.updateNotes(notes);
+      if (this.session()?.notes !== notes) {
+        this.workoutsService.updateNotes(notes);
+      }
     });
   }
 

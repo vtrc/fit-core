@@ -3,8 +3,8 @@ import { form, FormField, FormRoot, validate } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 
 import type { CardioExerciseResult, Exercise, ExerciseType, StrengthExerciseResult } from '../../core/domain/models';
-import { CatalogService, type CatalogFilter } from '../../core/catalog/catalog.service';
 import { EntrenamientosService, type WorkoutSessionExercise } from './workouts.service';
+import { ExerciseCatalogComponent } from '../../shared/exercise-catalog/exercise-catalog';
 
 interface StrengthResultDraft {
   setsCompleted: number | null;
@@ -26,7 +26,7 @@ interface CardioResultDraft {
 @Component({
   selector: 'app-workout-session-page',
   standalone: true,
-  imports: [FormField, FormRoot, RouterLink],
+  imports: [FormField, FormRoot, RouterLink, ExerciseCatalogComponent],
   template: `
     <main class="page">
       <header class="hero">
@@ -174,41 +174,12 @@ interface CardioResultDraft {
           </section>
 
           @if (showCatalog()) {
-            <aside class="card catalog">
-              <div class="section-heading">
-                <h2>Añadir ejercicio</h2>
-                <button type="button" (click)="loadCatalog()">Actualizar</button>
-              </div>
-
-              <div class="filters">
-                <label class="field"><span>Buscar</span><input type="text" [formField]="searchForm.query" placeholder="Remo, sentadilla, cinta" /></label>
-                <label class="field"><span>Tipo</span><select [formField]="searchForm.typeFilter"><option value="">Todos</option><option value="strength">Fuerza</option><option value="cardio">Cardio</option></select></label>
-              </div>
-
-              @if (catalogLoading()) {
-                <p>Cargando catálogo…</p>
-              } @else if (catalogError(); as catalogErrorMessage) {
-                <p class="error">{{ catalogErrorMessage }}</p>
-              } @else {
-                <div class="catalog-list">
-                  @for (exercise of filteredCatalog(); track exercise.id) {
-                    <article class="catalog-item">
-                      @if (exercise.imageUrl) {
-                        <img class="catalog-item-image" [src]="exercise.imageUrl" [alt]="exercise.name" />
-                      }
-                      <div>
-                         <p class="eyebrow">{{ exerciseTypeLabel(exercise.type) }}</p>
-                        <h3>{{ exercise.name }}</h3>
-                         <p>{{ exercise.equipment || 'Equipamiento general' }}</p>
-                      </div>
-                      <button type="button" (click)="addExercise(exercise)">Añadir</button>
-                    </article>
-                  } @empty {
-                     <p class="muted">Ningún ejercicio coincide con este filtro.</p>
-                  }
-                </div>
-              }
-            </aside>
+            <app-exercise-catalog
+              label="Añadir ejercicio"
+              filterMode="minimal"
+              [selectedExerciseIds]="selectedCatalogIds()"
+              (exerciseAdded)="addExercise($event)"
+            />
           }
         </div>
       }
@@ -236,12 +207,10 @@ interface CardioResultDraft {
     .layout { align-items: start; flex-wrap: wrap; }
     .rail { flex: 0 0 min(19rem, 100%); }
     .active-card { flex: 1 1 32rem; }
-    .catalog { flex: 0 0 min(24rem, 100%); }
+    app-exercise-catalog { flex: 1 1 24rem; min-width: 0; }
     .section-heading, .active-head { justify-content: space-between; align-items: start; }
-    .section-heading h2, .active-head h2, .catalog-item h3 { margin: .35rem 0; }
-    .exercise-nav, .catalog-list, .filters { display: grid; gap: .75rem; }
-    .catalog-list { grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
-    .catalog-item-image { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: .75rem; background: #fff; }
+    .section-heading h2, .active-head h2 { margin: .35rem 0; }
+    .exercise-nav { display: grid; gap: .75rem; }
     .nav-item { width: 100%; text-align: left; display: grid; gap: .25rem; background: #f4eadb; }
     .nav-item.active { outline: 2px solid #1f3028; }
     .nav-item.pending { background: #f4eadb; }
@@ -255,19 +224,17 @@ interface CardioResultDraft {
     .full { grid-column: 1 / -1; }
     input, textarea, select { width: 100%; border: 1px solid #c8bca7; border-radius: .75rem; padding: .8rem .9rem; font: inherit; background: #fff; }
     .form-actions { grid-column: 1 / -1; justify-content: end; flex-wrap: wrap; }
-    .catalog-item { display: grid; gap: .75rem; align-content: start; border: 1px solid #ece4d8; border-radius: 1rem; padding: 1rem; background: #fff; }
     a, button { border: 0; border-radius: .75rem; padding: .8rem 1rem; font: inherit; text-decoration: none; cursor: pointer; background: #e8dfd0; color: #1f3028; }
     .primary { background: #1f3028; color: #fff; }
     .danger { background: #f7d9d5; color: #8d2d2d; }
     button:disabled { opacity: .65; cursor: not-allowed; }
     .state { display: grid; gap: .75rem; justify-items: start; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-    @media (max-width: 1080px) { .rail, .catalog { flex-basis: 100%; } }
+    @media (max-width: 1080px) { .rail { flex-basis: 100%; } }
   `,
 })
 export class WorkoutSessionPage {
   private readonly workoutsService = inject(EntrenamientosService);
-  private readonly catalogService = inject(CatalogService);
   private readonly router = inject(Router);
 
   protected readonly session = this.workoutsService.session;
@@ -278,9 +245,7 @@ export class WorkoutSessionPage {
   protected readonly remainingCount = this.workoutsService.remainingCount;
   protected readonly saving = this.workoutsService.saving;
   protected readonly showCatalog = signal(false);
-  protected readonly catalog = signal<Exercise[]>([]);
-  protected readonly catalogLoading = signal(false);
-  protected readonly catalogError = signal<string | null>(null);
+  protected readonly selectedCatalogIds = computed(() => new Set(this.session()?.exercises.map((e) => e.exercise.id) ?? []));
   protected readonly errors = signal<string[]>([]);
   protected readonly liveStatus = signal('');
 
@@ -294,7 +259,6 @@ export class WorkoutSessionPage {
     resistance: null,
     notes: '',
   });
-  protected readonly searchModel = signal({ query: '', typeFilter: '' });
 
   protected readonly strengthForm = form(this.strengthModel, (p) => {
     validate(p.setsCompleted, ({ value }) => {
@@ -343,31 +307,8 @@ export class WorkoutSessionPage {
     }
   });
 
-  protected readonly searchForm = form(this.searchModel);
-
-  protected readonly filteredCatalog = computed(() => {
-    const query = this.searchModel().query.trim().toLowerCase();
-    return this.catalog().filter((exercise) => {
-      if (this.searchModel().typeFilter && exercise.type !== this.searchModel().typeFilter) {
-        return false;
-      }
-
-      if (!query) {
-        return true;
-      }
-
-      return [exercise.name, exercise.equipment ?? '', exercise.muscleGroups.join(' ')].join(' ').toLowerCase().includes(query);
-    });
-  });
-
   constructor() {
     this.seedDrafts(this.activeExercise());
-    this.loadCatalog();
-
-    effect(() => {
-      this.searchModel().typeFilter;
-      this.loadCatalog();
-    });
   }
 
   protected toggleCatalog(): void {
@@ -429,23 +370,6 @@ export class WorkoutSessionPage {
     };
 
     this.record(item, result);
-  }
-
-  protected loadCatalog(): void {
-    this.catalogLoading.set(true);
-    this.catalogError.set(null);
-
-    const filter: CatalogFilter = { type: this.asExerciseType(this.searchModel().typeFilter) };
-    this.catalogService.listExercises(filter).subscribe({
-      next: (exercises) => {
-        this.catalog.set(exercises);
-        this.catalogLoading.set(false);
-      },
-      error: (error: unknown) => {
-        this.catalogError.set(this.toMessage(error, 'No se pudo cargar el catálogo de ejercicios.'));
-        this.catalogLoading.set(false);
-      },
-    });
   }
 
   protected async finish(): Promise<void> {
@@ -539,11 +463,4 @@ export class WorkoutSessionPage {
     }
   }
 
-  private asExerciseType(value: string): ExerciseType | undefined {
-    return value === 'strength' || value === 'cardio' ? value : undefined;
-  }
-
-  private toMessage(error: unknown, fallback: string): string {
-    return error instanceof Error && error.message ? error.message : fallback;
-  }
 }

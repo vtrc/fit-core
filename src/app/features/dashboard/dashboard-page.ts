@@ -21,6 +21,8 @@ import { AuthService } from '../../core/auth/auth.service';
         <a routerLink="/routines">Mis rutinas</a>
         <a routerLink="/history">Historial</a>
         <a routerLink="/statistics">Estadísticas</a>
+        <a routerLink="/workouts/session">Sesión actual</a>
+        <a routerLink="/workouts/summary">Resumen del entrenamiento</a>
       </nav>
     </main>
   `,

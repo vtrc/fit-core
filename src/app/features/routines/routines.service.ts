@@ -108,10 +108,19 @@ interface RoutineExerciseRestoreRow extends RoutineExerciseInsertRow {
   id: string;
 }
 
-type RoutineMetricKey = 'sets' | 'repetitions' | 'weight' | 'duration' | 'distance' | 'speed';
+type RoutineMetricKey =
+  | 'sets'
+  | 'repetitions'
+  | 'weight'
+  | 'duration'
+  | 'distance'
+  | 'speed'
+  | 'incline'
+  | 'resistance'
+  | 'calories';
 
 const STRENGTH_METRICS = new Set<RoutineMetricKey>(['sets', 'repetitions', 'weight']);
-const CARDIO_METRICS = new Set<RoutineMetricKey>(['duration', 'distance', 'speed']);
+const CARDIO_METRICS = new Set<RoutineMetricKey>(['duration', 'distance', 'speed', 'incline', 'resistance', 'calories']);
 const METRIC_ALIASES = new Map<string, RoutineMetricKey>([
   ['set', 'sets'],
   ['sets', 'sets'],
@@ -126,6 +135,9 @@ const METRIC_ALIASES = new Map<string, RoutineMetricKey>([
   ['durationseconds', 'duration'],
   ['distance', 'distance'],
   ['speed', 'speed'],
+  ['incline', 'incline'],
+  ['resistance', 'resistance'],
+  ['calories', 'calories'],
 ]);
 
 function normalizeMetricKey(metric: string): RoutineMetricKey | null {

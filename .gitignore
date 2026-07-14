@@ -33,6 +33,7 @@ yarn-error.log
 .env.local
 .insforge/
 .angular/cache/
+.playwright-mcp/
 #/src/environments/environment.ts
 .sass-cache/
 /connect.lock
