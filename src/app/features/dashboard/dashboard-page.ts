@@ -1,5 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -8,23 +7,25 @@ import { AuthService } from '../../core/auth/auth.service';
   standalone: true,
   template: `
     <main class="dashboard">
-      <header><p class="eyebrow">FIT CORE</p><button type="button" (click)="signOut()">Cerrar sesión</button></header>
-      <section><h1>Hola {{ displayName() }}.</h1><p>Tu espacio para planificar y registrar cada entrenamiento.</p></section>
-      <img src="/image.png" alt="" class="hero-img" />
-      
+      <div class="hero">
+        <img src="/image.png" alt="" class="hero-img" />
+        <div class="hero-overlay"></div>
+        <div class="hero-text">
+          <h1>Hola {{ displayName() }}.</h1>
+          <p>Tu espacio para planificar y registrar cada entrenamiento.</p>
+        </div>
+      </div>
     </main>
   `,
   styles: `
-    :host { display: block; min-height: 100vh; }
-    .dashboard { min-height: 100vh; padding: 2rem clamp(1rem, 5vw, 5rem); background: #f5f1e8; color: #1f3028; }
-    header { display: flex; justify-content: space-between; align-items: center; }
-    header button { border: 0; background: transparent; color: #a44a2c; cursor: pointer; }
-    section { max-width: 48rem; padding: 14vh 0 3rem; } h1 { font-size: clamp(3rem, 9vw, 7rem); line-height: .9; margin: .8rem 0; }
-    .eyebrow { color: #a44a2c; font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
-    .actions { display: flex; flex-wrap: wrap; gap: .75rem; } .actions button { padding: .9rem 1.1rem; border: 0; border-radius: .6rem; background: #1f3028; color: #fff; cursor: pointer; }
-    .nav-links { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; }
-    .nav-links a { color: #1f3028; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; font-size: 1.1rem; }
-    .hero-img { max-width: 100%; height: auto; border-radius: 1.25rem; margin-top: 2rem; }
+    :host { display: block; position: fixed; z-index: 1; inset: 0; bottom: 3.5rem; overflow: hidden; }
+    .dashboard { height: 100%; background: #f5f1e8; color: #1f3028; display: flex; flex-direction: column; }
+    .hero { position: relative; flex: 1; overflow: hidden; }
+    .hero-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.55) 0%, transparent 50%); }
+    .hero-text { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem; padding-bottom: 4rem; color: #fff; }
+    .hero-text h1 { margin: 0 0 .5rem; }
+    h1 { font-size: clamp(3rem, 9vw, 7rem); line-height: .9; margin: .8rem 0; }
   `,
 })
 export class DashboardPage {
@@ -33,10 +34,4 @@ export class DashboardPage {
     const name = this.auth.user()?.profile?.name;
     return typeof name === 'string' && name.trim().length > 0 ? name : 'atleta';
   });
-  private readonly router = inject(Router);
-
-  protected async signOut(): Promise<void> {
-    await this.auth.signOut();
-    await this.router.navigateByUrl('/login');
-  }
 }

@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField, required, validateTree } from '@angular/forms/signals';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import type { Exercise } from '../../core/domain/models';
 import {
@@ -39,7 +39,7 @@ type NumericField =
 @Component({
   selector: 'app-routine-editor-page',
   standalone: true,
-  imports: [FormsModule, FormField, RouterLink, ExerciseCatalogComponent],
+  imports: [FormsModule, FormField, ExerciseCatalogComponent],
   template: `
     <main class="page">
       <header class="hero">
@@ -48,12 +48,7 @@ type NumericField =
           <h1>{{ isEditMode() ? 'Refine your plan.' : 'Build a reusable routine.' }}</h1>
           <p class="lede">Elige ejercicios del catálogo, ordénalos y define tus objetivos.</p>
         </div>
-        <div class="hero-actions">
-          <a routerLink="/routines">Volver a las rutinas</a>
-          @if (isEditMode()) {
-            <a [routerLink]="['/routines', routineId()]">Ver detalle</a>
-          }
-        </div>
+
       </header>
 
       @if (loading()) {
@@ -205,7 +200,7 @@ type NumericField =
   styles: `
     :host { display: block; min-height: 100vh; background: #f5f1e8; color: #1f3028; }
     .page { min-height: 100vh; padding: 2rem clamp(1rem, 4vw, 4rem) 3rem; }
-    .hero, .hero-actions, .layout, .exercise-header, .actions, .form-actions { display: flex; gap: 1rem; }
+    .hero, .layout, .exercise-header, .actions, .form-actions { display: flex; gap: 1rem; }
     .hero { justify-content: space-between; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .hero h1 { margin: .6rem 0; font-size: clamp(2.4rem, 7vw, 4.6rem); line-height: .95; }
     .lede { max-width: 48rem; margin: 0; color: #435248; }
@@ -233,8 +228,7 @@ type NumericField =
     .icon-button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; font-size: 1.25rem; line-height: 1; }
     .icon-button:disabled { opacity: .35; cursor: not-allowed; }
     .metrics { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); margin: 1rem 0; }
-    .hero-actions a, button { border: 0; border-radius: .75rem; padding: .8rem 1rem; font: inherit; text-decoration: none; cursor: pointer; }
-    .hero-actions a, button { background: #e8dfd0; color: #1f3028; }
+
     .primary { background: #1f3028; color: #fff; }
     .danger { background: #f7d9d5; color: #8d2d2d; }
     .banner { border-radius: 1rem; padding: .9rem 1rem; margin: 0 0 1rem; }
@@ -246,11 +240,10 @@ type NumericField =
       .page { padding: 1rem .75rem 2rem; }
       .hero { align-items: start; gap: .9rem; margin-bottom: 1rem; }
       .hero h1 { font-size: clamp(2rem, 11vw, 3rem); }
-      .hero-actions { width: 100%; }
-      .hero-actions a { width: 100%; text-align: center; box-sizing: border-box; }
+
       .layout { display: block; }
       .editor { padding: .9rem; margin-bottom: 1rem; }
-      .section-heading { align-items: start; flex-wrap: wrap; }
+      .section-heading { flex-wrap: wrap; }
       .section-heading h2 { font-size: 1.2rem; }
       .exercise-card { padding: .75rem; }
       .exercise-header { display: grid; gap: .75rem; grid-auto-flow: column;}

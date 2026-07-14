@@ -46,7 +46,9 @@ import { RoutinesService } from './routines.service';
               <div class="routine-copy">
                  <p class="eyebrow">Actualizada {{ formatDate(routine.updatedAt) }}</p>
                  <h2>{{ routine.name }}</h2>
-                 <p>{{ routine.description || 'Sin descripción todavía.' }}</p>
+                 @if (routine.description) {
+                  <p>{{ routine.description }}</p>
+                 }
                </div>
                <div class="routine-actions">
                  <a class="primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
