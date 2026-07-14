@@ -33,7 +33,7 @@ yarn-error.log
 .env.local
 .insforge/
 .angular/cache/
-/src/environments/environment.ts
+#/src/environments/environment.ts
 .sass-cache/
 /connect.lock
 /coverage
