@@ -1,0 +1,1447 @@
+diff --git a/fit-core/.superpowers/sdd/task-4-report.md b/fit-core/.superpowers/sdd/task-4-report.md
+new file mode 100644
+index 00000000..747abdb4
+--- /dev/null
++++ b/fit-core/.superpowers/sdd/task-4-report.md
+@@ -0,0 +1,31 @@
++# Task 4 Report — Routine Management
++
++## Status
++
++Completed pending re-review. Routine management is implemented without automated tests, per the updated project requirement.
++
++## Files
++
++- `src/app/features/routines/routines.service.ts` — InsForge CRUD, snake_case mapping, and routine exercise ordering.
++- `src/app/features/routines/routines-list-page.ts` — owned routine list, loading, empty, and error states.
++- `src/app/features/routines/routine-editor-page.ts` — create/edit form with exercise selection and planned values.
++- `src/app/features/routines/routine-detail-page.ts` — routine detail and start-workout entry point.
++- `src/app/app.routes.ts` — routine list, create, and detail routes protected by auth.
++- `angular.json` — externalizes the SDK's unused Node-only crypto fallback for browser builds.
++
++## Manual Verification
++
++- Production build: `npm run build` pending rerun after the Task 4 review fixes in this report.
++- No unit, integration, or end-to-end tests were created or run.
++- InsForge calls use the authenticated client and user-owned RLS tables.
++
++## Fixes
++
++- Corrected the InsForge relationship mapping because nested exercise rows arrive as an array.
++- Resolved Angular browser bundling for the SDK's dynamic Node `crypto` fallback without adding a polyfill or server credentials.
++- Made routine exercise replacement failure-safe: the service now inserts the replacement set before deleting current rows, rolls back temporary inserts if the delete step fails, and reports which original rows were preserved when replacement fails.
++- Removed the unrelated Angular CLI analytics change so the staged config keeps only the crypto externalization needed for builds.
++
++## Verification
++- `npm run build` — passed on 2026-07-14.
++- Automated unit, integration, and end-to-end tests were intentionally not created or run per project instruction.
+diff --git a/fit-core/angular.json b/fit-core/angular.json
+index df155630..55644b61 100644
+--- a/fit-core/angular.json
++++ b/fit-core/angular.json
+@@ -23,6 +23,7 @@
+             "browser": "src/main.ts",
+             "tsConfig": "tsconfig.app.json",
+             "inlineStyleLanguage": "scss",
++            "externalDependencies": ["crypto"],
+             "assets": [
+               {
+                 "glob": "**/*",
+diff --git a/fit-core/src/app/app.routes.ts b/fit-core/src/app/app.routes.ts
+index dc39edb5..7cc94ff5 100644
+--- a/fit-core/src/app/app.routes.ts
++++ b/fit-core/src/app/app.routes.ts
+@@ -1,3 +1,19 @@
+ import { Routes } from '@angular/router';
+ 
+-export const routes: Routes = [];
++import { authGuard } from './core/auth/auth.guard';
++import { DashboardPage } from './features/dashboard/dashboard-page';
++import { LoginPage } from './features/auth/login-page';
++import { RoutineDetailPage } from './features/routines/routine-detail-page';
++import { RoutineEditorPage } from './features/routines/routine-editor-page';
++import { RoutinesListPage } from './features/routines/routines-list-page';
++
++export const routes: Routes = [
++  { path: 'login', component: LoginPage },
++  { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
++  { path: 'routines', component: RoutinesListPage, canActivate: [authGuard] },
++  { path: 'routines/new', component: RoutineEditorPage, canActivate: [authGuard] },
++  { path: 'routines/:id', component: RoutineDetailPage, canActivate: [authGuard] },
++  { path: 'routines/:id/edit', component: RoutineEditorPage, canActivate: [authGuard] },
++  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
++  { path: '**', redirectTo: 'dashboard' },
++];
+diff --git a/fit-core/src/app/features/routines/routine-detail-page.ts b/fit-core/src/app/features/routines/routine-detail-page.ts
+new file mode 100644
+index 00000000..8bc8fee5
+--- /dev/null
++++ b/fit-core/src/app/features/routines/routine-detail-page.ts
+@@ -0,0 +1,204 @@
++import { Component, inject, signal } from '@angular/core';
++import { ActivatedRoute, Router, RouterLink } from '@angular/router';
++
++import type { RoutineDetail } from './routines.service';
++import { RoutinesService } from './routines.service';
++
++@Component({
++  selector: 'app-routine-detail-page',
++  standalone: true,
++  imports: [RouterLink],
++  template: `
++    <main class="page">
++      <header class="hero">
++        <div>
++          <p class="eyebrow">ROUTINE DETAIL</p>
++          <h1>{{ routine()?.name || 'Routine' }}</h1>
++          <p class="lede">{{ routine()?.description || 'No description yet.' }}</p>
++        </div>
++        <div class="hero-actions">
++          <a routerLink="/routines">Back to routines</a>
++          @if (routine(); as currentRoutine) {
++            <a [routerLink]="['/routines', currentRoutine.id, 'edit']">Edit</a>
++          }
++        </div>
++      </header>
++
++      @if (route.snapshot.queryParamMap.get('saved') === '1') {
++        <p class="banner success">Routine saved.</p>
++      }
++
++      @if (loading()) {
++        <section class="card state"><p>Loading routine…</p></section>
++      } @else if (error(); as errorMessage) {
++        <section class="card state">
++          <p class="error">{{ errorMessage }}</p>
++          <button type="button" (click)="load()">Retry</button>
++        </section>
++      } @else if (routine(); as currentRoutine) {
++        <section class="layout">
++          <article class="card summary">
++            <div class="summary-row">
++              <span>Exercises</span>
++              <strong>{{ currentRoutine.exercises.length }}</strong>
++            </div>
++            <div class="summary-row">
++              <span>Updated</span>
++              <strong>{{ formatDate(currentRoutine.updatedAt) }}</strong>
++            </div>
++            <div class="danger-zone">
++              @if (!confirmingDelete()) {
++                <button type="button" class="danger" (click)="confirmingDelete.set(true)">Delete routine</button>
++              } @else {
++                <div class="confirm-box">
++                  <p>Delete this routine? This cannot be undone.</p>
++                  <div class="confirm-actions">
++                    <button type="button" class="danger" (click)="deleteRoutine()" [disabled]="deleting()">
++                      {{ deleting() ? 'Deleting…' : 'Confirm delete' }}
++                    </button>
++                    <button type="button" (click)="confirmingDelete.set(false)">Cancel</button>
++                  </div>
++                </div>
++              }
++              @if (deleteError(); as deleteMessage) {
++                <p class="error">{{ deleteMessage }}</p>
++              }
++            </div>
++          </article>
++
++          <section class="exercise-list">
++            @for (exercise of currentRoutine.exercises; track exercise.id) {
++              <article class="card exercise-card">
++                <div class="exercise-head">
++                  <div>
++                    <p class="eyebrow">{{ exercise.exercise.type }}</p>
++                    <h2>{{ exercise.position + 1 }}. {{ exercise.exercise.name }}</h2>
++                    <p>{{ exercise.exercise.equipment || 'General equipment' }}</p>
++                  </div>
++                </div>
++
++                <div class="metrics">
++                  @if (exercise.exercise.type === 'strength') {
++                    <div><p>Sets</p><strong>{{ displayMetric(exercise.plannedSets) }}</strong></div>
++                    <div><p>Repetitions</p><strong>{{ displayMetric(exercise.plannedRepetitions) }}</strong></div>
++                    <div><p>Weight</p><strong>{{ displayMetric(exercise.plannedWeight) }}</strong></div>
++                    <div><p>Rest (sec)</p><strong>{{ displayMetric(exercise.restSeconds) }}</strong></div>
++                  } @else {
++                    <div><p>Duration (sec)</p><strong>{{ displayMetric(exercise.plannedDurationSeconds) }}</strong></div>
++                    <div><p>Distance</p><strong>{{ displayMetric(exercise.plannedDistance) }}</strong></div>
++                  }
++                </div>
++
++                @if (exercise.notes) {
++                  <p class="notes">{{ exercise.notes }}</p>
++                }
++              </article>
++            }
++          </section>
++        </section>
++      }
++    </main>
++  `,
++  styles: `
++    :host { display: block; min-height: 100vh; background: #f5f1e8; color: #1f3028; }
++    .page { min-height: 100vh; padding: 2rem clamp(1rem, 4vw, 4rem) 3rem; }
++    .hero, .hero-actions, .layout, .confirm-actions { display: flex; gap: 1rem; }
++    .hero { justify-content: space-between; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem; }
++    .hero h1 { margin: .6rem 0; font-size: clamp(2.4rem, 7vw, 4.6rem); line-height: .95; }
++    .lede { max-width: 48rem; margin: 0; color: #435248; }
++    .eyebrow { margin: 0; color: #a44a2c; font-size: .75rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
++    .layout { align-items: start; flex-wrap: wrap; }
++    .summary { flex: 0 0 min(20rem, 100%); }
++    .exercise-list { display: grid; gap: 1rem; flex: 1 1 36rem; }
++    .card { border: 1px solid #ded6c7; border-radius: 1.25rem; background: #fffdf8; padding: 1.2rem; }
++    .summary-row { display: flex; justify-content: space-between; gap: 1rem; padding: .5rem 0; }
++    .danger-zone { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ece4d8; }
++    .confirm-box { display: grid; gap: .75rem; }
++    .confirm-actions { flex-wrap: wrap; }
++    .exercise-card h2 { margin: .5rem 0; }
++    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: .75rem; margin: 1rem 0 0; }
++    .metrics div { padding: .85rem; border-radius: 1rem; background: #f7f1e6; }
++    .metrics p { margin: 0; font-size: .85rem; color: #617064; }
++    .metrics strong { display: block; margin-top: .35rem; }
++    .notes { margin: 1rem 0 0; color: #435248; }
++    .banner { border-radius: 1rem; padding: .9rem 1rem; margin: 0 0 1rem; }
++    .success { background: #e7f4ec; color: #1d5b3d; }
++    .error { color: #9d2f2f; }
++    a, button { border: 0; border-radius: .75rem; padding: .8rem 1rem; font: inherit; text-decoration: none; cursor: pointer; background: #e8dfd0; color: #1f3028; }
++    .danger { background: #f7d9d5; color: #8d2d2d; }
++    .state { display: grid; gap: .75rem; justify-items: start; }
++  `,
++})
++export class RoutineDetailPage {
++  protected readonly route = inject(ActivatedRoute);
++
++  private readonly routinesService = inject(RoutinesService);
++  private readonly router = inject(Router);
++
++  protected readonly loading = signal(true);
++  protected readonly error = signal<string | null>(null);
++  protected readonly deleteError = signal<string | null>(null);
++  protected readonly deleting = signal(false);
++  protected readonly confirmingDelete = signal(false);
++  protected readonly routine = signal<RoutineDetail | null>(null);
++
++  constructor() {
++    this.load();
++  }
++
++  protected load(): void {
++    const routineId = this.route.snapshot.paramMap.get('id');
++    if (!routineId) {
++      this.error.set('Routine not found.');
++      this.loading.set(false);
++      return;
++    }
++
++    this.loading.set(true);
++    this.error.set(null);
++
++    this.routinesService.getDetail(routineId).subscribe({
++      next: (routine) => {
++        this.routine.set(routine);
++        this.loading.set(false);
++      },
++      error: (error: unknown) => {
++        this.error.set(this.toMessage(error, 'We could not load this routine.'));
++        this.loading.set(false);
++      },
++    });
++  }
++
++  protected async deleteRoutine(): Promise<void> {
++    const routine = this.routine();
++    if (!routine) {
++      return;
++    }
++
++    this.deleting.set(true);
++    this.deleteError.set(null);
++
++    this.routinesService.delete(routine.id).subscribe({
++      next: async () => {
++        this.deleting.set(false);
++        await this.router.navigate(['/routines'], { queryParams: { deleted: 1 } });
++      },
++      error: (error: unknown) => {
++        this.deleteError.set(this.toMessage(error, 'Delete failed. The routine was not removed.'));
++        this.deleting.set(false);
++      },
++    });
++  }
++
++  protected formatDate(value: string): string {
++    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
++  }
++
++  protected displayMetric(value: number | null): string | number {
++    return value ?? '—';
++  }
++
++  private toMessage(error: unknown, fallback: string): string {
++    return error instanceof Error && error.message ? error.message : fallback;
++  }
++}
+diff --git a/fit-core/src/app/features/routines/routine-editor-page.ts b/fit-core/src/app/features/routines/routine-editor-page.ts
+new file mode 100644
+index 00000000..fea12113
+--- /dev/null
++++ b/fit-core/src/app/features/routines/routine-editor-page.ts
+@@ -0,0 +1,495 @@
++import { Component, inject, signal, computed } from '@angular/core';
++import { FormsModule } from '@angular/forms';
++import { Router, RouterLink, ActivatedRoute } from '@angular/router';
++
++import type { Exercise, ExerciseType } from '../../core/domain/models';
++import { CatalogService, type CatalogFilter } from '../../core/catalog/catalog.service';
++import {
++  RoutinesService,
++  type CreateRoutineInput,
++  type RoutineDetail,
++  validateRoutineInput,
++} from './routines.service';
++
++interface ExerciseDraft {
++  exercise: Exercise;
++  plannedSets: number | null;
++  plannedRepetitions: number | null;
++  plannedWeight: number | null;
++  plannedDurationSeconds: number | null;
++  plannedDistance: number | null;
++  restSeconds: number | null;
++  notes: string;
++}
++
++interface RoutineDraft {
++  name: string;
++  description: string;
++  exercises: ExerciseDraft[];
++}
++
++type NumericField =
++  | 'plannedSets'
++  | 'plannedRepetitions'
++  | 'plannedWeight'
++  | 'plannedDurationSeconds'
++  | 'plannedDistance'
++  | 'restSeconds';
++
++@Component({
++  selector: 'app-routine-editor-page',
++  standalone: true,
++  imports: [FormsModule, RouterLink],
++  template: `
++    <main class="page">
++      <header class="hero">
++        <div>
++          <p class="eyebrow">{{ isEditMode() ? 'EDIT ROUTINE' : 'NEW ROUTINE' }}</p>
++          <h1>{{ isEditMode() ? 'Refine your plan.' : 'Build a reusable routine.' }}</h1>
++          <p class="lede">Pick exercises from the shared catalog, order them, and define the targets you care about.</p>
++        </div>
++        <div class="hero-actions">
++          <a routerLink="/routines">Back to routines</a>
++          @if (isEditMode()) {
++            <a [routerLink]="['/routines', routineId()]">View detail</a>
++          }
++        </div>
++      </header>
++
++      @if (loading()) {
++        <section class="card state"><p>Loading routine editor…</p></section>
++      } @else {
++        <div class="layout">
++          <section class="card editor">
++            @if (saveError(); as errorMessage) {
++              <p class="banner error" role="alert">{{ errorMessage }}</p>
++            }
++
++            @if (validationErrors().length > 0 && attemptedSubmit()) {
++              <div class="banner error" role="alert">
++                <p>Fix these issues before saving:</p>
++                <ul>
++                  @for (errorMessage of validationErrors(); track errorMessage) {
++                    <li>{{ errorMessage }}</li>
++                  }
++                </ul>
++              </div>
++            }
++
++            <label class="field">
++              <span>Name</span>
++              <input
++                type="text"
++                [ngModel]="draft().name"
++                (ngModelChange)="updateDraftText('name', $event)"
++                placeholder="Upper / lower split"
++              />
++            </label>
++
++            <label class="field">
++              <span>Description</span>
++              <textarea
++                rows="3"
++                [ngModel]="draft().description"
++                (ngModelChange)="updateDraftText('description', $event)"
++                placeholder="Optional notes about intent, tempo, or focus."
++              ></textarea>
++            </label>
++
++            <section class="selected">
++              <div class="section-heading">
++                <h2>Selected exercises</h2>
++                <p>{{ draft().exercises.length }} planned</p>
++              </div>
++
++              @if (draft().exercises.length === 0) {
++                <div class="empty-inline"><p>Add at least one exercise from the catalog.</p></div>
++              } @else {
++                <div class="exercise-list">
++                  @for (item of draft().exercises; track trackExercise($index, item.exercise.id)) {
++                    <article class="exercise-card">
++                      <div class="exercise-header">
++                        <div>
++                          <p class="eyebrow">{{ item.exercise.type }}</p>
++                          <h3>{{ $index + 1 }}. {{ item.exercise.name }}</h3>
++                          <p>{{ item.exercise.equipment || 'General equipment' }}</p>
++                        </div>
++                        <div class="stack actions">
++                          <button type="button" (click)="moveExercise($index, -1)" [disabled]="$index === 0">Up</button>
++                          <button type="button" (click)="moveExercise($index, 1)" [disabled]="$index === draft().exercises.length - 1">Down</button>
++                          <button type="button" class="danger" (click)="removeExercise($index)">Remove</button>
++                        </div>
++                      </div>
++
++                      @if (item.exercise.type === 'strength') {
++                        <div class="metrics">
++                          <label class="field"><span>Sets</span><input type="number" min="0" [ngModel]="displayNumber(item.plannedSets)" (ngModelChange)="updateExerciseNumber($index, 'plannedSets', $event)" /></label>
++                          <label class="field"><span>Repetitions</span><input type="number" min="0" [ngModel]="displayNumber(item.plannedRepetitions)" (ngModelChange)="updateExerciseNumber($index, 'plannedRepetitions', $event)" /></label>
++                          <label class="field"><span>Weight</span><input type="number" min="0" step="0.5" [ngModel]="displayNumber(item.plannedWeight)" (ngModelChange)="updateExerciseNumber($index, 'plannedWeight', $event)" /></label>
++                          <label class="field"><span>Rest (sec)</span><input type="number" min="0" [ngModel]="displayNumber(item.restSeconds)" (ngModelChange)="updateExerciseNumber($index, 'restSeconds', $event)" /></label>
++                        </div>
++                      } @else {
++                        <div class="metrics">
++                          <label class="field"><span>Duration (sec)</span><input type="number" min="0" [ngModel]="displayNumber(item.plannedDurationSeconds)" (ngModelChange)="updateExerciseNumber($index, 'plannedDurationSeconds', $event)" /></label>
++                          <label class="field"><span>Distance</span><input type="number" min="0" step="0.1" [ngModel]="displayNumber(item.plannedDistance)" (ngModelChange)="updateExerciseNumber($index, 'plannedDistance', $event)" /></label>
++                        </div>
++                      }
++
++                      <label class="field">
++                        <span>Notes</span>
++                        <textarea rows="2" [ngModel]="item.notes" (ngModelChange)="updateExerciseNotes($index, $event)" placeholder="Optional cue or setup note."></textarea>
++                      </label>
++                    </article>
++                  }
++                </div>
++              }
++            </section>
++
++            <div class="form-actions">
++              <button type="button" class="primary" (click)="save()" [disabled]="saving()">
++                {{ saving() ? 'Saving…' : isEditMode() ? 'Save changes' : 'Create routine' }}
++              </button>
++            </div>
++          </section>
++
++          <aside class="card catalog">
++            <div class="section-heading">
++              <h2>Exercise catalog</h2>
++              <p>Add from the shared list</p>
++            </div>
++
++            <div class="filters">
++              <label class="field">
++                <span>Search</span>
++                <input type="text" [ngModel]="filters().query" (ngModelChange)="updateFilter('query', $event)" placeholder="Chest press" />
++              </label>
++              <label class="field">
++                <span>Type</span>
++                <select [ngModel]="filters().type" (ngModelChange)="updateFilter('type', $event)">
++                  <option value="">All</option>
++                  <option value="strength">Strength</option>
++                  <option value="cardio">Cardio</option>
++                </select>
++              </label>
++              <label class="field">
++                <span>Muscle group</span>
++                <input type="text" [ngModel]="filters().muscleGroup" (ngModelChange)="updateFilter('muscleGroup', $event)" placeholder="quadriceps" />
++              </label>
++              <label class="field">
++                <span>Equipment</span>
++                <input type="text" [ngModel]="filters().equipment" (ngModelChange)="updateFilter('equipment', $event)" placeholder="machine" />
++              </label>
++            </div>
++
++            @if (catalogLoading()) {
++              <p>Loading catalog…</p>
++            } @else if (catalogError(); as catalogErrorMessage) {
++              <div class="state">
++                <p class="error">{{ catalogErrorMessage }}</p>
++                <button type="button" (click)="loadCatalog()">Retry</button>
++              </div>
++            } @else if (filteredCatalog().length === 0) {
++              <div class="empty-inline"><p>No catalog exercises match these filters.</p></div>
++            } @else {
++              <div class="catalog-list">
++                @for (exercise of filteredCatalog(); track exercise.id) {
++                  <article class="catalog-item">
++                    <div>
++                      <p class="eyebrow">{{ exercise.type }}</p>
++                      <h3>{{ exercise.name }}</h3>
++                      <p>{{ exercise.equipment || 'General equipment' }}</p>
++                      <p class="tags">{{ exercise.muscleGroups.join(' · ') || 'No muscle groups' }}</p>
++                    </div>
++                    <button type="button" (click)="addExercise(exercise)">Add</button>
++                  </article>
++                }
++              </div>
++            }
++          </aside>
++        </div>
++      }
++    </main>
++  `,
++  styles: `
++    :host { display: block; min-height: 100vh; background: #f5f1e8; color: #1f3028; }
++    .page { min-height: 100vh; padding: 2rem clamp(1rem, 4vw, 4rem) 3rem; }
++    .hero, .hero-actions, .layout, .exercise-header, .actions, .form-actions { display: flex; gap: 1rem; }
++    .hero { justify-content: space-between; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem; }
++    .hero h1 { margin: .6rem 0; font-size: clamp(2.4rem, 7vw, 4.6rem); line-height: .95; }
++    .lede { max-width: 48rem; margin: 0; color: #435248; }
++    .eyebrow { margin: 0; color: #a44a2c; font-size: .75rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
++    .layout { align-items: start; flex-wrap: wrap; }
++    .editor { flex: 1 1 40rem; }
++    .catalog { flex: 0 0 min(24rem, 100%); }
++    .card { border: 1px solid #ded6c7; border-radius: 1.25rem; background: #fffdf8; padding: 1.2rem; }
++    .section-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin-bottom: 1rem; }
++    .section-heading h2, h3 { margin: 0; }
++    .field { display: grid; gap: .35rem; margin-bottom: 1rem; }
++    .field span { font-weight: 700; }
++    input, textarea, select { width: 100%; border: 1px solid #c8bca7; border-radius: .75rem; padding: .8rem .9rem; font: inherit; background: #fff; }
++    .selected { margin-top: 1.5rem; }
++    .exercise-list, .catalog-list { display: grid; gap: .85rem; }
++    .exercise-card, .catalog-item { border: 1px solid #ece4d8; border-radius: 1rem; padding: 1rem; background: #fff; }
++    .exercise-header { justify-content: space-between; align-items: start; }
++    .stack { display: grid; gap: .5rem; }
++    .actions { align-items: start; }
++    .metrics { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); margin: 1rem 0; }
++    .filters { display: grid; gap: .75rem; margin-bottom: 1rem; }
++    .catalog-item { display: grid; gap: .8rem; }
++    .tags { color: #617064; font-size: .95rem; }
++    .hero-actions a, button { border: 0; border-radius: .75rem; padding: .8rem 1rem; font: inherit; text-decoration: none; cursor: pointer; }
++    .hero-actions a, button { background: #e8dfd0; color: #1f3028; }
++    .primary { background: #1f3028; color: #fff; }
++    .danger { background: #f7d9d5; color: #8d2d2d; }
++    .banner { border-radius: 1rem; padding: .9rem 1rem; margin: 0 0 1rem; }
++    .error { color: #9d2f2f; }
++    .banner.error { background: #fce9e6; }
++    .banner ul { margin: .5rem 0 0; padding-left: 1.2rem; }
++    .state, .empty-inline { border: 1px dashed #d7ccb7; border-radius: 1rem; padding: 1rem; background: #fbf7f0; }
++    @media (max-width: 960px) { .catalog { flex-basis: 100%; } }
++  `,
++})
++export class RoutineEditorPage {
++  private readonly routinesService = inject(RoutinesService);
++  private readonly catalogService = inject(CatalogService);
++  private readonly router = inject(Router);
++  private readonly route = inject(ActivatedRoute);
++
++  protected readonly loading = signal(false);
++  protected readonly catalogLoading = signal(false);
++  protected readonly saving = signal(false);
++  protected readonly saveError = signal<string | null>(null);
++  protected readonly catalogError = signal<string | null>(null);
++  protected readonly attemptedSubmit = signal(false);
++  protected readonly draft = signal<RoutineDraft>({ name: '', description: '', exercises: [] });
++  protected readonly catalog = signal<Exercise[]>([]);
++  protected readonly filters = signal({
++    query: '',
++    type: '',
++    muscleGroup: '',
++    equipment: '',
++  });
++  protected readonly routineId = signal(this.route.snapshot.paramMap.get('id'));
++  protected readonly isEditMode = computed(() => !!this.routineId());
++  protected readonly filteredCatalog = computed(() => {
++    const query = this.filters().query.trim().toLowerCase();
++    if (!query) {
++      return this.catalog();
++    }
++
++    return this.catalog().filter((exercise) => {
++      const haystack = [exercise.name, exercise.equipment ?? '', exercise.muscleGroups.join(' ')].join(' ').toLowerCase();
++      return haystack.includes(query);
++    });
++  });
++  protected readonly validationErrors = computed(() => validateRoutineInput(this.toInput(this.draft())));
++
++  constructor() {
++    this.loadCatalog();
++    const routineId = this.routineId();
++    if (routineId) {
++      this.loadRoutine(routineId);
++    }
++  }
++
++  protected updateDraftText(field: 'name' | 'description', value: string): void {
++    this.draft.update((draft) => ({ ...draft, [field]: value }));
++  }
++
++  protected updateFilter(field: 'query' | 'type' | 'muscleGroup' | 'equipment', value: string): void {
++    this.filters.update((filters) => ({ ...filters, [field]: value }));
++    if (field !== 'query') {
++      this.loadCatalog();
++    }
++  }
++
++  protected addExercise(exercise: Exercise): void {
++    this.draft.update((draft) => ({
++      ...draft,
++      exercises: [
++        ...draft.exercises,
++        {
++          exercise,
++          plannedSets: null,
++          plannedRepetitions: null,
++          plannedWeight: null,
++          plannedDurationSeconds: null,
++          plannedDistance: null,
++          restSeconds: null,
++          notes: '',
++        },
++      ],
++    }));
++  }
++
++  protected removeExercise(index: number): void {
++    this.draft.update((draft) => ({
++      ...draft,
++      exercises: draft.exercises.filter((_, currentIndex) => currentIndex !== index),
++    }));
++  }
++
++  protected moveExercise(index: number, direction: -1 | 1): void {
++    const targetIndex = index + direction;
++    this.draft.update((draft) => {
++      if (targetIndex < 0 || targetIndex >= draft.exercises.length) {
++        return draft;
++      }
++
++      const exercises = [...draft.exercises];
++      const [item] = exercises.splice(index, 1);
++      exercises.splice(targetIndex, 0, item);
++      return { ...draft, exercises };
++    });
++  }
++
++  protected updateExerciseNumber(index: number, field: NumericField, rawValue: string | number): void {
++    const value = this.toNullableNumber(rawValue);
++    this.draft.update((draft) => ({
++      ...draft,
++      exercises: draft.exercises.map((exercise, currentIndex) =>
++        currentIndex === index ? { ...exercise, [field]: value } : exercise,
++      ),
++    }));
++  }
++
++  protected updateExerciseNotes(index: number, value: string): void {
++    this.draft.update((draft) => ({
++      ...draft,
++      exercises: draft.exercises.map((exercise, currentIndex) =>
++        currentIndex === index ? { ...exercise, notes: value } : exercise,
++      ),
++    }));
++  }
++
++  protected displayNumber(value: number | null): string | number {
++    return value ?? '';
++  }
++
++  protected trackExercise(index: number, exerciseId: string): string {
++    return `${index}-${exerciseId}`;
++  }
++
++  protected async save(): Promise<void> {
++    this.attemptedSubmit.set(true);
++    this.saveError.set(null);
++
++    const input = this.toInput(this.draft());
++    if (validateRoutineInput(input).length > 0) {
++      return;
++    }
++
++    this.saving.set(true);
++    const request$ = this.isEditMode() && this.routineId()
++      ? this.routinesService.update(this.routineId()!, input)
++      : this.routinesService.create(input);
++
++    request$.subscribe({
++      next: async (routine) => {
++        this.saving.set(false);
++        await this.router.navigate(['/routines', routine.id], {
++          queryParams: this.isEditMode() ? { saved: 1 } : { created: 1, saved: 1 },
++        });
++      },
++      error: (error: unknown) => {
++        this.saveError.set(this.toMessage(error, 'Save failed. Your changes were not confirmed as saved.'));
++        this.saving.set(false);
++      },
++    });
++  }
++
++  protected loadCatalog(): void {
++    this.catalogLoading.set(true);
++    this.catalogError.set(null);
++
++    const filters = this.filters();
++    const request: CatalogFilter = {
++      type: this.asExerciseType(filters.type),
++      muscleGroup: this.normalizeFilter(filters.muscleGroup),
++      equipment: this.normalizeFilter(filters.equipment),
++    };
++
++    this.catalogService.listExercises(request).subscribe({
++      next: (exercises) => {
++        this.catalog.set(exercises);
++        this.catalogLoading.set(false);
++      },
++      error: (error: unknown) => {
++        this.catalogError.set(this.toMessage(error, 'We could not load the shared exercise catalog.'));
++        this.catalogLoading.set(false);
++      },
++    });
++  }
++
++  private loadRoutine(id: string): void {
++    this.loading.set(true);
++    this.routinesService.getDetail(id).subscribe({
++      next: (routine) => {
++        this.draft.set(this.mapDraft(routine));
++        this.loading.set(false);
++      },
++      error: (error: unknown) => {
++        this.saveError.set(this.toMessage(error, 'We could not load this routine.'));
++        this.loading.set(false);
++      },
++    });
++  }
++
++  private mapDraft(routine: RoutineDetail): RoutineDraft {
++    return {
++      name: routine.name,
++      description: routine.description ?? '',
++      exercises: routine.exercises.map((exercise) => ({
++        exercise: exercise.exercise,
++        plannedSets: exercise.plannedSets,
++        plannedRepetitions: exercise.plannedRepetitions,
++        plannedWeight: exercise.plannedWeight,
++        plannedDurationSeconds: exercise.plannedDurationSeconds,
++        plannedDistance: exercise.plannedDistance,
++        restSeconds: exercise.restSeconds,
++        notes: exercise.notes ?? '',
++      })),
++    };
++  }
++
++  private toInput(draft: RoutineDraft): CreateRoutineInput {
++    return {
++      name: draft.name,
++      description: draft.description,
++      exercises: draft.exercises.map((exercise) => ({
++        exerciseId: exercise.exercise.id,
++        exerciseType: exercise.exercise.type,
++        supportedMetrics: exercise.exercise.supportedMetrics,
++        plannedSets: exercise.plannedSets,
++        plannedRepetitions: exercise.plannedRepetitions,
++        plannedWeight: exercise.plannedWeight,
++        plannedDurationSeconds: exercise.plannedDurationSeconds,
++        plannedDistance: exercise.plannedDistance,
++        restSeconds: exercise.restSeconds,
++        notes: exercise.notes,
++      })),
++    };
++  }
++
++  private toNullableNumber(rawValue: string | number): number | null {
++    if (rawValue === '' || rawValue === null || rawValue === undefined) {
++      return null;
++    }
++
++    const numeric = typeof rawValue === 'number' ? rawValue : Number(rawValue);
++    return Number.isFinite(numeric) ? numeric : null;
++  }
++
++  private normalizeFilter(value: string): string | undefined {
++    const normalized = value.trim();
++    return normalized ? normalized : undefined;
++  }
++
++  private asExerciseType(value: string): ExerciseType | undefined {
++    return value === 'strength' || value === 'cardio' ? value : undefined;
++  }
++
++  private toMessage(error: unknown, fallback: string): string {
++    return error instanceof Error && error.message ? error.message : fallback;
++  }
++}
+diff --git a/fit-core/src/app/features/routines/routines-list-page.ts b/fit-core/src/app/features/routines/routines-list-page.ts
+new file mode 100644
+index 00000000..afee8479
+--- /dev/null
++++ b/fit-core/src/app/features/routines/routines-list-page.ts
+@@ -0,0 +1,132 @@
++import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
++import { RouterLink, ActivatedRoute } from '@angular/router';
++
++import type { Routine } from '../../core/domain/models';
++import { RoutinesService } from './routines.service';
++
++@Component({
++  selector: 'app-routines-list-page',
++  standalone: true,
++  imports: [RouterLink],
++  template: `
++    <main class="page">
++      <header class="hero">
++        <div>
++          <p class="eyebrow">ROUTINES</p>
++          <h1>Your training plans.</h1>
++          <p class="lede">Create, revisit, and refine reusable sessions before you hit the gym.</p>
++        </div>
++        <div class="hero-actions">
++          <a routerLink="/dashboard">Back to dashboard</a>
++          <a class="primary" routerLink="/routines/new">Create routine</a>
++        </div>
++      </header>
++
++      @if (flashMessage(); as message) {
++        <p class="banner success">{{ message }}</p>
++      }
++
++      @if (loading()) {
++        <section class="card state"><p>Loading routines…</p></section>
++      } @else if (error(); as errorMessage) {
++        <section class="card state">
++          <p class="error">{{ errorMessage }}</p>
++          <button type="button" (click)="load()">Retry</button>
++        </section>
++      } @else if (routines().length === 0) {
++        <section class="card state">
++          <h2>No routines yet.</h2>
++          <p>Start with one saved plan so future workouts begin with structure.</p>
++          <a class="primary" routerLink="/routines/new">Create your first routine</a>
++        </section>
++      } @else {
++        <section class="grid">
++          @for (routine of routines(); track routine.id) {
++            <article class="card routine-card">
++              <div class="routine-copy">
++                <p class="eyebrow">UPDATED {{ formatDate(routine.updatedAt) }}</p>
++                <h2>{{ routine.name }}</h2>
++                <p>{{ routine.description || 'No description yet.' }}</p>
++              </div>
++              <div class="routine-actions">
++                <a [routerLink]="['/routines', routine.id]">Open</a>
++                <a [routerLink]="['/routines', routine.id, 'edit']">Edit</a>
++              </div>
++            </article>
++          }
++        </section>
++      }
++    </main>
++  `,
++  styles: `
++    :host { display: block; min-height: 100vh; background: #f5f1e8; color: #1f3028; }
++    .page { min-height: 100vh; padding: 2rem clamp(1rem, 4vw, 4rem) 3rem; }
++    .hero, .routine-card, .routine-actions, .hero-actions { display: flex; gap: 1rem; }
++    .hero { justify-content: space-between; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem; }
++    .hero h1 { margin: .6rem 0; font-size: clamp(2.4rem, 7vw, 4.6rem); line-height: .95; }
++    .lede { max-width: 42rem; margin: 0; color: #435248; }
++    .eyebrow { margin: 0; color: #a44a2c; font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
++    .hero-actions, .routine-actions { align-items: center; flex-wrap: wrap; }
++    a, button { border: 0; border-radius: .75rem; padding: .85rem 1rem; font: inherit; text-decoration: none; cursor: pointer; }
++    a, button { background: #e8dfd0; color: #1f3028; }
++    .primary { background: #1f3028; color: #fff; }
++    .banner, .card { border-radius: 1.2rem; border: 1px solid #ded6c7; background: #fffdf8; }
++    .banner { margin: 0 0 1rem; padding: .9rem 1rem; }
++    .success { color: #1d5b3d; }
++    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
++    .card { padding: 1.2rem; }
++    .state { display: grid; gap: .75rem; justify-items: start; }
++    .routine-card { min-height: 14rem; flex-direction: column; justify-content: space-between; }
++    .routine-copy h2 { margin: .5rem 0; }
++    .routine-copy p:last-child { color: #435248; }
++    .error { margin: 0; color: #9d2f2f; }
++  `,
++})
++export class RoutinesListPage {
++  private readonly routinesService = inject(RoutinesService);
++  private readonly route = inject(ActivatedRoute);
++  private readonly destroyRef = inject(DestroyRef);
++
++  protected readonly loading = signal(true);
++  protected readonly error = signal<string | null>(null);
++  protected readonly routines = signal<Routine[]>([]);
++  protected readonly flashMessage = computed(() => {
++    const deleted = this.route.snapshot.queryParamMap.get('deleted');
++    if (deleted === '1') {
++      return 'Routine deleted.';
++    }
++
++    const created = this.route.snapshot.queryParamMap.get('created');
++    return created === '1' ? 'Routine saved.' : null;
++  });
++
++  constructor() {
++    this.load();
++  }
++
++  protected load(): void {
++    this.loading.set(true);
++    this.error.set(null);
++
++    const subscription = this.routinesService.listMine().subscribe({
++      next: (routines) => {
++        this.routines.set(routines);
++        this.loading.set(false);
++      },
++      error: (error: unknown) => {
++        this.error.set(this.toMessage(error, 'We could not load your routines.'));
++        this.loading.set(false);
++      },
++    });
++
++    this.destroyRef.onDestroy(() => subscription.unsubscribe());
++  }
++
++  protected formatDate(value: string): string {
++    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value));
++  }
++
++  private toMessage(error: unknown, fallback: string): string {
++    return error instanceof Error && error.message ? error.message : fallback;
++  }
++}
+diff --git a/fit-core/src/app/features/routines/routines.service.ts b/fit-core/src/app/features/routines/routines.service.ts
+new file mode 100644
+index 00000000..dd4259cf
+--- /dev/null
++++ b/fit-core/src/app/features/routines/routines.service.ts
+@@ -0,0 +1,518 @@
++import { Injectable, inject } from '@angular/core';
++import { from, Observable, switchMap, map } from 'rxjs';
++
++import type { Exercise, ExerciseType, Routine, RoutineExercise } from '../../core/domain/models';
++import { AuthService } from '../../core/auth/auth.service';
++import { InsforgeClientService } from '../../core/insforge/insforge-client';
++
++export interface RoutineExerciseInput {
++  exerciseId: string;
++  exerciseType: ExerciseType;
++  supportedMetrics: string[];
++  plannedSets: number | null;
++  plannedRepetitions: number | null;
++  plannedWeight: number | null;
++  plannedDurationSeconds: number | null;
++  plannedDistance: number | null;
++  restSeconds: number | null;
++  notes?: string | null;
++}
++
++export interface CreateRoutineInput {
++  name: string;
++  description?: string | null;
++  exercises: RoutineExerciseInput[];
++}
++
++export type UpdateRoutineInput = CreateRoutineInput;
++
++export interface RoutineExerciseDetail extends RoutineExercise {
++  exercise: Exercise;
++}
++
++export interface RoutineDetail extends Routine {
++  exercises: RoutineExerciseDetail[];
++}
++
++interface RoutineRow {
++  id: string;
++  user_id: string;
++  name: string;
++  description: string | null;
++  created_at: string;
++  updated_at: string;
++}
++
++interface RoutineExerciseRow {
++  id: string;
++  user_id: string;
++  routine_id: string;
++  exercise_id: string;
++  position: number;
++  planned_sets: number | null;
++  planned_repetitions: number | null;
++  planned_weight: number | null;
++  planned_duration_seconds: number | null;
++  planned_distance: number | null;
++  rest_seconds: number | null;
++  notes: string | null;
++  created_at: string;
++  updated_at: string;
++  exercise: ExerciseRow[] | null;
++}
++
++interface RoutineExerciseMutationRow {
++  id: string;
++  user_id: string;
++  routine_id: string;
++  exercise_id: string;
++  position: number;
++  planned_sets: number | null;
++  planned_repetitions: number | null;
++  planned_weight: number | null;
++  planned_duration_seconds: number | null;
++  planned_distance: number | null;
++  rest_seconds: number | null;
++  notes: string | null;
++  created_at: string;
++  updated_at: string;
++}
++
++interface RoutineExerciseInsertRow {
++  user_id: string;
++  routine_id: string;
++  exercise_id: string;
++  position: number;
++  planned_sets: number | null;
++  planned_repetitions: number | null;
++  planned_weight: number | null;
++  planned_duration_seconds: number | null;
++  planned_distance: number | null;
++  rest_seconds: number | null;
++  notes: string | null;
++}
++
++interface ExerciseRow {
++  id: string;
++  name: string;
++  type: ExerciseType;
++  equipment: string | null;
++  muscle_groups: string[] | null;
++  supported_metrics: string[] | null;
++  created_at: string;
++  updated_at: string;
++}
++
++export function validateRoutineInput(input: CreateRoutineInput): string[] {
++  const errors: string[] = [];
++  const name = input.name.trim();
++
++  if (name.length === 0) {
++    errors.push('Routine name is required.');
++  }
++
++  if (input.exercises.length === 0) {
++    errors.push('Add at least one exercise before saving.');
++  }
++
++  input.exercises.forEach((exercise, index) => {
++    const label = `Exercise ${index + 1}`;
++    const metrics = new Set(exercise.supportedMetrics);
++
++    if (!exercise.exerciseId) {
++      errors.push(`${label} is missing an exercise reference.`);
++    }
++
++    for (const [field, value, integerOnly] of [
++      ['planned sets', exercise.plannedSets, true],
++      ['planned repetitions', exercise.plannedRepetitions, true],
++      ['planned weight', exercise.plannedWeight, false],
++      ['planned duration', exercise.plannedDurationSeconds, true],
++      ['planned distance', exercise.plannedDistance, false],
++      ['rest seconds', exercise.restSeconds, true],
++    ] as const) {
++      if (value === null) {
++        continue;
++      }
++
++      if (!Number.isFinite(value) || value < 0) {
++        errors.push(`${label} has an invalid ${field} value.`);
++        continue;
++      }
++
++      if (integerOnly && !Number.isInteger(value)) {
++        errors.push(`${label} requires ${field} to be a whole number.`);
++      }
++    }
++
++    if (exercise.exerciseType === 'cardio') {
++      const plannedDuration = exercise.plannedDurationSeconds ?? null;
++      const plannedDistance = exercise.plannedDistance ?? null;
++      const canUseDuration = metrics.size === 0 || metrics.has('duration') || metrics.has('durationSeconds');
++      const canUseDistance = metrics.size === 0 || metrics.has('distance');
++
++      if ((plannedDuration === null || !canUseDuration) && (plannedDistance === null || !canUseDistance)) {
++        errors.push(`${label} needs at least one valid cardio target.`);
++      }
++    }
++  });
++
++  return errors;
++}
++
++@Injectable({ providedIn: 'root' })
++export class RoutinesService {
++  private readonly auth = inject(AuthService);
++  private readonly insforge = inject(InsforgeClientService);
++
++  listMine(): Observable<Routine[]> {
++    return from(
++      this.insforge.client.database
++        .from('routines')
++        .select('id, user_id, name, description, created_at, updated_at')
++        .order('updated_at', { ascending: false }),
++    ).pipe(
++      map(({ data, error }) => {
++        if (error) {
++          throw error;
++        }
++
++        return (data ?? []).map((row) => this.mapRoutine(row as RoutineRow));
++      }),
++    );
++  }
++
++  getDetail(id: string): Observable<RoutineDetail> {
++    return from(
++      this.insforge.client.database
++        .from('routines')
++        .select('id, user_id, name, description, created_at, updated_at')
++        .eq('id', id)
++        .single(),
++    ).pipe(
++      switchMap(({ data, error }) => {
++        if (error) {
++          throw error;
++        }
++
++        return from(
++          this.insforge.client.database
++            .from('routine_exercises')
++            .select(
++              'id, user_id, routine_id, exercise_id, position, planned_sets, planned_repetitions, planned_weight, planned_duration_seconds, planned_distance, rest_seconds, notes, created_at, updated_at, exercise:exercises(id, name, type, equipment, muscle_groups, supported_metrics, created_at, updated_at)',
++            )
++            .eq('routine_id', id)
++            .order('position', { ascending: true }),
++        ).pipe(
++          map(({ data: exerciseData, error: exerciseError }) => {
++            if (exerciseError) {
++              throw exerciseError;
++            }
++
++            return {
++              ...this.mapRoutine(data as RoutineRow),
++              exercises: (exerciseData ?? []).map((row) => this.mapRoutineExercise(row as RoutineExerciseRow)),
++            };
++          }),
++        );
++      }),
++    );
++  }
++
++  create(input: CreateRoutineInput): Observable<Routine> {
++    return from(this.requireUserId()).pipe(
++      switchMap((userId) => from(this.createRoutine(userId, input))),
++    );
++  }
++
++  update(id: string, input: UpdateRoutineInput): Observable<Routine> {
++    return from(this.requireUserId()).pipe(
++      switchMap((userId) => from(this.updateRoutine(userId, id, input))),
++    );
++  }
++
++  delete(id: string): Observable<void> {
++    return from(this.requireUserId()).pipe(
++      switchMap((userId) =>
++        from(
++          this.insforge.client.database.from('routines').delete().eq('id', id).eq('user_id', userId).select('id'),
++        ).pipe(
++          map(({ error }) => {
++            if (error) {
++              throw error;
++            }
++          }),
++        ),
++      ),
++    );
++  }
++
++  private async requireUserId(): Promise<string> {
++    if (this.auth.loading()) {
++      await this.auth.restoreSession();
++    }
++
++    const userId = this.auth.user()?.id;
++    if (!userId) {
++      throw new Error('Your session expired. Sign in again before managing routines.');
++    }
++
++    return userId;
++  }
++
++  private async createRoutine(userId: string, input: CreateRoutineInput): Promise<Routine> {
++    this.assertValidInput(input);
++
++    const { data, error } = await this.insforge.client.database
++      .from('routines')
++      .insert([
++        {
++          user_id: userId,
++          name: input.name.trim(),
++          description: this.normalizeText(input.description),
++        },
++      ])
++      .select('id, user_id, name, description, created_at, updated_at')
++      .single();
++
++    if (error) {
++      throw error;
++    }
++
++    const routine = this.mapRoutine(data as RoutineRow);
++
++    try {
++      await this.replaceRoutineExercises(userId, routine.id, input.exercises);
++    } catch (error) {
++      await this.insforge.client.database.from('routines').delete().eq('id', routine.id).eq('user_id', userId);
++      throw error;
++    }
++
++    return routine;
++  }
++
++  private async updateRoutine(userId: string, id: string, input: UpdateRoutineInput): Promise<Routine> {
++    this.assertValidInput(input);
++
++    const { data, error } = await this.insforge.client.database
++      .from('routines')
++      .update({
++        name: input.name.trim(),
++        description: this.normalizeText(input.description),
++      })
++      .eq('id', id)
++      .eq('user_id', userId)
++      .select('id, user_id, name, description, created_at, updated_at')
++      .single();
++
++    if (error) {
++      throw error;
++    }
++
++    await this.replaceRoutineExercises(userId, id, input.exercises);
++    return this.mapRoutine(data as RoutineRow);
++  }
++
++  private async replaceRoutineExercises(userId: string, routineId: string, exercises: RoutineExerciseInput[]): Promise<void> {
++    const currentRows = await this.loadRoutineExerciseRows(userId, routineId);
++    const positionOffset =
++      currentRows.length > 0 ? Math.max(...currentRows.map((row) => row.position)) + exercises.length + 1 : 0;
++    const payload = this.buildRoutineExercisePayload(userId, routineId, exercises, positionOffset);
++
++    const insertResult = await this.insforge.client.database
++      .from('routine_exercises')
++      .insert(payload)
++      .select(
++        'id, user_id, routine_id, exercise_id, position, planned_sets, planned_repetitions, planned_weight, planned_duration_seconds, planned_distance, rest_seconds, notes, created_at, updated_at',
++      );
++
++    if (insertResult.error) {
++      throw new Error(
++        `Failed to replace routine exercises. Original records were preserved (${this.describeRoutineExerciseRows(currentRows)}). ${this.formatDatabaseError(insertResult.error)}`,
++      );
++    }
++
++    const insertedRows = (insertResult.data ?? []) as RoutineExerciseMutationRow[];
++    const insertedIds = insertedRows.map((row) => row.id);
++
++    if (currentRows.length > 0) {
++      const deleteResult = await this.insforge.client.database
++        .from('routine_exercises')
++        .delete()
++        .in('id', currentRows.map((row) => row.id))
++        .eq('routine_id', routineId)
++        .eq('user_id', userId)
++        .select('id');
++
++      if (deleteResult.error) {
++        const cleanupMessage = await this.cleanupInsertedRoutineExercises(userId, routineId, insertedIds);
++        const rollbackSuffix = cleanupMessage ? ` Cleanup warning: ${cleanupMessage}` : '';
++        throw new Error(
++          `Failed to replace routine exercises. Original records were preserved (${this.describeRoutineExerciseRows(currentRows)}). ${this.formatDatabaseError(deleteResult.error)}${rollbackSuffix}`,
++        );
++      }
++    }
++
++    const reorderError = await this.reorderRoutineExercises(userId, routineId, insertedRows);
++    if (reorderError) {
++      throw new Error(
++        `Routine exercises were saved but reordering failed after replacement. Original records before replacement: ${this.describeRoutineExerciseRows(currentRows)}. ${this.formatDatabaseError(reorderError)}`,
++      );
++    }
++  }
++
++  private async loadRoutineExerciseRows(userId: string, routineId: string): Promise<RoutineExerciseMutationRow[]> {
++    const { data, error } = await this.insforge.client.database
++      .from('routine_exercises')
++      .select(
++        'id, user_id, routine_id, exercise_id, position, planned_sets, planned_repetitions, planned_weight, planned_duration_seconds, planned_distance, rest_seconds, notes, created_at, updated_at',
++      )
++      .eq('routine_id', routineId)
++      .eq('user_id', userId)
++      .order('position', { ascending: true });
++
++    if (error) {
++      throw error;
++    }
++
++    return (data ?? []) as RoutineExerciseMutationRow[];
++  }
++
++  private buildRoutineExercisePayload(
++    userId: string,
++    routineId: string,
++    exercises: RoutineExerciseInput[],
++    positionOffset = 0,
++  ): RoutineExerciseInsertRow[] {
++    return exercises.map((exercise, index) => ({
++      user_id: userId,
++      routine_id: routineId,
++      exercise_id: exercise.exerciseId,
++      position: positionOffset + index,
++      planned_sets: exercise.plannedSets,
++      planned_repetitions: exercise.plannedRepetitions,
++      planned_weight: exercise.plannedWeight,
++      planned_duration_seconds: exercise.plannedDurationSeconds,
++      planned_distance: exercise.plannedDistance,
++      rest_seconds: exercise.restSeconds,
++      notes: this.normalizeText(exercise.notes),
++    }));
++  }
++
++  private async cleanupInsertedRoutineExercises(userId: string, routineId: string, insertedIds: string[]): Promise<string | null> {
++    if (insertedIds.length === 0) {
++      return null;
++    }
++
++    const { error } = await this.insforge.client.database
++      .from('routine_exercises')
++      .delete()
++      .in('id', insertedIds)
++      .eq('routine_id', routineId)
++      .eq('user_id', userId)
++      .select('id');
++
++    return error ? this.formatDatabaseError(error) : null;
++  }
++
++  private async reorderRoutineExercises(
++    userId: string,
++    routineId: string,
++    insertedRows: RoutineExerciseMutationRow[],
++  ): Promise<unknown | null> {
++    for (const [index, row] of insertedRows.entries()) {
++      const { error } = await this.insforge.client.database
++        .from('routine_exercises')
++        .update({ position: index })
++        .eq('id', row.id)
++        .eq('routine_id', routineId)
++        .eq('user_id', userId)
++        .select('id')
++        .single();
++
++      if (error) {
++        return error;
++      }
++    }
++
++    return null;
++  }
++
++  private describeRoutineExerciseRows(rows: RoutineExerciseMutationRow[]): string {
++    if (rows.length === 0) {
++      return 'no prior exercise rows';
++    }
++
++    return `count=${rows.length}; ids=${rows.map((row) => row.id).join(', ')}`;
++  }
++
++  private formatDatabaseError(error: unknown): string {
++    if (error instanceof Error) {
++      return error.message;
++    }
++
++    if (typeof error === 'string') {
++      return error;
++    }
++
++    return 'Unknown database error.';
++  }
++
++  private assertValidInput(input: CreateRoutineInput): void {
++    const errors = validateRoutineInput(input);
++    if (errors.length > 0) {
++      throw new Error(errors.join(' '));
++    }
++  }
++
++  private normalizeText(value: string | null | undefined): string | null {
++    const normalized = value?.trim();
++    return normalized ? normalized : null;
++  }
++
++  private mapRoutine(row: RoutineRow): Routine {
++    return {
++      id: row.id,
++      userId: row.user_id,
++      name: row.name,
++      description: row.description,
++      createdAt: row.created_at,
++      updatedAt: row.updated_at,
++    };
++  }
++
++  private mapRoutineExercise(row: RoutineExerciseRow): RoutineExerciseDetail {
++    const exercise = row.exercise?.[0] ?? null;
++
++    if (!exercise) {
++      throw new Error('Routine exercise is missing its catalog exercise.');
++    }
++
++    return {
++      id: row.id,
++      userId: row.user_id,
++      routineId: row.routine_id,
++      exerciseId: row.exercise_id,
++      position: row.position,
++      plannedSets: row.planned_sets,
++      plannedRepetitions: row.planned_repetitions,
++      plannedWeight: row.planned_weight,
++      plannedDurationSeconds: row.planned_duration_seconds,
++      plannedDistance: row.planned_distance,
++      restSeconds: row.rest_seconds,
++      notes: row.notes,
++      createdAt: row.created_at,
++      updatedAt: row.updated_at,
++      exercise: {
++        id: exercise.id,
++        name: exercise.name,
++        type: exercise.type,
++        equipment: exercise.equipment,
++        muscleGroups: exercise.muscle_groups ?? [],
++        supportedMetrics: exercise.supported_metrics ?? [],
++        createdAt: exercise.created_at,
++        updatedAt: exercise.updated_at,
++      },
++    };
++  }
++}

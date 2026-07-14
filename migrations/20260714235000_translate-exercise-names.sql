@@ -1,0 +1,35 @@
+update public.exercises
+set name = translations.spanish_name,
+    updated_at = now()
+from (values
+  ('Leg Press', 'Prensa de piernas'),
+  ('Leg Curl', 'Curl femoral'),
+  ('Leg Extension', 'Extensión de piernas'),
+  ('Glute Kickback', 'Patada de glúteo'),
+  ('Adductor Machine', 'Aductores'),
+  ('Abductor Machine', 'Abductores'),
+  ('Standing Calf Raise', 'Elevación de gemelos de pie'),
+  ('Chest Press', 'Press de pecho'),
+  ('Pec Deck Fly', 'Aperturas de pecho'),
+  ('Shoulder Press', 'Press de hombros'),
+  ('Lat Pulldown', 'Jalón al pecho'),
+  ('Seated Cable Row', 'Remo sentado en polea'),
+  ('Assisted Pull-Up', 'Dominadas asistidas'),
+  ('Assisted Dip', 'Fondos asistidos'),
+  ('Biceps Curl', 'Curl de bíceps'),
+  ('Triceps Dip', 'Fondos de tríceps'),
+  ('Abdominal Crunch', 'Abdominales'),
+  ('Back Extension', 'Extensión lumbar'),
+  ('Dumbbell Bench Press', 'Press de banca con mancuernas'),
+  ('Dumbbell Goblet Squat', 'Sentadilla goblet con mancuerna'),
+  ('Barbell Back Squat', 'Sentadilla con barra'),
+  ('Cable Triceps Pushdown', 'Extensión de tríceps en polea'),
+  ('Treadmill Walk', 'Caminata en cinta'),
+  ('Elliptical', 'Elíptica'),
+  ('Spin Bike', 'Bicicleta de spinning'),
+  ('Recumbent Bike', 'Bicicleta reclinada'),
+  ('TRX Row', 'Remo en TRX'),
+  ('Box Step-Up', 'Subida al cajón'),
+  ('Boxing Bag', 'Saco de boxeo')
+) as translations(english_name, spanish_name)
+where public.exercises.name = translations.english_name;

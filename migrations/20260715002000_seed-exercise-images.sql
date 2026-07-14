@@ -1,0 +1,10 @@
+update public.exercises set image_url = '/catalog-images/prensa-piernas.png' where lower(name) in ('prensa de piernas', 'leg press');
+update public.exercises set image_url = '/catalog-images/press-pecho.png' where lower(name) in ('press de pecho', 'chest press');
+update public.exercises set image_url = '/catalog-images/jalon-pecho.png' where lower(name) in ('jalón al pecho', 'jalon al pecho', 'lat pulldown');
+update public.exercises set image_url = '/catalog-images/curl-biceps.png' where lower(name) in ('curl de bíceps', 'curl de biceps', 'biceps curl');
+update public.exercises set image_url = '/catalog-images/sentadilla-mancuernas.png' where lower(name) in ('sentadilla con mancuernas', 'dumbbell squat');
+update public.exercises set image_url = '/catalog-images/cinta-correr.png' where lower(name) in ('cinta de correr', 'treadmill');
+update public.exercises set image_url = '/catalog-images/bicicleta-spinning.png' where lower(name) in ('bicicleta de spinning', 'spinning bike');
+update public.exercises set image_url = '/catalog-images/trx.png' where lower(name) = 'trx';
+update public.exercises set image_url = '/catalog-images/caja-pliometrica.png' where lower(name) in ('caja pliométrica', 'caja pliometrica');
+update public.exercises set image_url = '/catalog-images/saco-boxeo.png' where lower(name) in ('saco de boxeo', 'heavy bag');

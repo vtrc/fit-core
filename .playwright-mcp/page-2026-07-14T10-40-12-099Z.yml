@@ -1,0 +1,31 @@
+- main [ref=f21e17]:
+  - generic [ref=f21e18]:
+    - generic [ref=f21e19]:
+      - paragraph [ref=f21e20]: WORKOUTS
+      - heading "Start training." [level=1] [ref=f21e21]
+      - paragraph [ref=f21e22]: Use a saved routine as your plan, or begin with a blank session and add exercises as you go.
+    - generic [ref=f21e23]:
+      - link "Back to dashboard" [ref=f21e24] [cursor=pointer]:
+        - /url: /dashboard
+      - button "Start free workout" [ref=f21e25] [cursor=pointer]
+  - generic [ref=f21e26]:
+    - generic [ref=f21e27]:
+      - paragraph [ref=f21e28]: FREE WORKOUT
+      - heading "No routine? No problem." [level=2] [ref=f21e29]
+      - paragraph [ref=f21e30]: Add strength or cardio exercises on demand during the session.
+    - button "Start blank session" [ref=f21e31] [cursor=pointer]
+  - generic [ref=f21e32]:
+    - generic [ref=f21e33]:
+      - paragraph [ref=f21e34]: SAVED ROUTINES
+      - heading "Start from a routine snapshot" [level=2] [ref=f21e35]
+    - link "Create routine" [ref=f21e36] [cursor=pointer]:
+      - /url: /routines/new
+  - article [ref=f21e38]:
+    - generic [ref=f21e39]:
+      - paragraph [ref=f21e40]: UPDATED 14 jul 2026
+      - heading "ru1" [level=3] [ref=f21e41]
+      - paragraph [ref=f21e42]: No description yet.
+    - generic [ref=f21e43]:
+      - link "View" [ref=f21e44] [cursor=pointer]:
+        - /url: /routines/a178a50a-f636-43d1-8837-11d9c6223a56
+      - button "Start" [ref=f21e45] [cursor=pointer]

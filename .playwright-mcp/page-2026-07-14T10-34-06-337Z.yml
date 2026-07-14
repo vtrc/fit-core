@@ -1,0 +1,28 @@
+- main [ref=f14e30]:
+  - generic [ref=f14e31]:
+    - generic [ref=f14e32]:
+      - paragraph [ref=f14e33]: WORKOUT DETAILS
+      - heading "Workout record." [level=1] [ref=f14e34]
+    - link "Back to history" [ref=f14e35] [cursor=pointer]:
+      - /url: /history
+  - generic [ref=f14e36]:
+    - paragraph [ref=f14e37]: martes, 14 de julio de 2026
+    - heading "Free workout" [level=2] [ref=f14e38]
+    - paragraph [ref=f14e39]: No workout notes.
+  - region "Exercise results" [ref=f14e40]:
+    - heading "Exercise results" [level=2] [ref=f14e41]
+    - article [ref=f14e42]:
+      - generic [ref=f14e43]:
+        - paragraph [ref=f14e44]: strength
+        - heading "Abdominales" [level=3] [ref=f14e45]
+        - paragraph [ref=f14e46]: abdominales
+      - generic [ref=f14e47]:
+        - generic [ref=f14e48]:
+          - term [ref=f14e49]: Sets
+          - definition [ref=f14e50]: "3"
+        - generic [ref=f14e51]:
+          - term [ref=f14e52]: Repetitions
+          - definition [ref=f14e53]: "36"
+        - generic [ref=f14e54]:
+          - term [ref=f14e55]: Weight
+          - definition [ref=f14e56]: "20"

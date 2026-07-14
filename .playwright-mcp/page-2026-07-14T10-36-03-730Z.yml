@@ -1,0 +1,46 @@
+- main [ref=f16e327]:
+  - generic [ref=f16e328]:
+    - generic [ref=f16e329]:
+      - paragraph [ref=f16e330]: WORKOUT SUMMARY
+      - heading "Review before saving." [level=1] [ref=f16e331]
+      - paragraph [ref=f16e332]: Only completed exercise results are persisted. Skipped and removed exercises stay out of the saved workout.
+    - generic [ref=f16e333]:
+      - link "Back to session" [ref=f16e334] [cursor=pointer]:
+        - /url: /workouts/session
+      - button "Discard" [ref=f16e335] [cursor=pointer]
+  - generic [ref=f16e336]:
+    - complementary [ref=f16e337]:
+      - generic [ref=f16e338]:
+        - generic [ref=f16e339]: Source
+        - strong [ref=f16e340]: Free workout
+      - generic [ref=f16e341]:
+        - generic [ref=f16e342]: Started
+        - strong [ref=f16e343]: 14 jul 2026, 12:34
+      - generic [ref=f16e344]:
+        - generic [ref=f16e345]: Completed results
+        - strong [ref=f16e346]: "1"
+      - generic [ref=f16e347]:
+        - generic [ref=f16e348]: Skipped
+        - strong [ref=f16e349]: "0"
+      - generic [ref=f16e350]:
+        - generic [ref=f16e351]: Workout notes
+        - textbox "Workout notes" [ref=f16e352]:
+          - /placeholder: Optional overall notes.
+      - button "Save workout" [ref=f16e353] [cursor=pointer]
+    - generic [ref=f16e354]:
+      - heading "Completed results" [level=2] [ref=f16e355]
+      - article [ref=f16e356]:
+        - generic [ref=f16e357]:
+          - paragraph [ref=f16e358]: cardio
+          - heading "Bicicleta de spinning" [level=3] [ref=f16e359]
+          - paragraph [ref=f16e360]: Spin Bike
+        - generic [ref=f16e361]:
+          - generic [ref=f16e362]:
+            - text: Duration
+            - strong [ref=f16e363]: 1800 sec
+          - generic [ref=f16e364]:
+            - text: Distance
+            - strong [ref=f16e365]: "12"
+          - generic [ref=f16e366]:
+            - text: Calories
+            - strong [ref=f16e367]: "250"

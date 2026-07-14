@@ -1,0 +1,71 @@
+# Review package: adc03789d70c3fda2cd394257aa8579f408b5ae5..5fc263eb298df53b640f1af66d32d966e7ae06dc
+
+## Commits
+5fc263eb docs: correct task 1 report
+
+## Files changed
+ fit-core/.superpowers/sdd/task-1-report.md | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
+
+## Diff
+diff --git a/fit-core/.superpowers/sdd/task-1-report.md b/fit-core/.superpowers/sdd/task-1-report.md
+index bc551c81..5dcd440d 100644
+--- a/fit-core/.superpowers/sdd/task-1-report.md
++++ b/fit-core/.superpowers/sdd/task-1-report.md
+@@ -1,19 +1,19 @@
+ # Task 1 Report: Angular Workspace Scaffold
+ 
+ ## Status
+ DONE — Task 1 completed in `/Users/victor/projects/fit-core`.
+ 
+ Commit created as requested for the scaffold handoff.
+ 
+ ## Commit hashes
+-- Scaffold commit: `ded4e708`
++- Scaffold commit: `adc03789d70c3fda2cd394257aa8579f408b5ae5`
+ 
+ ## Scope implemented
+ - Created Angular application shell at the repository root.
+ - Used Angular CLI 22 scaffold for `fit-core` with routing, SCSS, strict mode, and no Git initialization.
+ - Updated `.gitignore` for local environment/backend/build/cache files while keeping project seed data and skills trackable.
+ - Verified the generated test suite.
+ 
+ ## Command notes
+ Requested command from the brief:
+ 
+@@ -152,13 +152,35 @@ Output location: /Users/victor/projects/fit-core/dist/fit-core
+ TDD was not applied beyond generated test verification because this task is generated Angular workspace/config scaffolding, not new product behavior or a bug fix. The generated Angular test suite was used as the validation target, as requested by the brief.
+ 
+ ## Self-review
+ Issues found and fixed:
+ - Angular CLI initially failed on the existing `.gitignore`; fixed by backing it up, rerunning the same scaffold command, then manually merging required ignore rules.
+ - The old project `.gitignore` ignored `.agents/`; fixed because Task 1 requires retaining `.agents/skills/`.
+ - In-sandbox build exited with code `134` and no diagnostics; verified the same build outside the sandbox, where it passed.
+ 
+ No unrelated edits were reverted.
+ 
++## Review fixes
++- Removed the redundant trailing `.insforge/` entry from `/Users/victor/projects/fit-core/.gitignore` and kept the earlier effective ignore rule intact.
++- Corrected the stale scaffold commit hash to `adc03789d70c3fda2cd394257aa8579f408b5ae5`.
++- Re-ran the required test command after the review fixes.
++
++## Post-review test rerun
++Command:
++
++```bash
++npm test -- --watch=false
++```
++
++Result: passed, exit code `0`.
++
++Evidence:
++
++```text
++Test Files  1 passed (1)
++Tests       2 passed (2)
++Duration    1.88s
++```
++
+ ## Concerns
+ - The Git root is `/Users/victor/projects`, not `/Users/victor/projects/fit-core`, so `git status` includes many unrelated sibling-project changes. Any later commit must carefully stage only files under `/Users/victor/projects/fit-core` that belong to this task.
+ - The build's sandbox-only abort should be treated as an environment/tooling concern, not a project compile failure, because the same command passed outside the sandbox.

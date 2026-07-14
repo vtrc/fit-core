@@ -1,0 +1,282 @@
+- main [ref=f12e31]:
+  - generic [ref=f12e32]:
+    - generic [ref=f12e33]:
+      - paragraph [ref=f12e34]: EDIT ROUTINE
+      - heading "Refine your plan." [level=1] [ref=f12e35]
+      - paragraph [ref=f12e36]: Pick exercises from the shared catalog, order them, and define the targets you care about.
+    - generic [ref=f12e37]:
+      - link "Back to routines" [ref=f12e38] [cursor=pointer]:
+        - /url: /routines
+      - link "View detail" [ref=f12e39] [cursor=pointer]:
+        - /url: /routines/330f0f22-67d0-49ff-9ea5-6a816e91da9e
+  - generic [ref=f12e40]:
+    - generic [ref=f12e41]:
+      - generic [ref=f12e42]:
+        - generic [ref=f12e43]: Name
+        - textbox "Name" [ref=f12e44]:
+          - /placeholder: Upper / lower split
+          - text: Rutina de prueba manual
+      - generic [ref=f12e45]:
+        - generic [ref=f12e46]: Description
+        - textbox "Description" [ref=f12e47]:
+          - /placeholder: Optional notes about intent, tempo, or focus.
+          - text: Verificación manual
+      - generic [ref=f12e48]:
+        - generic [ref=f12e49]:
+          - heading "Selected exercises" [level=2] [ref=f12e50]
+          - paragraph [ref=f12e51]: 1 planned
+        - article [ref=f12e53]:
+          - generic [ref=f12e54]:
+            - generic [ref=f12e55]:
+              - paragraph [ref=f12e56]: strength
+              - heading "1. Abdominales" [level=3] [ref=f12e57]
+              - paragraph [ref=f12e58]: Abdominal Machine
+            - generic [ref=f12e59]:
+              - button "Up" [disabled] [ref=f12e60] [cursor=pointer]
+              - button "Down" [disabled] [ref=f12e61] [cursor=pointer]
+              - button "Remove" [ref=f12e62] [cursor=pointer]
+          - generic [ref=f12e63]:
+            - generic [ref=f12e64]:
+              - generic [ref=f12e65]: Sets
+              - spinbutton "Sets" [ref=f12e66]: "3"
+            - generic [ref=f12e67]:
+              - generic [ref=f12e68]: Repetitions
+              - spinbutton "Repetitions" [ref=f12e69]: "12"
+            - generic [ref=f12e70]:
+              - generic [ref=f12e71]: Weight
+              - spinbutton "Weight" [ref=f12e72]: "20"
+            - generic [ref=f12e73]:
+              - generic [ref=f12e74]: Rest (sec)
+              - spinbutton "Rest (sec)" [ref=f12e75]: "60"
+          - generic [ref=f12e76]:
+            - generic [ref=f12e77]: Notes
+            - textbox "Notes" [ref=f12e78]:
+              - /placeholder: Optional cue or setup note.
+      - button "Save changes" [ref=f12e80] [cursor=pointer]
+    - complementary [ref=f12e81]:
+      - generic [ref=f12e82]:
+        - heading "Exercise catalog" [level=2] [ref=f12e83]
+        - paragraph [ref=f12e84]: Add from the shared list
+      - generic [ref=f12e85]:
+        - generic [ref=f12e86]:
+          - generic [ref=f12e87]: Search
+          - textbox "Search" [ref=f12e88]:
+            - /placeholder: Chest press
+        - generic [ref=f12e89]:
+          - generic [ref=f12e90]: Type
+          - combobox "Type" [ref=f12e91]:
+            - option "All" [selected]
+            - option "Strength"
+            - option "Cardio"
+        - generic [ref=f12e92]:
+          - generic [ref=f12e93]: Muscle group
+          - textbox "Muscle group" [ref=f12e94]:
+            - /placeholder: quadriceps
+        - generic [ref=f12e95]:
+          - generic [ref=f12e96]: Equipment
+          - textbox "Equipment" [ref=f12e97]:
+            - /placeholder: machine
+      - generic [ref=f12e98]:
+        - article [ref=f12e99]:
+          - generic [ref=f12e100]:
+            - paragraph [ref=f12e101]: strength
+            - heading "Abdominales" [level=3] [ref=f12e102]
+            - paragraph [ref=f12e103]: Abdominal Machine
+            - paragraph [ref=f12e104]: abdominales
+          - button "Add" [ref=f12e105] [cursor=pointer]
+        - article [ref=f12e106]:
+          - generic [ref=f12e107]:
+            - paragraph [ref=f12e108]: strength
+            - heading "Abductores" [level=3] [ref=f12e109]
+            - paragraph [ref=f12e110]: Outer Thigh
+            - paragraph [ref=f12e111]: abductores · glúteo medio
+          - button "Add" [ref=f12e112] [cursor=pointer]
+        - article [ref=f12e113]:
+          - generic [ref=f12e114]:
+            - paragraph [ref=f12e115]: strength
+            - heading "Aductores" [level=3] [ref=f12e116]
+            - paragraph [ref=f12e117]: Inner Thigh
+            - paragraph [ref=f12e118]: aductores
+          - button "Add" [ref=f12e119] [cursor=pointer]
+        - article [ref=f12e120]:
+          - generic [ref=f12e121]:
+            - paragraph [ref=f12e122]: strength
+            - heading "Aperturas de pecho" [level=3] [ref=f12e123]
+            - paragraph [ref=f12e124]: Pec Fly
+            - paragraph [ref=f12e125]: pecho
+          - button "Add" [ref=f12e126] [cursor=pointer]
+        - article [ref=f12e127]:
+          - generic [ref=f12e128]:
+            - paragraph [ref=f12e129]: cardio
+            - heading "Bicicleta de spinning" [level=3] [ref=f12e130]
+            - paragraph [ref=f12e131]: Spin Bike
+            - paragraph [ref=f12e132]: piernas
+          - button "Add" [ref=f12e133] [cursor=pointer]
+        - article [ref=f12e134]:
+          - generic [ref=f12e135]:
+            - paragraph [ref=f12e136]: cardio
+            - heading "Bicicleta reclinada" [level=3] [ref=f12e137]
+            - paragraph [ref=f12e138]: Recumbent Bike
+            - paragraph [ref=f12e139]: piernas
+          - button "Add" [ref=f12e140] [cursor=pointer]
+        - article [ref=f12e141]:
+          - generic [ref=f12e142]:
+            - paragraph [ref=f12e143]: cardio
+            - heading "Caminata en cinta" [level=3] [ref=f12e144]
+            - paragraph [ref=f12e145]: Treadmill
+            - paragraph [ref=f12e146]: piernas
+          - button "Add" [ref=f12e147] [cursor=pointer]
+        - article [ref=f12e148]:
+          - generic [ref=f12e149]:
+            - paragraph [ref=f12e150]: strength
+            - heading "Curl de bíceps" [level=3] [ref=f12e151]
+            - paragraph [ref=f12e152]: Biceps Curl
+            - paragraph [ref=f12e153]: bíceps
+          - button "Add" [ref=f12e154] [cursor=pointer]
+        - article [ref=f12e155]:
+          - generic [ref=f12e156]:
+            - paragraph [ref=f12e157]: strength
+            - heading "Curl femoral" [level=3] [ref=f12e158]
+            - paragraph [ref=f12e159]: Leg Curl
+            - paragraph [ref=f12e160]: isquiotibiales
+          - button "Add" [ref=f12e161] [cursor=pointer]
+        - article [ref=f12e162]:
+          - generic [ref=f12e163]:
+            - paragraph [ref=f12e164]: strength
+            - heading "Dominadas asistidas" [level=3] [ref=f12e165]
+            - paragraph [ref=f12e166]: Chin/Dip Assist
+            - paragraph [ref=f12e167]: espalda · bíceps
+          - button "Add" [ref=f12e168] [cursor=pointer]
+        - article [ref=f12e169]:
+          - generic [ref=f12e170]:
+            - paragraph [ref=f12e171]: strength
+            - heading "Elevación de gemelos de pie" [level=3] [ref=f12e172]
+            - paragraph [ref=f12e173]: Standing Calf Raise
+            - paragraph [ref=f12e174]: gemelos
+          - button "Add" [ref=f12e175] [cursor=pointer]
+        - article [ref=f12e176]:
+          - generic [ref=f12e177]:
+            - paragraph [ref=f12e178]: cardio
+            - heading "Elíptica" [level=3] [ref=f12e179]
+            - paragraph [ref=f12e180]: Elliptical
+            - paragraph [ref=f12e181]: piernas · glúteos
+          - button "Add" [ref=f12e182] [cursor=pointer]
+        - article [ref=f12e183]:
+          - generic [ref=f12e184]:
+            - paragraph [ref=f12e185]: strength
+            - heading "Extensión de piernas" [level=3] [ref=f12e186]
+            - paragraph [ref=f12e187]: Leg Extension
+            - paragraph [ref=f12e188]: cuádriceps
+          - button "Add" [ref=f12e189] [cursor=pointer]
+        - article [ref=f12e190]:
+          - generic [ref=f12e191]:
+            - paragraph [ref=f12e192]: strength
+            - heading "Extensión de tríceps en polea" [level=3] [ref=f12e193]
+            - paragraph [ref=f12e194]: Cable Crossover
+            - paragraph [ref=f12e195]: tríceps
+          - button "Add" [ref=f12e196] [cursor=pointer]
+        - article [ref=f12e197]:
+          - generic [ref=f12e198]:
+            - paragraph [ref=f12e199]: strength
+            - heading "Extensión lumbar" [level=3] [ref=f12e200]
+            - paragraph [ref=f12e201]: Low Back
+            - paragraph [ref=f12e202]: lumbares · glúteos · isquiotibiales
+          - button "Add" [ref=f12e203] [cursor=pointer]
+        - article [ref=f12e204]:
+          - generic [ref=f12e205]:
+            - paragraph [ref=f12e206]: strength
+            - heading "Fondos asistidos" [level=3] [ref=f12e207]
+            - paragraph [ref=f12e208]: Chin/Dip Assist
+            - paragraph [ref=f12e209]: pecho · tríceps
+          - button "Add" [ref=f12e210] [cursor=pointer]
+        - article [ref=f12e211]:
+          - generic [ref=f12e212]:
+            - paragraph [ref=f12e213]: strength
+            - heading "Fondos de tríceps" [level=3] [ref=f12e214]
+            - paragraph [ref=f12e215]: Seated Dip
+            - paragraph [ref=f12e216]: tríceps · pecho
+          - button "Add" [ref=f12e217] [cursor=pointer]
+        - article [ref=f12e218]:
+          - generic [ref=f12e219]:
+            - paragraph [ref=f12e220]: strength
+            - heading "Jalón al pecho" [level=3] [ref=f12e221]
+            - paragraph [ref=f12e222]: Lat Pulldown
+            - paragraph [ref=f12e223]: espalda · bíceps
+          - button "Add" [ref=f12e224] [cursor=pointer]
+        - article [ref=f12e225]:
+          - generic [ref=f12e226]:
+            - paragraph [ref=f12e227]: strength
+            - heading "Patada de glúteo" [level=3] [ref=f12e228]
+            - paragraph [ref=f12e229]: Glute Master
+            - paragraph [ref=f12e230]: glúteos
+          - button "Add" [ref=f12e231] [cursor=pointer]
+        - article [ref=f12e232]:
+          - generic [ref=f12e233]:
+            - paragraph [ref=f12e234]: strength
+            - heading "Prensa de piernas" [level=3] [ref=f12e235]
+            - paragraph [ref=f12e236]: Leg Press
+            - paragraph [ref=f12e237]: cuádriceps · glúteos · isquiotibiales
+          - button "Add" [ref=f12e238] [cursor=pointer]
+        - article [ref=f12e239]:
+          - generic [ref=f12e240]:
+            - paragraph [ref=f12e241]: strength
+            - heading "Press de banca con mancuernas" [level=3] [ref=f12e242]
+            - paragraph [ref=f12e243]: Dumbbells
+            - paragraph [ref=f12e244]: pecho · tríceps · hombros
+          - button "Add" [ref=f12e245] [cursor=pointer]
+        - article [ref=f12e246]:
+          - generic [ref=f12e247]:
+            - paragraph [ref=f12e248]: strength
+            - heading "Press de hombros" [level=3] [ref=f12e249]
+            - paragraph [ref=f12e250]: Shoulder Press
+            - paragraph [ref=f12e251]: hombros · tríceps
+          - button "Add" [ref=f12e252] [cursor=pointer]
+        - article [ref=f12e253]:
+          - generic [ref=f12e254]:
+            - paragraph [ref=f12e255]: strength
+            - heading "Press de pecho" [level=3] [ref=f12e256]
+            - paragraph [ref=f12e257]: Chest Press
+            - paragraph [ref=f12e258]: pecho · tríceps · hombros
+          - button "Add" [ref=f12e259] [cursor=pointer]
+        - article [ref=f12e260]:
+          - generic [ref=f12e261]:
+            - paragraph [ref=f12e262]: strength
+            - heading "Remo en TRX" [level=3] [ref=f12e263]
+            - paragraph [ref=f12e264]: TRX
+            - paragraph [ref=f12e265]: espalda · bíceps · hombros
+          - button "Add" [ref=f12e266] [cursor=pointer]
+        - article [ref=f12e267]:
+          - generic [ref=f12e268]:
+            - paragraph [ref=f12e269]: strength
+            - heading "Remo sentado en polea" [level=3] [ref=f12e270]
+            - paragraph [ref=f12e271]: Mid Row
+            - paragraph [ref=f12e272]: espalda · bíceps
+          - button "Add" [ref=f12e273] [cursor=pointer]
+        - article [ref=f12e274]:
+          - generic [ref=f12e275]:
+            - paragraph [ref=f12e276]: cardio
+            - heading "Saco de boxeo" [level=3] [ref=f12e277]
+            - paragraph [ref=f12e278]: Heavy Bag
+            - paragraph [ref=f12e279]: hombros · brazos · abdominales · piernas
+          - button "Add" [ref=f12e280] [cursor=pointer]
+        - article [ref=f12e281]:
+          - generic [ref=f12e282]:
+            - paragraph [ref=f12e283]: strength
+            - heading "Sentadilla con barra" [level=3] [ref=f12e284]
+            - paragraph [ref=f12e285]: Smith Machine
+            - paragraph [ref=f12e286]: cuádriceps · glúteos · isquiotibiales
+          - button "Add" [ref=f12e287] [cursor=pointer]
+        - article [ref=f12e288]:
+          - generic [ref=f12e289]:
+            - paragraph [ref=f12e290]: strength
+            - heading "Sentadilla goblet con mancuerna" [level=3] [ref=f12e291]
+            - paragraph [ref=f12e292]: Dumbbells
+            - paragraph [ref=f12e293]: cuádriceps · glúteos
+          - button "Add" [ref=f12e294] [cursor=pointer]
+        - article [ref=f12e295]:
+          - generic [ref=f12e296]:
+            - paragraph [ref=f12e297]: strength
+            - heading "Subida al cajón" [level=3] [ref=f12e298]
+            - paragraph [ref=f12e299]: Plyometric Box
+            - paragraph [ref=f12e300]: cuádriceps · glúteos · isquiotibiales
+          - button "Add" [ref=f12e301] [cursor=pointer]

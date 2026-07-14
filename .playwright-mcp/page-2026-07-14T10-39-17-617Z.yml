@@ -1,0 +1,13 @@
+- main [ref=f20e4]:
+  - generic [ref=f20e5]:
+    - paragraph [ref=f20e6]: FIT CORE
+    - button "Cerrar sesión" [ref=f20e7] [cursor=pointer]
+  - generic [ref=f20e8]:
+    - paragraph [ref=f20e9]: PANEL
+    - heading "Hola Víctor Castelló." [level=1] [ref=f20e10]
+    - paragraph [ref=f20e11]: Tu espacio para planificar y registrar cada entrenamiento.
+  - generic [ref=f20e12]:
+    - link [ref=f20e13] [cursor=pointer]:
+      - /url: /routines/new
+      - button "Crear rutina" [ref=f20e14]
+    - button "Entrenamiento libre" [active] [ref=f20e15] [cursor=pointer]

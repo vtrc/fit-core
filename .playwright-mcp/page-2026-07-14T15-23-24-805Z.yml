@@ -1,0 +1,78 @@
+- main [ref=e49]:
+  - generic [ref=e50]:
+    - generic [ref=e51]:
+      - paragraph [ref=e52]: ENTRENAMIENTO EN CURSO
+      - heading "hfyku" [level=1] [ref=e53]
+      - paragraph [ref=e54]: Registra un ejercicio cada vez. Puedes omitirlo, eliminarlo o añadir ejercicios sin cambiar las rutinas guardadas.
+    - generic [ref=e55]:
+      - link "Empezar de nuevo" [ref=e56] [cursor=pointer]:
+        - /url: /workouts/start
+      - button "Descartar" [ref=e57] [cursor=pointer]
+      - button "Revisar resumen final" [disabled] [ref=e58]
+  - region [ref=e59]:
+    - generic [ref=e60]:
+      - heading "Progreso del entrenamiento" [level=2] [ref=e61]
+      - strong [ref=e62]: 0 de 1 ejercicios completados
+    - progressbar "Progreso de ejercicios completados" [ref=e63]
+  - paragraph [ref=e64]
+  - generic [ref=e65]:
+    - article [ref=e66]:
+      - generic [ref=e67]: Planificados
+      - strong [ref=e68]: "1"
+    - article [ref=e69]:
+      - generic [ref=e70]: Completados
+      - strong [ref=e71]: "0"
+    - article [ref=e72]:
+      - generic [ref=e73]: Omitidos
+      - strong [ref=e74]: "0"
+    - article [ref=e75]:
+      - generic [ref=e76]: Pendientes
+      - strong [ref=e77]: "1"
+    - article [ref=e78]:
+      - generic [ref=e79]: Actual
+      - strong [ref=e80]: 1/1
+  - generic [ref=e81]:
+    - complementary [ref=e82]:
+      - generic [ref=e83]:
+        - heading "Exercises" [level=2] [ref=e84]
+        - button "Añadir ejercicio" [ref=e85] [cursor=pointer]
+      - 'button "Ejercicio 1: Curl de bíceps, Pendiente" [ref=e87] [cursor=pointer]':
+        - generic [ref=e88]: 1. Curl de bíceps
+        - generic [ref=e89]: Pendiente
+    - generic [ref=e90]:
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - paragraph [ref=e93]: strength
+          - heading "Curl de bíceps" [level=2] [ref=e94]
+          - paragraph [ref=e95]: Biceps Curl
+        - button "Eliminar" [ref=e96] [cursor=pointer]
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - text: "Series:"
+          - strong [ref=e99]: "1"
+        - generic [ref=e100]:
+          - text: "Repeticiones:"
+          - strong [ref=e101]: "3"
+        - generic [ref=e102]:
+          - text: "Peso:"
+          - strong [ref=e103]: "70"
+        - generic [ref=e104]:
+          - text: "Descanso:"
+          - strong [ref=e105]: "100"
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e108]: Series completadas
+          - spinbutton "Series completadas" [ref=e109]: "1"
+        - generic [ref=e110]:
+          - generic [ref=e111]: Repeticiones totales
+          - spinbutton "Repeticiones totales" [ref=e112]: "3"
+        - generic [ref=e113]:
+          - generic [ref=e114]: Peso
+          - spinbutton "Peso" [ref=e115]: "70"
+        - generic [ref=e116]:
+          - generic [ref=e117]: Notas
+          - textbox "Notas" [ref=e118]:
+            - /placeholder: Nota opcional del resultado.
+        - generic [ref=e119]:
+          - button "Omitir" [ref=e120] [cursor=pointer]
+          - button "Registrar resultado de fuerza" [ref=e121] [cursor=pointer]

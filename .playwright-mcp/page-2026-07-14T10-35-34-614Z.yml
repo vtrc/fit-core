@@ -1,0 +1,69 @@
+- main [ref=f16e34]:
+  - generic [ref=f16e35]:
+    - generic [ref=f16e36]:
+      - paragraph [ref=f16e37]: LIVE WORKOUT
+      - heading "Free workout" [level=1] [ref=f16e38]
+      - paragraph [ref=f16e39]: Record one exercise at a time. You can skip, remove, or add exercises without changing saved routines.
+    - generic [ref=f16e40]:
+      - link "Start over" [ref=f16e41] [cursor=pointer]:
+        - /url: /workouts/start
+      - button "Discard" [ref=f16e42] [cursor=pointer]
+      - button "Review summary" [disabled] [ref=f16e43]
+  - generic [ref=f16e44]:
+    - article [ref=f16e45]:
+      - generic [ref=f16e46]: Planned
+      - strong [ref=f16e47]: "1"
+    - article [ref=f16e48]:
+      - generic [ref=f16e49]: Completed
+      - strong [ref=f16e50]: "0"
+    - article [ref=f16e51]:
+      - generic [ref=f16e52]: Current
+      - strong [ref=f16e53]: 1/1
+  - generic [ref=f16e54]:
+    - complementary [ref=f16e55]:
+      - generic [ref=f16e56]:
+        - heading "Exercises" [level=2] [ref=f16e57]
+        - button "Add exercise" [ref=f16e284] [cursor=pointer]
+      - button "1. Bicicleta de spinning cardio" [ref=f16e286] [cursor=pointer]:
+        - generic [ref=f16e287]: 1. Bicicleta de spinning
+        - generic [ref=f16e288]: cardio
+    - generic [ref=f16e60]:
+      - generic [ref=f16e289]:
+        - generic [ref=f16e290]:
+          - paragraph [ref=f16e291]: cardio
+          - heading "Bicicleta de spinning" [level=2] [ref=f16e292]
+          - paragraph [ref=f16e293]: Spin Bike
+        - button "Remove" [ref=f16e294] [cursor=pointer]
+      - generic [ref=f16e295]:
+        - generic [ref=f16e296]:
+          - text: "Duration:"
+          - strong [ref=f16e297]: —
+        - generic [ref=f16e298]:
+          - text: "Distance:"
+          - strong [ref=f16e299]: —
+      - generic [ref=f16e300]:
+        - generic [ref=f16e301]:
+          - generic [ref=f16e302]: Duration (sec)
+          - spinbutton "Duration (sec)" [ref=f16e303]
+        - generic [ref=f16e304]:
+          - generic [ref=f16e305]: Distance
+          - spinbutton "Distance" [ref=f16e306]
+        - generic [ref=f16e307]:
+          - generic [ref=f16e308]: Speed
+          - spinbutton "Speed" [ref=f16e309]
+        - generic [ref=f16e310]:
+          - generic [ref=f16e311]: Incline
+          - spinbutton "Incline" [ref=f16e312]
+        - generic [ref=f16e313]:
+          - generic [ref=f16e314]: Calories
+          - spinbutton "Calories" [ref=f16e315]
+        - generic [ref=f16e316]:
+          - generic [ref=f16e317]: Resistance
+          - spinbutton "Resistance" [ref=f16e318]
+        - generic [ref=f16e319]:
+          - generic [ref=f16e320]: Notes
+          - textbox "Notes" [ref=f16e321]:
+            - /placeholder: Optional result note.
+        - generic [ref=f16e322]:
+          - button "Skip" [ref=f16e323] [cursor=pointer]
+          - button "Record cardio result" [ref=f16e324] [cursor=pointer]

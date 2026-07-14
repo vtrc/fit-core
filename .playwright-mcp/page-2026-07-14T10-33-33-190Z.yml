@@ -1,0 +1,46 @@
+- main [ref=f13e290]:
+  - generic [ref=f13e291]:
+    - generic [ref=f13e292]:
+      - paragraph [ref=f13e293]: WORKOUT SUMMARY
+      - heading "Review before saving." [level=1] [ref=f13e294]
+      - paragraph [ref=f13e295]: Only completed exercise results are persisted. Skipped and removed exercises stay out of the saved workout.
+    - generic [ref=f13e296]:
+      - link "Back to session" [ref=f13e297] [cursor=pointer]:
+        - /url: /workouts/session
+      - button "Discard" [ref=f13e298] [cursor=pointer]
+  - generic [ref=f13e299]:
+    - complementary [ref=f13e300]:
+      - generic [ref=f13e301]:
+        - generic [ref=f13e302]: Source
+        - strong [ref=f13e303]: Free workout
+      - generic [ref=f13e304]:
+        - generic [ref=f13e305]: Started
+        - strong [ref=f13e306]: 14 jul 2026, 12:32
+      - generic [ref=f13e307]:
+        - generic [ref=f13e308]: Completed results
+        - strong [ref=f13e309]: "1"
+      - generic [ref=f13e310]:
+        - generic [ref=f13e311]: Skipped
+        - strong [ref=f13e312]: "0"
+      - generic [ref=f13e313]:
+        - generic [ref=f13e314]: Workout notes
+        - textbox "Workout notes" [ref=f13e315]:
+          - /placeholder: Optional overall notes.
+      - button "Save workout" [ref=f13e316] [cursor=pointer]
+    - generic [ref=f13e317]:
+      - heading "Completed results" [level=2] [ref=f13e318]
+      - article [ref=f13e319]:
+        - generic [ref=f13e320]:
+          - paragraph [ref=f13e321]: strength
+          - heading "Abdominales" [level=3] [ref=f13e322]
+          - paragraph [ref=f13e323]: Abdominal Machine
+        - generic [ref=f13e324]:
+          - generic [ref=f13e325]:
+            - text: Sets
+            - strong [ref=f13e326]: "3"
+          - generic [ref=f13e327]:
+            - text: Reps
+            - strong [ref=f13e328]: "36"
+          - generic [ref=f13e329]:
+            - text: Weight
+            - strong [ref=f13e330]: "20"

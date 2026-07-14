@@ -1,0 +1,12 @@
+- main [ref=f9e294]:
+  - generic [ref=f9e295]:
+    - generic [ref=f9e296]:
+      - paragraph [ref=f9e297]: ROUTINE DETAIL
+      - heading "Routine" [level=1] [ref=f9e298]
+      - paragraph [ref=f9e299]: No description yet.
+    - link "Back to routines" [ref=f9e301] [cursor=pointer]:
+      - /url: /routines
+  - paragraph [ref=f9e302]: Routine saved.
+  - generic [ref=f9e303]:
+    - paragraph [ref=f9e304]: Routine exercise is missing its catalog exercise.
+    - button "Retry" [ref=f9e305] [cursor=pointer]
