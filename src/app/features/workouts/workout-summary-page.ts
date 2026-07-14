@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { form, FormField, debounce } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 
-import { EntrenamientosService } from './workouts.service';
+import { EntrenamientosService, type WorkoutSummaryModel } from './workouts.service';
 
 @Component({
   selector: 'app-workout-summary-page',
@@ -38,15 +38,20 @@ import { EntrenamientosService } from './workouts.service';
         }
 
         @if (savedWorkoutId(); as workoutId) {
-          <p class="banner success">Workout saved. ID: {{ workoutId }}</p>
+          <p class="banner success">Entrenamiento guardado. ID: {{ workoutId }}</p>
         }
 
         <section class="layout">
           <aside class="card summary-card">
-            <div class="summary-row"><span>Origen</span><strong>{{ session()!.routineName || 'Entrenamiento libre' }}</strong></div>
-            <div class="summary-row"><span>Started</span><strong>{{ formatDateTime(session()!.startedAt) }}</strong></div>
-            <div class="summary-row"><span>Resultados completados</span><strong>{{ completedCount() }}</strong></div>
-            <div class="summary-row"><span>Omitidos</span><strong>{{ skippedCount() }}</strong></div>
+            <div class="summary-row"><span>Rutina</span><strong>{{ summary()!.routineName }}</strong></div>
+            <div class="summary-row"><span>Fecha</span><strong>{{ formatDate(summary()!.performedOn) }}</strong></div>
+            @if (summary()!.durationSeconds !== null) {
+              <div class="summary-row"><span>Duración</span><strong>{{ formatDuration(summary()!.durationSeconds!) }}</strong></div>
+            }
+            <div class="summary-row"><span>Planificados</span><strong>{{ summary()!.plannedCount }}</strong></div>
+            <div class="summary-row"><span>Completados</span><strong>{{ summary()!.completedCount }}</strong></div>
+            <div class="summary-row"><span>Omitidos</span><strong>{{ summary()!.skippedCount }}</strong></div>
+            <div class="summary-row"><span>Completitud</span><strong>{{ summary()!.completionPercentage }}%</strong></div>
 
             <label class="field">
               <span>Notas del entrenamiento</span>
@@ -58,7 +63,7 @@ import { EntrenamientosService } from './workouts.service';
             }
 
             <button type="button" class="primary save" (click)="save()" [disabled]="completedCount() === 0 || saving() || !!savedWorkoutId()">
-              {{ saving() ? 'Guardando…' : savedWorkoutId() ? 'Saved' : 'Save workout' }}
+              {{ saving() ? 'Guardando…' : savedWorkoutId() ? 'Guardado' : 'Guardar entrenamiento' }}
             </button>
           </aside>
 
@@ -67,9 +72,9 @@ import { EntrenamientosService } from './workouts.service';
             @for (item of completedExercises(); track item.sessionExerciseId) {
               <article class="card result-card">
                 <div>
-                  <p class="eyebrow">{{ item.exercise.type }}</p>
+                  <p class="eyebrow">{{ item.exercise.type === 'strength' ? 'Fuerza' : 'Cardio' }}</p>
                   <h3>{{ item.exercise.name }}</h3>
-                  <p>{{ item.exercise.equipment || 'General equipment' }}</p>
+                  <p>{{ item.exercise.equipment || 'Equipamiento general' }}</p>
                 </div>
 
                 @if (item.result?.kind === 'strength') {
@@ -85,12 +90,12 @@ import { EntrenamientosService } from './workouts.service';
 
                 @if (item.result?.kind === 'cardio') {
                   <div class="metrics">
-                    <span>Duración <strong>{{ item.result.durationSeconds }} sec</strong></span>
+                     <span>Duración <strong>{{ item.result.durationSeconds }} seg</strong></span>
                     <span>Distancia <strong>{{ item.result.distance }}</strong></span>
-                    @if (item.result.speed !== null && item.result.speed !== undefined) { <span>Speed <strong>{{ item.result.speed }}</strong></span> }
-                    @if (item.result.incline !== null && item.result.incline !== undefined) { <span>Incline <strong>{{ item.result.incline }}</strong></span> }
-                    @if (item.result.calories !== null && item.result.calories !== undefined) { <span>Calories <strong>{{ item.result.calories }}</strong></span> }
-                    @if (item.result.resistance !== null && item.result.resistance !== undefined) { <span>Resistance <strong>{{ item.result.resistance }}</strong></span> }
+                    @if (item.result.speed !== null && item.result.speed !== undefined) { <span>Velocidad <strong>{{ item.result.speed }}</strong></span> }
+                    @if (item.result.incline !== null && item.result.incline !== undefined) { <span>Inclinación <strong>{{ item.result.incline }}</strong></span> }
+                    @if (item.result.calories !== null && item.result.calories !== undefined) { <span>Calorías <strong>{{ item.result.calories }}</strong></span> }
+                    @if (item.result.resistance !== null && item.result.resistance !== undefined) { <span>Resistencia <strong>{{ item.result.resistance }}</strong></span> }
                   </div>
                   @if (item.result.notes) {
                     <p class="notes">{{ item.result.notes }}</p>
@@ -167,15 +172,23 @@ export class WorkoutSummaryPage {
   protected readonly completedCount = computed(() => this.completedExercises().length);
   protected readonly skippedCount = computed(() => this.skippedExercises().length);
   protected readonly savedWorkoutId = computed(() => this.session()?.savedWorkout?.id ?? null);
+  private readonly savedSummary = signal<WorkoutSummaryModel | null>(null);
+  protected readonly summary = computed(() => this.savedSummary() ?? this.createDraftSummary());
 
   protected readonly notesModel = signal({ notes: '' });
   protected readonly notesForm = form(this.notesModel, (p) => {
     debounce(p.notes, 300);
   });
+  private summarySessionId: string | null = null;
 
   constructor() {
     effect(() => {
       const session = this.session();
+      if (session?.id !== this.summarySessionId) {
+        this.summarySessionId = session?.id ?? null;
+        this.savedSummary.set(null);
+      }
+
       if (session) {
         this.notesModel.set({ notes: session.notes });
       }
@@ -194,11 +207,12 @@ export class WorkoutSummaryPage {
 
     this.saveError.set(null);
     this.workoutsService.saveSession().subscribe({
-      next: () => {
+      next: ({ summary }) => {
+        this.savedSummary.set(summary);
         this.saveError.set(null);
       },
       error: (error: unknown) => {
-        this.saveError.set(this.toMessage(error, 'Save failed. The workout was not confirmed as saved.'));
+        this.saveError.set(this.toMessage(error, 'Error al guardar. No se confirmó que el entrenamiento se haya guardado.'));
       },
     });
   }
@@ -212,8 +226,38 @@ export class WorkoutSummaryPage {
     await this.router.navigate(['/workouts/start']);
   }
 
-  protected formatDateTime(value: string): string {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+  protected formatDate(value: string): string {
+    const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    const date = dateOnlyMatch
+      ? new Date(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3]))
+      : new Date(value);
+    return new Intl.DateTimeFormat('es', { dateStyle: 'medium' }).format(date);
+  }
+
+  protected formatDuration(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return minutes > 0 ? `${minutes} min ${remainingSeconds} s` : `${remainingSeconds} s`;
+  }
+
+  private createDraftSummary(): WorkoutSummaryModel | null {
+    const session = this.session();
+    if (!session) {
+      return null;
+    }
+
+    const plannedCount = session.exercises.length;
+    const completedCount = this.completedCount();
+    const skippedCount = this.skippedCount();
+    return {
+      routineName: session.routineName ?? 'Entrenamiento libre',
+      performedOn: session.startedAt,
+      plannedCount,
+      completedCount,
+      skippedCount,
+      completionPercentage: plannedCount === 0 ? 0 : Math.round((completedCount / plannedCount) * 100),
+      durationSeconds: null,
+    };
   }
 
   private toMessage(error: unknown, fallback: string): string {

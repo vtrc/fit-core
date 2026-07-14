@@ -55,7 +55,7 @@ interface CardioResultDraft {
       } @else {
         @if (errors().length > 0) {
           <div class="banner error" role="alert">
-            <p>Fix these issues before recording:</p>
+            <p>Corrige estos problemas antes de registrar:</p>
             <ul>
               @for (errorMessage of errors(); track errorMessage) {
                 <li>{{ errorMessage }}</li>
@@ -84,7 +84,7 @@ interface CardioResultDraft {
         <div class="layout">
           <aside class="card rail">
             <div class="section-heading">
-              <h2>Exercises</h2>
+              <h2>Ejercicios</h2>
               <button type="button" (click)="toggleCatalog()">{{ showCatalog() ? 'Ocultar panel de añadir' : 'Añadir ejercicio' }}</button>
             </div>
 
@@ -115,9 +115,9 @@ interface CardioResultDraft {
             @if (activeExercise(); as item) {
               <div class="active-head">
                 <div>
-                  <p class="eyebrow">{{ item.exercise.type }}</p>
+                   <p class="eyebrow">{{ exerciseTypeLabel(item.exercise.type) }}</p>
                   <h2>{{ item.exercise.name }}</h2>
-                  <p>{{ item.exercise.equipment || 'General equipment' }}</p>
+                  <p>{{ item.exercise.equipment || 'Equipamiento general' }}</p>
                 </div>
                 <button type="button" class="danger" (click)="remove(item)">Eliminar</button>
               </div>
@@ -135,7 +135,7 @@ interface CardioResultDraft {
               </div>
 
               @if (item.notes) {
-                <p class="planned-note">Plan note: {{ item.notes }}</p>
+                <p class="planned-note">Nota del plan: {{ item.notes }}</p>
               }
 
               @if (item.exercise.type === 'strength') {
@@ -153,10 +153,10 @@ interface CardioResultDraft {
                 <form class="result-form" [formRoot]="cardioForm" (submit)="onSubmitCardio($event, item)">
                   <label class="field"><span>Duración (seg.)</span><input type="number" [formField]="cardioForm.durationSeconds" /></label>
                   <label class="field"><span>Distancia</span><input type="number" step="0.1" [formField]="cardioForm.distance" /></label>
-                  <label class="field"><span>Speed</span><input type="number" step="0.1" [formField]="cardioForm.speed" /></label>
-                  <label class="field"><span>Incline</span><input type="number" step="0.1" [formField]="cardioForm.incline" /></label>
-                  <label class="field"><span>Calories</span><input type="number" step="1" [formField]="cardioForm.calories" /></label>
-                  <label class="field"><span>Resistance</span><input type="number" step="1" [formField]="cardioForm.resistance" /></label>
+                   <label class="field"><span>Velocidad</span><input type="number" step="0.1" [formField]="cardioForm.speed" /></label>
+                   <label class="field"><span>Inclinación</span><input type="number" step="0.1" [formField]="cardioForm.incline" /></label>
+                   <label class="field"><span>Calorías</span><input type="number" step="1" [formField]="cardioForm.calories" /></label>
+                   <label class="field"><span>Resistencia</span><input type="number" step="1" [formField]="cardioForm.resistance" /></label>
                   <label class="field full"><span>Notas</span><textarea rows="3" [formField]="cardioForm.notes" placeholder="Nota opcional del resultado."></textarea></label>
                   <div class="form-actions">
                     <button type="button" (click)="skip(item)">Omitir</button>
@@ -197,14 +197,14 @@ interface CardioResultDraft {
                         <img class="catalog-item-image" [src]="exercise.imageUrl" [alt]="exercise.name" />
                       }
                       <div>
-                        <p class="eyebrow">{{ exercise.type }}</p>
+                         <p class="eyebrow">{{ exerciseTypeLabel(exercise.type) }}</p>
                         <h3>{{ exercise.name }}</h3>
-                        <p>{{ exercise.equipment || 'General equipment' }}</p>
+                         <p>{{ exercise.equipment || 'Equipamiento general' }}</p>
                       </div>
                       <button type="button" (click)="addExercise(exercise)">Añadir</button>
                     </article>
                   } @empty {
-                    <p class="muted">No exercises match this filter.</p>
+                     <p class="muted">Ningún ejercicio coincide con este filtro.</p>
                   }
                 </div>
               }
@@ -442,7 +442,7 @@ export class WorkoutSessionPage {
         this.catalogLoading.set(false);
       },
       error: (error: unknown) => {
-        this.catalogError.set(this.toMessage(error, 'We could not load the exercise catalog.'));
+        this.catalogError.set(this.toMessage(error, 'No se pudo cargar el catálogo de ejercicios.'));
         this.catalogLoading.set(false);
       },
     });
@@ -450,7 +450,7 @@ export class WorkoutSessionPage {
 
   protected async finish(): Promise<void> {
     if (this.completedCount() === 0) {
-      this.errors.set(['Complete at least one exercise before saving the workout.']);
+      this.errors.set(['Completa al menos un ejercicio antes de guardar el entrenamiento.']);
       return;
     }
 
@@ -477,6 +477,10 @@ export class WorkoutSessionPage {
 
   protected displayMetric(value: number | null): string | number {
     return value ?? '—';
+  }
+
+  protected exerciseTypeLabel(type: ExerciseType): string {
+    return type === 'strength' ? 'Fuerza' : 'Cardio';
   }
 
   private record(item: WorkoutSessionExercise, result: StrengthExerciseResult | CardioExerciseResult): void {

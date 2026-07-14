@@ -47,6 +47,17 @@ export interface WorkoutSessionDraft {
 export interface SaveWorkoutSessionResult {
   workout: Workout;
   results: WorkoutResult[];
+  summary: WorkoutSummaryModel;
+}
+
+export interface WorkoutSummaryModel {
+  routineName: string;
+  performedOn: string;
+  plannedCount: number;
+  completedCount: number;
+  skippedCount: number;
+  completionPercentage: number;
+  durationSeconds: number | null;
 }
 
 interface WorkoutRow {
@@ -327,7 +338,7 @@ export class EntrenamientosService {
     }
 
     if (session.savedWorkout) {
-      return Promise.resolve({ workout: session.savedWorkout, results: [] });
+      return Promise.resolve({ workout: session.savedWorkout, results: [], summary: this.createSummary(session, session.savedWorkout) });
     }
 
     if (this.savePromise) {
@@ -376,7 +387,7 @@ export class EntrenamientosService {
       try {
         const results = await this.insertResults(userId, workout.id, completedExercises);
         this.sessionState.update((currentSession) => (currentSession?.id === session.id ? { ...currentSession, savedWorkout: workout } : currentSession));
-        return { workout, results };
+        return { workout, results, summary: this.createSummary(session, workout) };
       } catch (resultsError) {
         await this.insforge.client.database.from('workouts').delete().eq('id', workout.id).eq('user_id', userId).select('id');
         throw resultsError;
@@ -408,6 +419,25 @@ export class EntrenamientosService {
     }
 
     return (data ?? []).map((row) => this.mapWorkoutResult(row as WorkoutResultRow));
+  }
+
+  private createSummary(session: WorkoutSessionDraft, workout: Workout): WorkoutSummaryModel {
+    const plannedCount = session.exercises.length;
+    const completedCount = session.exercises.filter((exercise) => exercise.result !== null).length;
+    const skippedCount = session.exercises.filter((exercise) => exercise.skipped && exercise.result === null).length;
+    const durationSeconds = session.startedAt && workout.completedAt
+      ? Math.max(0, Math.round((new Date(workout.completedAt).getTime() - new Date(session.startedAt).getTime()) / 1000))
+      : null;
+
+    return {
+      routineName: session.routineName ?? 'Entrenamiento libre',
+      performedOn: workout.performedOn,
+      plannedCount,
+      completedCount,
+      skippedCount,
+      completionPercentage: plannedCount === 0 ? 0 : Math.round((completedCount / plannedCount) * 100),
+      durationSeconds,
+    };
   }
 
   private async requireUserId(): Promise<string> {

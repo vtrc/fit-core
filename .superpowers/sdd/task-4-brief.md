@@ -1,34 +1,17 @@
-## Task 4: Implement routine creation and management
+## Task 4: Make history answer “what did I do today?”
 
 **Files:**
-- Create: `src/app/features/routines/routines.service.ts`
-- Create: `src/app/features/routines/routines-list-page.*`
-- Create: `src/app/features/routines/routine-editor-page.*`
-- Create: `src/app/features/routines/routine-detail-page.*`
+- Modify: `src/app/features/history/history-list-page.ts`
+- Modify: `src/app/features/history/history-detail-page.ts`
+- Modify: `src/app/features/history/history.service.ts` only if the existing query lacks the required result counts
 
 **Interfaces:**
-- `RoutinesService.listMine(): Observable<Routine[]>`
-- `RoutinesService.create(input: CreateRoutineInput): Observable<Routine>`
-- `RoutinesService.update(id: string, input: UpdateRoutineInput): Observable<Routine>`
-- `RoutinesService.delete(id: string): Observable<void>`
+- Consume persisted `Workout` and `WorkoutResult` records.
+- Display completed sessions, not routine definitions, as the history unit.
 
-- [ ] **Step 1: Write failing tests for routine validation and ownership**
-
-Cover required name, at least one exercise, exercise ordering, planned strength/cardio fields, and service error propagation.
-
-- [ ] **Step 2: Implement the service with InsForge queries**
-
-Persist routines and ordered routine exercises using the authenticated user's ownership context. Never accept a client-supplied `user_id` as authority.
-
-- [ ] **Step 3: Implement the routine editor**
-
-Allow searching the catalog, filtering exercises, adding/removing exercises, reordering them, and configuring planned fields.
-
-- [ ] **Step 4: Implement list and detail states**
-
-Include loading, empty, error, save-success, and delete-confirmation states.
-
-- [ ] **Step 5: Run tests and commit**
-
-Run the focused routine tests and the full unit suite, then commit with `git commit -m "feat: add routine management"`.
+- [ ] **Step 1: Extend the history read model** with counts derived from persisted results and workout exercises.
+- [ ] **Step 2: Render the date, routine name, total exercises, completed exercises, and completion percentage.**
+- [ ] **Step 3: Show per-exercise result status on the detail page.**
+- [ ] **Step 4: Verify manually** by opening the saved workout from history.
+- [ ] **Step 5: Commit** with `feat: clarify workout history completion totals`.
 

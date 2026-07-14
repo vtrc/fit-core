@@ -1,2 +1,3 @@
 [     496ms] [LOG] Angular is running in development mode. @ http://localhost:4300/@fs/Users/victor/projects/fit-core/.angular/cache/22.0.6/fit-core/vite/deps/chunk-YDDPOQWX.js?v=4836fd29:14943
 [   28701ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4300/catalog-images/saco-boxeo.png:0
+[   78847ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:4300/@vite/client:864
