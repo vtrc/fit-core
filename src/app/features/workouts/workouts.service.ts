@@ -263,6 +263,45 @@ export class EntrenamientosService {
     });
   }
 
+  toggleComplete(sessionExerciseId: string): void {
+    this.sessionState.update((session) => {
+      if (!session) return session;
+
+      return {
+        ...session,
+        exercises: session.exercises.map((ex) => {
+          if (ex.sessionExerciseId !== sessionExerciseId) return ex;
+
+          if (ex.result !== null) {
+            return { ...ex, result: null, skipped: false };
+          }
+
+          const result: ExerciseResult =
+            ex.exercise.type === 'strength'
+              ? {
+                  kind: 'strength',
+                  setsCompleted: ex.plannedSets ?? 0,
+                  repetitionsTotal: ex.plannedRepetitions ?? 0,
+                  weight: ex.plannedWeight ?? 0,
+                  notes: '',
+                }
+              : {
+                  kind: 'cardio',
+                  durationSeconds: ex.plannedDurationSeconds ?? 0,
+                  distance: ex.plannedDistance ?? 0,
+                  speed: null,
+                  incline: null,
+                  calories: null,
+                  resistance: null,
+                  notes: '',
+                };
+
+          return { ...ex, result, skipped: false };
+        }),
+      };
+    });
+  }
+
   removeExercise(sessionExerciseId: string): void {
     this.sessionState.update((session) => {
       if (!session) {

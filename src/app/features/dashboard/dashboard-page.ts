@@ -6,24 +6,12 @@ import { AuthService } from '../../core/auth/auth.service';
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [RouterLink],
   template: `
     <main class="dashboard">
       <header><p class="eyebrow">FIT CORE</p><button type="button" (click)="signOut()">Cerrar sesión</button></header>
-      <section><p class="eyebrow">PANEL</p><h1>Hola {{ displayName() }}.</h1><p>Tu espacio para planificar y registrar cada entrenamiento.</p></section>
-      <div class="actions">
-        <a class="primary" routerLink="/routines/new">
-          <button type="button">Crear rutina</button>
-        </a>
-        <button type="button" routerLink="/workouts/start">Entrenamiento libre</button>
-      </div>
-      <nav class="nav-links">
-        <a routerLink="/routines">Mis rutinas</a>
-        <a routerLink="/history">Historial</a>
-        <a routerLink="/statistics">Estadísticas</a>
-        <a routerLink="/workouts/session">Sesión actual</a>
-        <a routerLink="/workouts/summary">Resumen del entrenamiento</a>
-      </nav>
+      <section><h1>Hola {{ displayName() }}.</h1><p>Tu espacio para planificar y registrar cada entrenamiento.</p></section>
+      <img src="/image.png" alt="" class="hero-img" />
+      
     </main>
   `,
   styles: `
@@ -36,6 +24,7 @@ import { AuthService } from '../../core/auth/auth.service';
     .actions { display: flex; flex-wrap: wrap; gap: .75rem; } .actions button { padding: .9rem 1.1rem; border: 0; border-radius: .6rem; background: #1f3028; color: #fff; cursor: pointer; }
     .nav-links { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; }
     .nav-links a { color: #1f3028; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; font-size: 1.1rem; }
+    .hero-img { max-width: 100%; height: auto; border-radius: 1.25rem; margin-top: 2rem; }
   `,
 })
 export class DashboardPage {

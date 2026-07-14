@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
+import { AppShell } from './shared/shell/shell';
 import { DashboardPage } from './features/dashboard/dashboard-page';
 import { LoginPage } from './features/auth/login-page';
 import { RoutineDetailPage } from './features/routines/routine-detail-page';
@@ -15,17 +16,24 @@ import { StatisticsPage } from './features/statistics/statistics-page';
 
 export const routes: Routes = [
   { path: 'login', component: LoginPage },
-  { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
-  { path: 'routines', component: RoutinesListPage, canActivate: [authGuard] },
-  { path: 'routines/new', component: RoutineEditarorPage, canActivate: [authGuard] },
-  { path: 'routines/:id', component: RoutineDetailPage, canActivate: [authGuard] },
-  { path: 'routines/:id/edit', component: RoutineEditarorPage, canActivate: [authGuard] },
-  { path: 'workouts/start', component: WorkoutStartPage, canActivate: [authGuard] },
-  { path: 'workouts/session', component: WorkoutSessionPage, canActivate: [authGuard] },
-  { path: 'workouts/summary', component: WorkoutSummaryPage, canActivate: [authGuard] },
-  { path: 'history', component: HistoryListPage, canActivate: [authGuard] },
-  { path: 'history/:id', component: HistoryDetailPage, canActivate: [authGuard] },
-  { path: 'statistics', component: StatisticsPage, canActivate: [authGuard] },
-  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-  { path: '**', redirectTo: 'dashboard' },
+  {
+    path: '',
+    canActivate: [authGuard],
+    component: AppShell,
+    children: [
+      { path: 'dashboard', component: DashboardPage },
+      { path: 'routines', component: RoutinesListPage },
+      { path: 'routines/new', component: RoutineEditarorPage },
+      { path: 'routines/:id', component: RoutineDetailPage },
+      { path: 'routines/:id/edit', component: RoutineEditarorPage },
+      { path: 'workouts/start', component: WorkoutStartPage },
+      { path: 'workouts/session', component: WorkoutSessionPage },
+      { path: 'workouts/summary', component: WorkoutSummaryPage },
+      { path: 'history', component: HistoryListPage },
+      { path: 'history/:id', component: HistoryDetailPage },
+      { path: 'statistics', component: StatisticsPage },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      { path: '**', redirectTo: 'dashboard' },
+    ],
+  },
 ];

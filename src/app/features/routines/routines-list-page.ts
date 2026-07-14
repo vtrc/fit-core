@@ -49,8 +49,7 @@ import { RoutinesService } from './routines.service';
                  <p>{{ routine.description || 'Sin descripción todavía.' }}</p>
                </div>
                <div class="routine-actions">
-                 <a class="primary" [routerLink]="['/routines', routine.id]">Ver rutina</a>
-                 <a [routerLink]="['/routines', routine.id, 'edit']">Editar</a>
+                 <a class="primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
               </div>
             </article>
           }
