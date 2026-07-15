@@ -19,7 +19,7 @@
     <section class="card state">
       <h2>No hay ningún entrenamiento activo.</h2>
       <p>Inicia un entrenamiento antes de revisar el resumen.</p>
-      <a class="primary" routerLink="/workouts/start">Iniciar entrenamiento</a>
+      <a class="btn-primary" routerLink="/workouts/start">Iniciar entrenamiento</a>
     </section>
   } @else {
       @if (saveError(); as errorMessage) {
@@ -47,7 +47,7 @@
           <p class="banner error">Completa al menos un ejercicio antes de guardar.</p>
         }
 
-        <button type="button" class="primary save" (click)="save()" [disabled]="completedCount() === 0 || saving()">
+        <button type="button" class="btn-primary save" (click)="save()" [disabled]="completedCount() === 0 || saving()">
           {{ saving() ? 'Guardando…' : 'Guardar entrenamiento' }}
         </button>
       </aside>

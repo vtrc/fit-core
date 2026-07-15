@@ -147,15 +147,6 @@ button:hover:not(:disabled) {
   background: #ddd4c4;
 }
 
-.primary {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.primary:hover:not(:disabled) {
-  background: #283b32;
-}
-
 button:disabled {
   opacity: 0.65;
   cursor: not-allowed;
