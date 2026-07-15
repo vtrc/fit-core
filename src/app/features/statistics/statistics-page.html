@@ -1,11 +1,13 @@
-<main>
+<main class="page">
   <header class="hero">
     <div>
       <p class="eyebrow">ESTADÍSTICAS</p>
       <h1>Tu entrenamiento en cifras.</h1>
       <p class="lede">Todos los valores se calculan a partir de tu historial de entrenamientos.</p>
-    </div><a class="btn-primary" routerLink="/history">Ver historial</a>
+    </div>
+    <a class="btn-primary" routerLink="/history">Ver historial</a>
   </header>
+
   <form class="card filters" (submit)="onSubmit($event)" aria-label="Filtrar estadísticas por fecha">
     <div class="filters-row">
       <label><span>Desde</span><input type="date" [formField]="dateRangeForm.from" /></label>
@@ -16,58 +18,101 @@
       <button type="button" class="btn-secondary" (click)="clearDates()" [disabled]="loading()">Limpiar</button>
     </div>
   </form>
-  @if (error(); as message) { <p class="banner error" role="alert">{{ message }}</p> }
-  @if (loading()) { <section class="card state" aria-live="polite">
-    <p>Calculando estadísticas…</p>
-  </section> } @else if (overview(); as data) { @if (data.workoutCount === 0) {
-  <app-empty-state title="Todavía no hay estadísticas."
-    description="Completa un entrenamiento para generar estos datos." actionText="Iniciar entrenamiento"
-    actionRoute="/workouts/start" />
-  } @else { <section class="metrics" aria-label="Totales de entrenamiento">
-    <article class="card"><span>Entrenamientos</span><strong>{{ data.workoutCount }}</strong></article>
-    <article class="card"><span>Frecuencia</span><strong>{{ data.workoutFrequencyPerWeek | number:'1.1-1'
-        }}/semana</strong></article>
-    <article class="card"><span>Volumen de fuerza</span><strong>{{ data.strengthVolume | number:'1.0-0' }}</strong>
-    </article>
-    <article class="card"><span>Duración de cardio</span><strong>{{ formatDuration(data.cardioDurationSeconds)
-        }}</strong></article>
-    <article class="card"><span>Distancia de cardio</span><strong>{{ data.cardioDistance | number:'1.0-2' }}</strong>
-    </article>
-  </section>
-  <section class="layout">
-    <section class="card">
-      <h2>Volumen de fuerza trend</h2>
-      <div class="trend" role="img" aria-label="Volumen de fuerza by workout date">@for (point of data.volumeTrend;
-        track point.date) { <div class="trend-row"><span>{{ formatDate(point.date) }}</span>
-          <div class="bar-track">
-            <div class="bar" [style.width.%]="trendWidth(point.volume)"></div>
-          </div><strong>{{ point.volume | number:'1.0-0' }}</strong>
-        </div> } @empty { <p>No hay volumen de fuerza registrado en este periodo.</p> }</div>
+
+  @if (error(); as message) {
+    <p class="banner error" role="alert">{{ message }}</p>
+  }
+
+  @if (loading()) {
+    <section class="card state" aria-live="polite">
+      <p>Calculando estadísticas…</p>
     </section>
-    <section class="card">
-      <h2>Grupos musculares</h2>
-      <ul>@for (group of data.muscleGroups; track group.name) { <li><span>{{ group.name }}</span><strong>{{
-            group.exercises }}</strong></li> } @empty { <li>Sin grupos musculares registrados in this range.</li> }</ul>
-    </section>
-    <section class="card">
-      <h2>Mejores resultados</h2>
-      <div class="table-wrap">
-        <table>
-          <caption class="sr-only">Mejor resultado registrado por ejercicio</caption>
-          <thead>
-            <tr>
-              <th scope="col">Ejercicio</th>
-              <th scope="col">Mejor resultado</th>
-            </tr>
-          </thead>
-          <tbody>@for (result of data.bestResults; track result.exerciseId) { <tr>
-              <th scope="row">{{ result.exerciseName }}</th>
-              <td>{{ result.value | number:'1.0-2' }} {{ result.unit }}</td>
-            </tr> } @empty { <tr>
-              <td colspan="2">No hay resultados registrados en este periodo.</td>
-            </tr> }</tbody>
-        </table>
-      </div>
-    </section>
-  </section> } }
+  } @else if (overview(); as data) {
+    @if (data.workoutCount === 0) {
+      <app-empty-state
+        title="Todavía no hay estadísticas."
+        description="Completa un entrenamiento para generar estos datos."
+        actionText="Iniciar entrenamiento"
+        actionRoute="/workouts/start"
+      />
+    } @else {
+      <section class="metrics" aria-label="Totales de entrenamiento">
+        <article class="metric-card">
+          <span class="metric-label">Entrenamientos</span>
+          <strong class="metric-value">{{ data.workoutCount }}</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Frecuencia</span>
+          <strong class="metric-value">{{ data.workoutFrequencyPerWeek | number:'1.1-1' }}<span class="metric-unit">/semana</span></strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Volumen de fuerza</span>
+          <strong class="metric-value">{{ data.strengthVolume | number:'1.0-0' }}<span class="metric-unit">kg</span></strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Duración de cardio</span>
+          <strong class="metric-value">{{ formatDuration(data.cardioDurationSeconds) }}</strong>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">Distancia de cardio</span>
+          <strong class="metric-value">{{ data.cardioDistance | number:'1.0-2' }}<span class="metric-unit">km</span></strong>
+        </article>
+      </section>
+
+      <section class="grid">
+        <section class="card">
+          <h2>Volumen de fuerza</h2>
+          <div class="trend" role="img" aria-label="Volumen de fuerza por fecha de entrenamiento">
+            @for (point of data.volumeTrend; track point.date) {
+              <div class="trend-row">
+                <span class="trend-date">{{ formatDate(point.date) }}</span>
+                <div class="bar-track">
+                  <div class="bar" [style.width.%]="trendWidth(point.volume)"></div>
+                </div>
+                <strong class="trend-value">{{ point.volume | number:'1.0-0' }}</strong>
+              </div>
+            } @empty {
+              <p class="empty-text">No hay volumen de fuerza registrado en este periodo.</p>
+            }
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Grupos musculares</h2>
+          <div class="muscle-groups">
+            @for (group of data.muscleGroups; track group.name) {
+              <div class="muscle-row">
+                <div class="muscle-info">
+                  <span class="muscle-name">{{ group.name }}</span>
+                  <span class="muscle-count">{{ group.exercises }} ejercicios</span>
+                </div>
+                <div class="muscle-bar-track">
+                  <div class="muscle-bar" [style.width.%]="muscleBarWidth(group.exercises)"></div>
+                </div>
+              </div>
+            } @empty {
+              <p class="empty-text">Sin grupos musculares registrados en este periodo.</p>
+            }
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Mejores resultados</h2>
+          <div class="best-results">
+            @for (result of data.bestResults; track result.exerciseId) {
+              <div class="result-row">
+                <div class="result-info">
+                  <span class="result-exercise">{{ result.exerciseName }}</span>
+                  <span class="result-unit">{{ result.unit }}</span>
+                </div>
+                <strong class="result-value">{{ result.value | number:'1.0-2' }}</strong>
+              </div>
+            } @empty {
+              <p class="empty-text">No hay resultados registrados en este periodo.</p>
+            }
+          </div>
+        </section>
+      </section>
+    }
+  }
 </main>
