@@ -31,7 +31,7 @@ export class RoutineDetailPage {
   protected load(): void {
     const routineId = this.route.snapshot.paramMap.get('id');
     if (!routineId) {
-      this.error.set('Routine not found.');
+      this.error.set('No se encontró la rutina.');
       this.loading.set(false);
       return;
     }
@@ -45,7 +45,7 @@ export class RoutineDetailPage {
         this.loading.set(false);
       },
       error: (error: unknown) => {
-        this.error.set(this.toMessage(error, 'We could not load this routine.'));
+        this.error.set(this.toMessage(error, 'No se pudo cargar la rutina.'));
         this.loading.set(false);
       },
     });
@@ -66,7 +66,7 @@ export class RoutineDetailPage {
         await this.router.navigate(['/routines'], { queryParams: { deleted: 1 } });
       },
       error: (error: unknown) => {
-        this.deleteError.set(this.toMessage(error, 'Delete failed. The routine was not removed.'));
+        this.deleteError.set(this.toMessage(error, 'Error al eliminar. La rutina no fue removida.'));
         this.deleting.set(false);
       },
     });
