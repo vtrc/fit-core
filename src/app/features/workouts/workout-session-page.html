@@ -1,4 +1,4 @@
-<main >
+<main class="page">
   <header class="hero">
     <div>
       <p class="eyebrow">ENTRENAMIENTO EN CURSO</p>
@@ -7,11 +7,11 @@
     </div>
     <div class="hero-actions">
       @if (saving()) {
-        <button type="button" disabled>Empezar de nuevo</button>
+        <button type="button" class="btn-secondary" disabled>Empezar de nuevo</button>
       } @else {
-        <a routerLink="/workouts/start">Empezar de nuevo</a>
+        <a class="btn-secondary" routerLink="/workouts/start">Empezar de nuevo</a>
       }
-      <button type="button" class="primary" (click)="finish()" [disabled]="completedCount() === 0">Finalizar Entrenamiento</button>
+      <button type="button" class="btn-primary" (click)="finish()" [disabled]="completedCount() === 0">Finalizar</button>
     </div>
   </header>
 
@@ -19,21 +19,33 @@
     <section class="card state">
       <h2>No hay ningún entrenamiento activo.</h2>
       <p>Primero inicia un entrenamiento basado en una rutina o un entrenamiento libre.</p>
-      <a class="primary" routerLink="/workouts/start">Iniciar entrenamiento</a>
+      <a class="btn-primary" routerLink="/workouts/start">Iniciar entrenamiento</a>
     </section>
   } @else {
     <section class="card progress-card" aria-labelledby="progress-heading">
-      <div class="progress-heading">
+      <div class="progress-header">
         <h2 id="progress-heading">Progreso del entrenamiento</h2>
-        <strong>{{ completedCount() }} de {{ plannedCount() }} ejercicios completados</strong>
+        <span class="progress-count">{{ completedCount() }} / {{ plannedCount() }}</span>
       </div>
-      <progress [value]="completedCount()" [max]="plannedCount() || 1" aria-label="Progreso de ejercicios completados"></progress>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progressPercent()"></div>
+      </div>
+      <span class="progress-label">{{ progressPercent() }}% completado</span>
     </section>
 
     <section class="stats">
-      <article class="card stat"><span>Planificados</span><strong>{{ plannedCount() }}</strong></article>
-      <article class="card stat"><span>Completados</span><strong>{{ completedCount() }}</strong></article>
-      <article class="card stat"><span>Pendientes</span><strong>{{ remainingCount() }}</strong></article>
+      <article class="stat-card">
+        <span class="stat-value">{{ plannedCount() }}</span>
+        <span class="stat-label">Planificados</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-value">{{ completedCount() }}</span>
+        <span class="stat-label">Completados</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-value">{{ remainingCount() }}</span>
+        <span class="stat-label">Pendientes</span>
+      </article>
     </section>
 
     <section class="exercise-list">
@@ -41,7 +53,7 @@
         <article class="card state">
           <h2>No hay ejercicios en este entrenamiento.</h2>
           <p>Los entrenamientos libres empiezan vacíos. Vuelve a empezar con una rutina o añade ejercicios desde el inicio.</p>
-          <a class="primary" routerLink="/workouts/start">Volver al inicio</a>
+          <a class="btn-primary" routerLink="/workouts/start">Volver al inicio</a>
         </article>
       }
 
@@ -50,7 +62,7 @@
           class="card exercise-card"
           [class.completed]="item.result !== null"
           role="option"
-          aria-selected="item.result !== null"
+          [attr.aria-selected]="item.result !== null"
         >
           <label class="check-wrap">
             <input
@@ -60,37 +72,59 @@
               (change)="toggleComplete(item)"
               [attr.aria-label]="'Marcar ' + item.exercise.name + ' como ' + (item.result !== null ? 'pendiente' : 'completado')"
             />
-            <span class="check-visual" aria-hidden="true">{{ item.result !== null ? '✓' : '' }}</span>
+            <span class="check-visual" aria-hidden="true"></span>
           </label>
 
           <div class="card-body">
             <div class="card-head">
-              <p class="eyebrow">{{ exerciseTypeLabel(item.exercise.type) }}</p>
+              <span class="type-badge" [class.strength]="item.exercise.type === 'strength'" [class.cardio]="item.exercise.type === 'cardio'">
+                {{ exerciseTypeLabel(item.exercise.type) }}
+              </span>
               <h3>{{ item.exercise.name }}</h3>
-              <p class="equip">{{ item.exercise.equipment || 'Equipamiento general' }}</p>
+              @if (item.exercise.equipment) {
+                <p class="exercise-meta">{{ item.exercise.equipment }}</p>
+              }
             </div>
 
-            @if (item.exercise.type === 'strength') {
-              <div class="targets">
-                <span class="tag">Series <strong>{{ displayMetric(item.plannedSets) }}</strong></span>
-                <span class="tag">Repeticiones <strong>{{ displayMetric(item.plannedRepetitions) }}</strong></span>
-                <span class="tag">Peso <strong>{{ displayMetric(item.plannedWeight) }} kg</strong></span>
-                <span class="tag">Descanso <strong>{{ formatRest(item.restSeconds) }}</strong></span>
-              </div>
-            } @else {
-              <div class="targets">
-                <span class="tag">Duración <strong>{{ displayMetric(item.plannedDurationSeconds) }} seg</strong></span>
-                <span class="tag">Distancia <strong>{{ displayMetric(item.plannedDistance) }}</strong></span>
-              </div>
-            }
+            <div class="exercise-metrics">
+              @if (item.exercise.type === 'strength') {
+                <div class="metric">
+                  <span class="metric-value">{{ displayMetric(item.plannedSets) }}</span>
+                  <span class="metric-label">Series</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">{{ displayMetric(item.plannedRepetitions) }}</span>
+                  <span class="metric-label">Repeticiones</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">{{ displayMetric(item.plannedWeight) }}<span class="metric-unit">kg</span></span>
+                  <span class="metric-label">Peso</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">{{ formatRest(item.restSeconds) }}</span>
+                  <span class="metric-label">Descanso</span>
+                </div>
+              } @else {
+                <div class="metric">
+                  <span class="metric-value">{{ displayMetric(item.plannedDurationSeconds) }}<span class="metric-unit">s</span></span>
+                  <span class="metric-label">Duración</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">{{ displayMetric(item.plannedDistance) }}<span class="metric-unit">km</span></span>
+                  <span class="metric-label">Distancia</span>
+                </div>
+              }
+            </div>
 
             @if (item.notes) {
-              <p class="notes">{{ item.notes }}</p>
+              <p class="exercise-notes">{{ item.notes }}</p>
             }
           </div>
 
           @if (item.restSeconds !== null && item.restSeconds > 0) {
-            <button type="button" class="timer-btn" (click)="openTimer(item)" aria-label="Abrir temporizador de descanso" title="Temporizador">⏱</button>
+            <button type="button" class="timer-btn" (click)="openTimer(item)" aria-label="Abrir temporizador de descanso" title="Temporizador">
+              <span class="timer-icon">⏱</span>
+            </button>
           }
         </article>
       }
@@ -99,25 +133,27 @@
     @if (timerState(); as timer) {
       <div class="timer-overlay" (click)="closeTimer()">
         <div class="timer-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Temporizador de descanso">
-          <div class="timer-head">
+          <div class="timer-header">
             <h2>{{ timer.exerciseName }}</h2>
             <button type="button" class="timer-close" (click)="closeTimer()" aria-label="Cerrar temporizador">×</button>
           </div>
 
-          <div class="timer-display" [class.timer-expired]="timer.remaining === 0">{{ formatTimer(timer.remaining) }}</div>
+          <div class="timer-display" [class.expired]="timer.remaining === 0">
+            {{ formatTimer(timer.remaining) }}
+          </div>
 
-          <div class="timer-controls">
+          <div class="timer-actions">
             @if (timer.remaining === 0) {
-              <button type="button" class="primary" (click)="resetTimer()">Reiniciar</button>
-              <button type="button" (click)="closeTimer()">Cerrar</button>
+              <button type="button" class="btn-primary" (click)="resetTimer()">Reiniciar</button>
+              <button type="button" class="btn-secondary" (click)="closeTimer()">Cerrar</button>
             } @else {
               @if (timer.running) {
-                <button type="button" class="primary" (click)="pauseTimer()">Pausa</button>
+                <button type="button" class="btn-primary" (click)="pauseTimer()">Pausa</button>
               } @else {
-                <button type="button" class="primary" (click)="startTimer()">Iniciar</button>
+                <button type="button" class="btn-primary" (click)="startTimer()">Iniciar</button>
               }
-              <button type="button" (click)="resetTimer()">Reiniciar</button>
-              <button type="button" (click)="closeTimer()">Cerrar</button>
+              <button type="button" class="btn-secondary" (click)="resetTimer()">Reiniciar</button>
+              <button type="button" class="btn-secondary" (click)="closeTimer()">Cerrar</button>
             }
           </div>
         </div>

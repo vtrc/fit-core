@@ -28,6 +28,11 @@ export class WorkoutSessionPage {
   protected readonly plannedCount = this.workoutsService.plannedCount;
   protected readonly completedCount = this.workoutsService.completedCount;
   protected readonly remainingCount = this.workoutsService.remainingCount;
+  protected readonly progressPercent = computed(() => {
+    const planned = this.plannedCount();
+    if (planned === 0) return 0;
+    return Math.round((this.completedCount() / planned) * 100);
+  });
   protected readonly saving = this.workoutsService.saving;
   protected readonly timerState = signal<TimerState | null>(null);
 
