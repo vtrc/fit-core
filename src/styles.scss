@@ -166,3 +166,132 @@ button:disabled {
     font-size: clamp(2rem, 11vw, 2.6rem);
   }
 }
+
+/* ── Filters card ─────────────────────────────────────────── */
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.filters-row label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.filters-row label span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+}
+
+.filters-row input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 0.95rem;
+  background: var(--fill-soft);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filters-row input:hover {
+  border-color: var(--border-strong);
+}
+
+.filters-row input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px rgba(31, 48, 40, 0.1);
+}
+
+.filters-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.filters-buttons button {
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  min-height: 44px;
+}
+
+.filters-buttons .btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.filters-buttons .btn-primary:hover:not(:disabled) {
+  background: #283b32;
+}
+
+.filters-buttons .btn-secondary {
+  background: var(--fill-hover);
+  color: var(--ink);
+}
+
+.filters-buttons .btn-secondary:hover:not(:disabled) {
+  background: #ddd4c4;
+}
+
+.filters-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (min-width: 640px) {
+  .filters {
+    flex-direction: row;
+    align-items: end;
+  }
+
+  .filters-buttons {
+    flex-shrink: 0;
+  }
+}
+
+/* ── Routine card grid ────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+}
+
+/* ── Card button variants ─────────────────────────────────── */
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #283b32;
+}
+
+.btn-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #f9d5d0;
+}
