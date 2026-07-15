@@ -4,9 +4,10 @@ import { form, FormField } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 
 import { type StatisticsOverview, StatisticsService } from './statistics.service';
+import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
 
 @Component({
-  selector: 'app-statistics-page', standalone: true, imports: [DecimalPipe, FormField, RouterLink],
+  selector: 'app-statistics-page', standalone: true, imports: [DecimalPipe, FormField, RouterLink, EmptyStateComponent],
   templateUrl: './statistics-page.html',
   styleUrl: './statistics-page.scss',
 })

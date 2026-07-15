@@ -3,30 +3,15 @@
 }
 
 .hero-actions,
-.layout,
-.filters {
+.layout {
     display: flex;
     gap: var(--space-4);
-}
-
-.filters {
-    align-items: end;
-    flex-wrap: wrap;
-    margin-bottom: var(--space-4);
 }
 
 .label {
     display: grid;
     gap: 0.35rem;
     font-weight: 700;
-}
-
-input {
-    border: 1px solid var(--border-input);
-    border-radius: var(--radius-sm);
-    padding: 0.65rem;
-    font: inherit;
-    background: var(--paper);
 }
 
 .metrics {
