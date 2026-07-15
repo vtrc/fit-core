@@ -1,0 +1,7 @@
+<section class="card state">
+  <h2>{{ title() }}</h2>
+  <p>{{ description() }}</p>
+  @if (actionText() && actionRoute()) {
+    <a class="primary" [routerLink]="actionRoute()!">{{ actionText() }}</a>
+  }
+</section>

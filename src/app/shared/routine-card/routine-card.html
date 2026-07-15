@@ -1,0 +1,12 @@
+<article class="card routine-card">
+  <div class="routine-body">
+    <p class="eyebrow">{{ eyebrow() }}</p>
+    <h2>{{ name() }}</h2>
+    @if (description(); as desc) {
+      <p class="routine-desc">{{ desc }}</p>
+    }
+  </div>
+  <div class="routine-actions">
+    <ng-content />
+  </div>
+</article>
