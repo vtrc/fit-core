@@ -11,13 +11,6 @@
     <p class="banner error" role="alert">{{ errorMessage }}</p>
   }
 
-  <section class="section-heading">
-    <div>
-      <p class="eyebrow">RUTINAS GUARDADAS</p>
-      <h2>Iniciar desde una rutina guardada</h2>
-    </div>
-  </section>
-
   @if (loading()) {
     <section class="card state"><p>Cargando rutinas…</p></section>
   } @else if (routines().length === 0) {
