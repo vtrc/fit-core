@@ -1,4 +1,8 @@
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 :root {
   --parchment: #f5f1e8;
@@ -51,10 +55,25 @@ body {
   color: var(--ink);
 }
 
-h1, h2, h3, p { margin: 0; }
-a { color: inherit; }
-button { font: inherit; }
-img { max-width: 100%; display: block; }
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
 
 /* ── Page layout ──────────────────────────────────────────── */
 
@@ -186,12 +205,13 @@ button:disabled {
 }
 
 .filters-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-flow: wrap;
   gap: var(--space-3);
 }
 
 .filters-row label {
+  flex: 1 1 0;
   display: grid;
   gap: 0.3rem;
 }
