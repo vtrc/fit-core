@@ -1,4 +1,4 @@
-<main class="page">
+<main >
   <header class="hero">
     <div>
       <p class="eyebrow">ENTRENAMIENTOS</p>
@@ -13,7 +13,7 @@
 
   <section class="section-heading">
     <div>
-      <p class="eyebrow">SAVED ROUTINES</p>
+      <p class="eyebrow">RUTINAS GUARDADAS</p>
       <h2>Iniciar desde una rutina guardada</h2>
     </div>
   </section>
@@ -30,14 +30,14 @@
       @for (routine of routines(); track routine.id) {
         <article class="card routine-card">
           <div>
-            <p class="eyebrow">UPDATED {{ formatDate(routine.updatedAt) }}</p>
-            <h3>{{ routine.name }}</h3>
+            <p class="eyebrow">ACTUALIZADA {{ formatDate(routine.updatedAt) }}</p>
+            <h2>{{ routine.name }}</h2>
             @if (routine.description) {
               <p>{{ routine.description }}</p>
             }
           </div>
           <div class="inline-actions">
-            <button type="button" (click)="startRoutine(routine)" [disabled]="saving() || startingRoutineId() === routine.id">
+            <button class="primary" type="button" (click)="startRoutine(routine)" [disabled]="saving() || startingRoutineId() === routine.id">
               {{ startingRoutineId() === routine.id ? 'Starting…' : 'Empezar' }}
             </button>
           </div>

@@ -1,8 +1,8 @@
-<main class="page">
+<main >
   <header class="hero">
     <div>
-      <p class="eyebrow">{{ isEditMode() ? 'EDIT ROUTINE' : 'NEW ROUTINE' }}</p>
-      <h1>{{ isEditMode() ? 'Refine your plan.' : 'Build a reusable routine.' }}</h1>
+      <p class="eyebrow">{{ isEditMode() ? 'EDITA TU RUTINA' : 'NUEVA RUTINA' }}</p>
+      <h1>{{ isEditMode() ? 'Redefine tu plan.' : 'Construye una rutina reutilizable.' }}</h1>
       <p class="lede">Elige ejercicios del catálogo, ordénalos y define tus objetivos.</p>
     </div>
 
@@ -28,13 +28,18 @@
           </div>
         }
 
-        <label class="field">
+        <label class="field" [class.field-error]="attemptedSubmit() && routineForm.name().invalid()">
           <span>Nombre</span>
           <input
             type="text"
             [formField]="routineForm.name"
             placeholder="Rutina de tren superior / inferior"
           />
+          @if (attemptedSubmit() && routineForm.name().invalid()) {
+            @for (error of routineForm.name().errors(); track error.kind) {
+              <p class="field-error-msg">{{ error.message }}</p>
+            }
+          }
         </label>
 
         <label class="field">
@@ -73,7 +78,7 @@
 
                   @if (item.exercise.type === 'strength') {
                     <div class="metrics">
-                      <label class="field">
+                      <label class="field" [class.field-error]="hasExerciseError($index, 'plannedSets')">
                         <span>Series</span>
                         <select [ngModel]="displayNumber(item.plannedSets)" (ngModelChange)="updateExerciseNumber($index, 'plannedSets', $event)">
                           <option value="">—</option>
@@ -82,7 +87,7 @@
                           }
                         </select>
                       </label>
-                      <label class="field">
+                      <label class="field" [class.field-error]="hasExerciseError($index, 'plannedRepetitions')">
                         <span>Repeticiones</span>
                         <select [ngModel]="displayNumber(item.plannedRepetitions)" (ngModelChange)="updateExerciseNumber($index, 'plannedRepetitions', $event)">
                           <option value="">—</option>
@@ -122,8 +127,8 @@
                     </div>
                   } @else {
                     <div class="metrics">
-                      <label class="field"><span>Duración (seg.)</span><input type="number" [ngModel]="displayNumber(item.plannedDurationSeconds)" (ngModelChange)="updateExerciseNumber($index, 'plannedDurationSeconds', $event)" /></label>
-                      <label class="field"><span>Distancia</span><input type="number" step="0.1" [ngModel]="displayNumber(item.plannedDistance)" (ngModelChange)="updateExerciseNumber($index, 'plannedDistance', $event)" /></label>
+                      <label class="field" [class.field-error]="hasExerciseError($index, 'plannedDurationSeconds')"><span>Duración (seg.)</span><input type="number" [ngModel]="displayNumber(item.plannedDurationSeconds)" (ngModelChange)="updateExerciseNumber($index, 'plannedDurationSeconds', $event)" /></label>
+                      <label class="field" [class.field-error]="hasExerciseError($index, 'plannedDistance')"><span>Distancia</span><input type="number" step="0.1" [ngModel]="displayNumber(item.plannedDistance)" (ngModelChange)="updateExerciseNumber($index, 'plannedDistance', $event)" /></label>
                     </div>
                   }
 

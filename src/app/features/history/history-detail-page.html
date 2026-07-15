@@ -1,0 +1,68 @@
+<main >
+  <header class="hero">
+    <div>
+      <p class="eyebrow">DETALLE DEL ENTRENAMIENTO</p>
+      <h1>Registro del entrenamiento.</h1>
+    </div>
+    <a routerLink="/history">Volver al historial</a>
+  </header>
+
+  @if (loading()) {
+    <section class="card state" aria-live="polite">
+      <p>Cargando los detalles del entrenamiento…</p>
+    </section>
+  } @else if (error(); as message) {
+    <section class="card state">
+      <p class="error" role="alert">{{ message }}</p>
+      <a routerLink="/history">Volver al historial</a>
+    </section>
+  } @else if (workout(); as item) {
+    <section class="card summary">
+      <p class="eyebrow">{{ formatDate(item.performedOn) }}</p>
+      <h2>{{ item.routineName }}</h2>
+      <p>{{ item.notes || 'Sin notas del entrenamiento.' }}</p>
+      <dl>
+        <div><dt>Total</dt><dd>{{ item.plannedCount }}</dd></div>
+        <div><dt>Completados</dt><dd>{{ item.completedCount }}</dd></div>
+        <div><dt>Omitidos</dt><dd>{{ item.skippedCount }}</dd></div>
+        <div><dt>Completitud</dt><dd>{{ item.completionPercentage }}%</dd></div>
+      </dl>
+    </section>
+
+    <section class="results" aria-label="Estado de ejercicios">
+      <h2>Estado de ejercicios</h2>
+      @for (exercise of item.exercises; track $index) {
+        <article class="card result" [class.skipped]="exercise.status === 'skipped'">
+          <div>
+            <p class="eyebrow">{{ exercise.status === 'completed' ? 'COMPLETADO' : 'OMITIDO' }}</p>
+            <h3>{{ exercise.exercise.name }}</h3>
+            <p>{{ exercise.exercise.type === 'strength' ? 'Fuerza' : 'Cardio' }} · {{ exercise.exercise.muscleGroups.join(', ') || 'Sin grupos musculares registrados' }}</p>
+          </div>
+          @if (exercise.result; as result) {
+            @if (result.kind === 'strength') {
+              <dl>
+                <div><dt>Series</dt><dd>{{ result.setsCompleted }}</dd></div>
+                <div><dt>Repeticiones</dt><dd>{{ result.repetitionsTotal }}</dd></div>
+                <div><dt>Peso</dt><dd>{{ result.weight }}</dd></div>
+              </dl>
+            } @else {
+              <dl>
+                <div><dt>Duración</dt><dd>{{ formatDuration(result.durationSeconds) }}</dd></div>
+                <div><dt>Distancia</dt><dd>{{ result.distance }}</dd></div>
+              </dl>
+            }
+            @if (result.notes) {
+              <p>{{ result.notes }}</p>
+            }
+          } @else {
+            <p>Este ejercicio no se completó.</p>
+          }
+        </article>
+      } @empty {
+        <section class="card state">
+          <p>No se planificaron ejercicios para este entrenamiento.</p>
+        </section>
+      }
+    </section>
+  }
+</main>

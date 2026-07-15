@@ -1,8 +1,37 @@
-:host { display: block; min-height: 100vh; }
-.login-page { display: grid; place-items: center; min-height: 100vh; padding: var(--space-8); background: var(--parchment); }
-.login-panel { width: min(100%, 32rem); padding: var(--space-12); background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--elevation-card); }
-.eyebrow { color: var(--rust); font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
-h1 { margin: var(--space-4) 0; font-size: clamp(2.2rem, 7vw, 4rem); line-height: .95; }
-button { margin-top: var(--space-6); width: 100%; padding: .9rem var(--space-4); border: 0; border-radius: var(--radius-md); background: var(--ink); color: white; font-weight: 700; cursor: pointer; }
-.google-btn { display: flex; align-items: center; justify-content: center; gap: .6rem; }
-.google-icon { flex-shrink: 0; }
+:host {
+    display: block;
+}
+
+.login-page {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: var(--space-8);
+    background: var(--parchment);
+}
+
+.login-panel {
+    width: min(100%, 32rem);
+    padding: var(--space-12);
+    background: var(--paper);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--elevation-card);
+}
+
+.login-panel h1 {
+    margin: var(--space-4) 0;
+    font-size: clamp(2.2rem, 7vw, 4rem);
+    line-height: 0.95;
+}
+
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: var(--space-6);
+}
+
+.google-icon {
+    flex-shrink: 0;
+}

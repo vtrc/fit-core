@@ -67,6 +67,36 @@ export class RoutineEditarorPage {
 
   protected readonly validationErrors = computed(() => validateRoutineInput(this.toInput(this.draft())));
 
+  protected hasExerciseError(index: number, field: string): boolean {
+    if (!this.attemptedSubmit()) return false;
+    const exercise = this.draft().exercises[index];
+    if (!exercise) return false;
+
+    const errors = validateRoutineInput(this.toInput(this.draft()));
+    if (errors.length === 0) return false;
+
+    const exerciseType = exercise.exercise.type;
+    const exerciseIndex = index;
+
+    if (field === 'plannedSets' || field === 'plannedRepetitions') {
+      if (exerciseType === 'strength') {
+        const value = field === 'plannedSets' ? exercise.plannedSets : exercise.plannedRepetitions;
+        return value === null || value === undefined;
+      }
+      return false;
+    }
+
+    if (field === 'plannedDurationSeconds' || field === 'plannedDistance') {
+      if (exerciseType === 'cardio') {
+        const value = field === 'plannedDurationSeconds' ? exercise.plannedDurationSeconds : exercise.plannedDistance;
+        return value === null || value === undefined;
+      }
+      return false;
+    }
+
+    return false;
+  }
+
   protected readonly selectedCatalogIds = computed(() => new Set(this.draft().exercises.map((e) => e.exercise.id)));
 
   protected readonly seriesOptions = Array.from({ length: 20 }, (_, i) => i + 1);

@@ -149,15 +149,15 @@ export function validateRoutineInput(input: CreateRoutineInput): string[] {
   const name = input.name.trim();
 
   if (name.length === 0) {
-    errors.push('Routine name is required.');
+    errors.push('El nombre de la rutina es requerido.');
   }
 
   if (input.exercises.length === 0) {
-    errors.push('Añadir at least one exercise before saving.');
+    errors.push('Añade al menos un ejercicio antes de guardar.');
   }
 
   input.exercises.forEach((exercise, index) => {
-    const label = `Exercise ${index + 1}`;
+    const label = `Ejercicio ${index + 1}`;
     const normalizedMetrics = new Set<RoutineMetricKey>();
     const unknownMetrics: string[] = [];
 
@@ -172,15 +172,15 @@ export function validateRoutineInput(input: CreateRoutineInput): string[] {
     }
 
     if (!exercise.exerciseId) {
-      errors.push(`${label} is missing an exercise reference.`);
+      errors.push(`${label} no tiene referencia de ejercicio.`);
     }
 
     if (unknownMetrics.length > 0) {
-      errors.push(`${label} has unsupported metric metadata: ${unknownMetrics.join(', ')}.`);
+      errors.push(`${label} tiene metadatos de métricas no soportados: ${unknownMetrics.join(', ')}.`);
     }
 
     if (exercise.exerciseType !== 'strength' && exercise.exerciseType !== 'cardio') {
-      errors.push(`${label} has an unsupported exercise type.`);
+      errors.push(`${label} tiene un tipo de ejercicio no soportado.`);
       return;
     }
 
@@ -188,34 +188,34 @@ export function validateRoutineInput(input: CreateRoutineInput): string[] {
     const crossTipoMetrics = [...normalizedMetrics].filter((metric) => !allowedMetrics.has(metric));
 
     if (crossTipoMetrics.length > 0) {
-      errors.push(`${label} has ${exercise.exerciseType} metadata mixed with ${crossTipoMetrics.join(', ')} metrics.`);
+      errors.push(`${label} tiene metadatos de ${exercise.exerciseType} mezclados con métricas de ${crossTipoMetrics.join(', ')}.`);
     }
 
     for (const [field, value, integerOnly] of [
-      ['planned sets', exercise.plannedSets, true],
-      ['planned repetitions', exercise.plannedRepetitions, true],
-      ['planned weight', exercise.plannedWeight, false],
-      ['planned duration', exercise.plannedDurationSeconds, true],
-      ['planned distance', exercise.plannedDistance, false],
-      ['rest seconds', exercise.restSeconds, true],
+      ['series planificadas', exercise.plannedSets, true],
+      ['repeticiones planificadas', exercise.plannedRepetitions, true],
+      ['peso planificado', exercise.plannedWeight, false],
+      ['duración planificada', exercise.plannedDurationSeconds, true],
+      ['distancia planificada', exercise.plannedDistance, false],
+      ['segundos de descanso', exercise.restSeconds, true],
     ] as const) {
       if (value === null) {
         continue;
       }
 
       if (!Number.isFinite(value) || value < 0) {
-        errors.push(`${label} has an invalid ${field} value.`);
+        errors.push(`${label} tiene un valor de ${field} no válido.`);
         continue;
       }
 
       if (integerOnly && !Number.isInteger(value)) {
-        errors.push(`${label} requires ${field} to be a whole number.`);
+        errors.push(`${label} requiere que ${field} sea un número entero.`);
       }
     }
 
     if (exercise.exerciseType === 'strength') {
       if (exercise.plannedDurationSeconds !== null || exercise.plannedDistance !== null) {
-        errors.push(`${label} is a strength exercise and cannot use cardio targets.`);
+        errors.push(`${label} es un ejercicio de fuerza y no puede usar objetivos de cardio.`);
       }
 
       if (
@@ -224,7 +224,7 @@ export function validateRoutineInput(input: CreateRoutineInput): string[] {
         exercise.plannedWeight === null &&
         exercise.restSeconds === null
       ) {
-        errors.push(`${label} needs at least one valid strength target.`);
+        errors.push(`${label} necesita al menos un objetivo de fuerza válido.`);
       }
     }
 
@@ -240,11 +240,11 @@ export function validateRoutineInput(input: CreateRoutineInput): string[] {
         exercise.plannedWeight !== null ||
         exercise.restSeconds !== null
       ) {
-        errors.push(`${label} is a cardio exercise and cannot use strength targets.`);
+        errors.push(`${label} es un ejercicio de cardio y no puede usar objetivos de fuerza.`);
       }
 
       if ((plannedDuration === null || !canUseDuration) && (plannedDistance === null || !canUseDistance)) {
-        errors.push(`${label} needs at least one valid cardio target.`);
+        errors.push(`${label} necesita al menos un objetivo de cardio válido.`);
       }
     }
   });

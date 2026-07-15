@@ -1,0 +1,54 @@
+:host {
+    display: block;
+}
+
+.summary {
+    margin-bottom: var(--space-4);
+}
+
+.summary h2,
+.result h3 {
+    margin: 0.45rem 0;
+}
+
+.results {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.result {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.result p {
+    color: var(--ink-secondary);
+}
+
+.result.skipped {
+    border-color: var(--border-strong);
+    background: var(--fill-soft);
+}
+
+dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+dl div {
+    background: var(--fill-soft);
+    border-radius: 0.8rem;
+    padding: 0.75rem;
+}
+
+dt {
+    font-size: 0.8rem;
+}
+
+dd {
+    margin: 0.25rem 0 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}

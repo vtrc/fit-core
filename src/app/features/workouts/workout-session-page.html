@@ -1,4 +1,4 @@
-<main class="page">
+<main >
   <header class="hero">
     <div>
       <p class="eyebrow">ENTRENAMIENTO EN CURSO</p>
@@ -108,7 +108,6 @@
 
           <div class="timer-controls">
             @if (timer.remaining === 0) {
-              <p class="timer-done">¡Tiempo!</p>
               <button type="button" class="primary" (click)="resetTimer()">Reiniciar</button>
               <button type="button" (click)="closeTimer()">Cerrar</button>
             } @else {

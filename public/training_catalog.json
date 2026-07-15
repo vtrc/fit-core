@@ -1,0 +1,181 @@
+{
+  "fuerza": {
+    "maquinas": [
+      {
+        "nombre": "Leg Press",
+        "musculos": ["cuádriceps", "glúteos", "isquiotibiales"],
+        "ejercicios": ["prensa de piernas"]
+      },
+      {
+        "nombre": "Leg Curl",
+        "musculos": ["isquiotibiales"],
+        "ejercicios": ["curl femoral"]
+      },
+      {
+        "nombre": "Leg Extension",
+        "musculos": ["cuádriceps"],
+        "ejercicios": ["extensión de piernas"]
+      },
+      {
+        "nombre": "Glute Master",
+        "musculos": ["glúteos"],
+        "ejercicios": ["extensión de cadera"]
+      },
+      {
+        "nombre": "Inner Thigh",
+        "musculos": ["aductores"],
+        "ejercicios": ["aducción de cadera"]
+      },
+      {
+        "nombre": "Outer Thigh",
+        "musculos": ["abductores", "glúteo medio"],
+        "ejercicios": ["abducción de cadera"]
+      },
+      {
+        "nombre": "Standing Calf Raise",
+        "musculos": ["gemelos"],
+        "ejercicios": ["elevación de talones de pie"]
+      },
+      {
+        "nombre": "Chest Press",
+        "musculos": ["pecho", "tríceps", "hombros"],
+        "ejercicios": ["press de pecho"]
+      },
+      {
+        "nombre": "Pec Fly",
+        "musculos": ["pecho"],
+        "ejercicios": ["aperturas de pecho"]
+      },
+      {
+        "nombre": "Shoulder Press",
+        "musculos": ["hombros", "tríceps"],
+        "ejercicios": ["press de hombros"]
+      },
+      {
+        "nombre": "Lat Pulldown",
+        "musculos": ["espalda", "bíceps"],
+        "ejercicios": ["jalón al pecho"]
+      },
+      {
+        "nombre": "Mid Row",
+        "musculos": ["espalda", "bíceps"],
+        "ejercicios": ["remo sentado"]
+      },
+      {
+        "nombre": "Chin/Dip Assist",
+        "musculos": ["espalda", "bíceps", "pecho", "tríceps"],
+        "ejercicios": ["dominadas asistidas", "fondos asistidos"]
+      },
+      {
+        "nombre": "Bíceps Curl",
+        "musculos": ["bíceps"],
+        "ejercicios": ["curl de bíceps"]
+      },
+      {
+        "nombre": "Seated Dip",
+        "musculos": ["tríceps", "pecho"],
+        "ejercicios": ["fondos de tríceps sentado"]
+      },
+      {
+        "nombre": "Abdominales",
+        "musculos": ["abdomen"],
+        "ejercicios": ["encogimientos abdominales"]
+      },
+      {
+        "nombre": "Low Back",
+        "musculos": ["lumbares", "erectores espinales"],
+        "ejercicios": ["extensiones lumbares"]
+      }
+    ],
+    "peso_libre": [
+      {
+        "equipamiento": "Mancuernas",
+        "musculos": ["cuerpo completo"],
+        "ejercicios": ["press", "remo", "sentadillas", "zancadas", "curl"]
+      },
+      {
+        "equipamiento": "Máquina Smith",
+        "musculos": ["cuerpo completo"],
+        "ejercicios": ["sentadilla", "press de banca", "press de hombros"]
+      },
+      {
+        "equipamiento": "Polea alta y baja / crossover",
+        "musculos": ["pecho", "espalda", "hombros", "brazos"],
+        "ejercicios": ["cruce de poleas", "remo", "jalón", "extensión de tríceps"]
+      },
+      {
+        "equipamiento": "Banco Scott",
+        "musculos": ["bíceps"],
+        "ejercicios": ["curl predicador"]
+      },
+      {
+        "equipamiento": "Banco romano",
+        "musculos": ["lumbares", "glúteos", "isquiotibiales"],
+        "ejercicios": ["hiperextensiones"]
+      },
+      {
+        "equipamiento": "Balones medicinales",
+        "musculos": ["cuerpo completo", "abdomen"],
+        "ejercicios": ["lanzamientos", "giros", "trabajo funcional"]
+      },
+      {
+        "equipamiento": "Discos olímpicos",
+        "musculos": ["cuerpo completo"],
+        "ejercicios": ["cargadas", "peso muerto", "sentadillas"]
+      }
+    ]
+  },
+  "cardio": [
+    {
+      "equipamiento": "Cinta de correr",
+      "objetivo": ["resistencia cardiovascular", "gasto calórico"]
+    },
+    {
+      "equipamiento": "Elíptica",
+      "objetivo": ["cardio de bajo impacto", "gasto calórico"]
+    },
+    {
+      "equipamiento": "Bicicleta de spinning",
+      "objetivo": ["resistencia cardiovascular", "piernas"]
+    },
+    {
+      "equipamiento": "Bicicleta reclinada",
+      "objetivo": ["cardio de bajo impacto", "piernas"]
+    }
+  ],
+  "zona_funcional": [
+    {
+      "equipamiento": "Monkey bars",
+      "musculos": ["espalda", "brazos", "hombros", "abdomen"]
+    },
+    {
+      "equipamiento": "TRX",
+      "musculos": ["cuerpo completo", "abdomen"]
+    },
+    {
+      "equipamiento": "Caja pliométrica",
+      "musculos": ["piernas", "glúteos"],
+      "ejercicios": ["subidas al cajón", "saltos"]
+    },
+    {
+      "equipamiento": "Saco de boxeo",
+      "musculos": ["cuerpo completo", "hombros", "brazos", "abdomen"],
+      "objetivo": ["cardio", "coordinación"]
+    }
+  ],
+  "grupos_musculares_disponibles": [
+    "pecho",
+    "espalda",
+    "hombros",
+    "bíceps",
+    "tríceps",
+    "abdomen",
+    "lumbares",
+    "glúteos",
+    "cuádriceps",
+    "isquiotibiales",
+    "aductores",
+    "abductores",
+    "gemelos"
+  ]
+}
