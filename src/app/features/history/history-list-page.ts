@@ -3,11 +3,12 @@ import { form, FormField } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 
 import { HistoryService, type DateRange, type WorkoutHistoryItem } from './history.service';
+import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
 
 @Component({
   selector: 'app-history-list-page',
   standalone: true,
-  imports: [FormField, RouterLink],
+  imports: [FormField, RouterLink, EmptyStateComponent],
   templateUrl: './history-list-page.html',
   styleUrl: './history-list-page.scss',
 })
