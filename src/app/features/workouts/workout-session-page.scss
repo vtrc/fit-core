@@ -361,7 +361,7 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 
-@media (max-width: 640px) {
+@media (min-width: 480px) {
   .exercise-metrics {
     grid-template-columns: repeat(4, 1fr);
   }
