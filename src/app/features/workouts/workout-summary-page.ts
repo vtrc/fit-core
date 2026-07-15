@@ -33,13 +33,9 @@ import { EntrenamientosService, type WorkoutSummaryModel } from './workouts.serv
           <a class="primary" routerLink="/workouts/start">Iniciar entrenamiento</a>
         </section>
       } @else {
-        @if (saveError(); as errorMessage) {
-          <p class="banner error" role="alert">{{ errorMessage }}</p>
-        }
-
-        @if (savedWorkoutId(); as workoutId) {
-          <p class="banner success">Entrenamiento guardado. ID: {{ workoutId }}</p>
-        }
+          @if (saveError(); as errorMessage) {
+           <p class="banner error" role="alert">{{ errorMessage }}</p>
+         }
 
         <section class="layout">
           <aside class="card summary-card">
@@ -62,67 +58,10 @@ import { EntrenamientosService, type WorkoutSummaryModel } from './workouts.serv
               <p class="banner error">Completa al menos un ejercicio antes de guardar.</p>
             }
 
-            <button type="button" class="primary save" (click)="save()" [disabled]="completedCount() === 0 || saving() || !!savedWorkoutId()">
-              {{ saving() ? 'Guardando…' : savedWorkoutId() ? 'Guardado' : 'Guardar entrenamiento' }}
+            <button type="button" class="primary save" (click)="save()" [disabled]="completedCount() === 0 || saving()">
+              {{ saving() ? 'Guardando…' : 'Guardar entrenamiento' }}
             </button>
           </aside>
-
-          <section class="results">
-            <h2>Resultados completados</h2>
-            @for (item of completedExercises(); track item.sessionExerciseId) {
-              <article class="card result-card">
-                <div>
-                  <p class="eyebrow">{{ item.exercise.type === 'strength' ? 'Fuerza' : 'Cardio' }}</p>
-                  <h3>{{ item.exercise.name }}</h3>
-                  <p>{{ item.exercise.equipment || 'Equipamiento general' }}</p>
-                </div>
-
-                @if (item.result?.kind === 'strength') {
-                  <div class="metrics">
-                    <span>Series <strong>{{ item.result.setsCompleted }}</strong></span>
-                    <span>Reps <strong>{{ item.result.repetitionsTotal }}</strong></span>
-                    <span>Peso <strong>{{ item.result.weight }}</strong></span>
-                  </div>
-                  @if (item.result.notes) {
-                    <p class="notes">{{ item.result.notes }}</p>
-                  }
-                }
-
-                @if (item.result?.kind === 'cardio') {
-                  <div class="metrics">
-                     <span>Duración <strong>{{ item.result.durationSeconds }} seg</strong></span>
-                    <span>Distancia <strong>{{ item.result.distance }}</strong></span>
-                    @if (item.result.speed !== null && item.result.speed !== undefined) { <span>Velocidad <strong>{{ item.result.speed }}</strong></span> }
-                    @if (item.result.incline !== null && item.result.incline !== undefined) { <span>Inclinación <strong>{{ item.result.incline }}</strong></span> }
-                    @if (item.result.calories !== null && item.result.calories !== undefined) { <span>Calorías <strong>{{ item.result.calories }}</strong></span> }
-                    @if (item.result.resistance !== null && item.result.resistance !== undefined) { <span>Resistencia <strong>{{ item.result.resistance }}</strong></span> }
-                  </div>
-                  @if (item.result.notes) {
-                    <p class="notes">{{ item.result.notes }}</p>
-                  }
-                }
-              </article>
-            } @empty {
-              <article class="card state">
-                <h2>Todavía no hay resultados completados.</h2>
-                <p>Vuelve a la sesión y registra al menos un resultado de ejercicio.</p>
-                @if (saving()) {
-                  <button type="button" class="primary" disabled>Volver a la sesión</button>
-                } @else {
-                  <a class="primary" routerLink="/workouts/session">Volver a la sesión</a>
-                }
-              </article>
-            }
-
-            @if (skippedExercises().length > 0) {
-              <h2>Ejercicios omitidos</h2>
-              @for (item of skippedExercises(); track item.sessionExerciseId) {
-                <article class="card skipped-card">
-                  <p>{{ item.exercise.name }}</p>
-                </article>
-              }
-            }
-          </section>
         </section>
       }
     </main>
@@ -138,21 +77,12 @@ import { EntrenamientosService, type WorkoutSummaryModel } from './workouts.serv
     .card, .banner { border: 1px solid #ded6c7; border-radius: 1.25rem; background: #fffdf8; padding: 1.2rem; }
     .banner { margin: 0 0 1rem; }
     .error { color: #9d2f2f; }
-    .success { background: #e7f4ec; color: #1d5b3d; }
-    .layout { align-items: start; flex-wrap: wrap; }
-    .summary-card { flex: 0 0 min(24rem, 100%); display: grid; gap: 1rem; }
-    .results { flex: 1 1 34rem; display: grid; gap: 1rem; }
-    .results h2 { margin: .5rem 0 0; }
+    .layout { display: block; }
+    .summary-card { max-width: 40rem; display: grid; gap: 1rem; }
     .summary-row { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #ece4d8; padding-bottom: .75rem; }
     .field { display: grid; gap: .35rem; }
     .field span { font-weight: 700; }
     textarea { width: 100%; border: 1px solid #c8bca7; border-radius: .75rem; padding: .8rem .9rem; font: inherit; background: #fff; }
-    .result-card { display: grid; gap: 1rem; }
-    .result-card h3 { margin: .35rem 0; }
-    .metrics { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
-    .metrics span { border-radius: 1rem; background: #f7f1e6; padding: .85rem; }
-    .metrics strong { display: block; margin-top: .25rem; }
-    .skipped-card { background: #fff8f1; }
     .state { display: grid; gap: .75rem; justify-items: start; }
     a, button { border: 0; border-radius: .75rem; padding: .8rem 1rem; font: inherit; text-decoration: none; cursor: pointer; background: #e8dfd0; color: #1f3028; }
     .primary { background: #1f3028; color: #fff; }
@@ -167,28 +97,18 @@ export class WorkoutSummaryPage {
   protected readonly session = this.workoutsService.session;
   protected readonly saving = this.workoutsService.saving;
   protected readonly saveError = signal<string | null>(null);
-  protected readonly completedExercises = computed(() => this.session()?.exercises.filter((exercise) => exercise.result !== null) ?? []);
-  protected readonly skippedExercises = computed(() => this.session()?.exercises.filter((exercise) => exercise.skipped && exercise.result === null) ?? []);
-  protected readonly completedCount = computed(() => this.completedExercises().length);
-  protected readonly skippedCount = computed(() => this.skippedExercises().length);
-  protected readonly savedWorkoutId = computed(() => this.session()?.savedWorkout?.id ?? null);
-  private readonly savedSummary = signal<WorkoutSummaryModel | null>(null);
-  protected readonly summary = computed(() => this.savedSummary() ?? this.createDraftSummary());
+  protected readonly completedCount = computed(() => this.session()?.exercises.filter((e) => e.result !== null).length ?? 0);
+  protected readonly skippedCount = computed(() => this.session()?.exercises.filter((e) => e.skipped && e.result === null).length ?? 0);
+  protected readonly summary = computed(() => this.createDraftSummary());
 
   protected readonly notesModel = signal({ notes: '' });
   protected readonly notesForm = form(this.notesModel, (p) => {
     debounce(p.notes, 300);
   });
-  private summarySessionId: string | null = null;
 
   constructor() {
     effect(() => {
       const session = this.session();
-      if (session?.id !== this.summarySessionId) {
-        this.summarySessionId = session?.id ?? null;
-        this.savedSummary.set(null);
-      }
-
       if (session) {
         if (this.notesModel().notes !== session.notes) {
           this.notesModel.set({ notes: session.notes });
@@ -205,15 +125,15 @@ export class WorkoutSummaryPage {
   }
 
   protected save(): void {
-    if (this.completedCount() === 0 || this.saving() || this.savedWorkoutId()) {
+    if (this.completedCount() === 0 || this.saving()) {
       return;
     }
 
     this.saveError.set(null);
     this.workoutsService.saveSession().subscribe({
-      next: ({ summary }) => {
-        this.savedSummary.set(summary);
+      next: () => {
         this.saveError.set(null);
+        this.router.navigate(['/history']);
       },
       error: (error: unknown) => {
         this.saveError.set(this.toMessage(error, 'Error al guardar. No se confirmó que el entrenamiento se haya guardado.'));

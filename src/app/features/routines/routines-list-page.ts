@@ -51,8 +51,9 @@ import { RoutinesService } from './routines.service';
                  }
                </div>
                <div class="routine-actions">
-                 <a class="primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
-              </div>
+                  <a class="primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
+                  <button type="button" class="danger" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">Borrar Rutina</button>
+               </div>
             </article>
           }
         </section>
@@ -81,7 +82,7 @@ import { RoutinesService } from './routines.service';
      .routine-copy h2 { margin: .5rem 0; }
      .routine-copy p:last-child { display: -webkit-box; overflow: hidden; margin-bottom: 0; color: #435248; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
      .routine-actions { width: 100%; }
-     .routine-actions a { flex: 1; text-align: center; }
+     .routine-actions a, .routine-actions button { flex: 1; text-align: center; }
      .error { margin: 0; color: #9d2f2f; }
      @media (max-width: 700px) {
        .page { padding: 1rem .75rem 2rem; }
@@ -94,7 +95,7 @@ import { RoutinesService } from './routines.service';
        .routine-card { min-height: 0; gap: 1rem; }
        .routine-copy h2 { font-size: 1.15rem; }
        .routine-actions { gap: .5rem; }
-       .routine-actions a { min-height: 3rem; display: grid; place-items: center; padding: .65rem .5rem; }
+        .routine-actions a, .routine-actions button { flex: 1; min-height: 3rem; display: grid; place-items: center; padding: .65rem .5rem; box-sizing: border-box; }
      }
   `,
 })
@@ -106,6 +107,7 @@ export class RoutinesListPage {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly routines = signal<Routine[]>([]);
+  protected readonly deletingId = signal<string | null>(null);
   protected readonly flashMessage = computed(() => {
     const deleted = this.route.snapshot.queryParamMap.get('deleted');
     if (deleted === '1') {
@@ -140,6 +142,23 @@ export class RoutinesListPage {
 
   protected formatDate(value: string): string {
     return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value));
+  }
+
+  protected deleteRoutine(id: string): void {
+    if (this.deletingId()) return;
+    if (!confirm('¿Eliminar esta rutina?')) return;
+
+    this.deletingId.set(id);
+    this.routinesService.delete(id).subscribe({
+      next: () => {
+        this.routines.update((list) => list.filter((r) => r.id !== id));
+        this.deletingId.set(null);
+      },
+      error: (error: unknown) => {
+        this.error.set(this.toMessage(error, 'No se pudo eliminar la rutina.'));
+        this.deletingId.set(null);
+      },
+    });
   }
 
   private toMessage(error: unknown, fallback: string): string {

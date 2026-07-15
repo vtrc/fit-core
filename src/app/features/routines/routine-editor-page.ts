@@ -213,22 +213,24 @@ type NumericField =
     .section-heading h2, h3 { margin: 0; }
     .field { display: grid; gap: .35rem; margin-bottom: 1rem; }
     .field span { font-weight: 700; }
-    input, textarea, select { box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; border: 1px solid #c8bca7; border-radius: .75rem; padding: .8rem .9rem; font: inherit; background: #fff; }
+    input, textarea, select { width: 100%; border: 1px solid #c8bca7; border-radius: .75rem; padding: .8rem .9rem; font: inherit; background: #fff; }
     .selected { margin-top: 1.5rem; }
     .exercise-list { display: grid; gap: .85rem; }
     .exercise-card { border: 1px solid #ece4d8; border-radius: 1rem; padding: 1rem; background: #fff; }
     .exercise-header { justify-content: space-between; align-items: start; min-width: 0; }
     .exercise-header > div:first-child { min-width: 0; }
     .exercise-header h3, .exercise-header p { overflow-wrap: anywhere; }
-    .stack { display: grid; gap: .5rem; flex: 0 0 auto; }
+    .stack { display: grid; gap: .5rem; grid-auto-flow: column; }
     .actions { align-items: start; }
     .rest-group { display: flex; gap: .35rem; align-items: center; }
     .rest-group select, .rest-group input { width: 5.5rem; }
     .rest-unit { color: #617064; font-size: .82rem; }
-    .icon-button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; font-size: 1.25rem; line-height: 1; }
+    .icon-button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; font-size: 1.25rem; line-height: 1; border-radius: .75rem; }
     .icon-button:disabled { opacity: .35; cursor: not-allowed; }
     .metrics { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); margin: 1rem 0; }
 
+    button { border: 0; border-radius: .75rem; padding: .8rem 1rem; font: inherit; cursor: pointer; background: #e8dfd0; color: #1f3028; }
+    .form-actions button { width: 100%; margin-top: 1rem; }
     .primary { background: #1f3028; color: #fff; }
     .danger { background: #f7d9d5; color: #8d2d2d; }
     .banner { border-radius: 1rem; padding: .9rem 1rem; margin: 0 0 1rem; }
@@ -236,26 +238,6 @@ type NumericField =
     .banner.error { background: #fce9e6; }
     .banner ul { margin: .5rem 0 0; padding-left: 1.2rem; }
     .state { border: 1px dashed #d7ccb7; border-radius: 1rem; padding: 1rem; background: #fbf7f0; }
-    @media (max-width: 700px) {
-      .page { padding: 1rem .75rem 2rem; }
-      .hero { align-items: start; gap: .9rem; margin-bottom: 1rem; }
-      .hero h1 { font-size: clamp(2rem, 11vw, 3rem); }
-
-      .layout { display: block; }
-      .editor { padding: .9rem; margin-bottom: 1rem; }
-      .section-heading { flex-wrap: wrap; }
-      .section-heading h2 { font-size: 1.2rem; }
-      .exercise-card { padding: .75rem; }
-      .exercise-header { display: grid; gap: .75rem; grid-auto-flow: column;}
-      .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
-      .actions { display: flex; justify-content: flex-end; }
-      .actions button { flex: 0 0 2.75rem; }
-      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
-      .metrics .field { min-width: 0; margin-bottom: .5rem; }
-      .metrics input, .metrics select { padding: .7rem .65rem; }
-      .form-actions { display: block; }
-      .form-actions button { width: 100%; }
-    }
   `,
 })
 export class RoutineEditarorPage {
@@ -417,9 +399,9 @@ export class RoutineEditarorPage {
       : this.routinesService.create(input);
 
     request$.subscribe({
-      next: async (routine) => {
+      next: async () => {
         this.saving.set(false);
-        await this.router.navigate(['/routines', routine.id], {
+        await this.router.navigate(['/routines'], {
           queryParams: this.isEditMode() ? { saved: 1 } : { created: 1, saved: 1 },
         });
       },
