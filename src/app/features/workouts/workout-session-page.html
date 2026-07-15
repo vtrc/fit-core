@@ -1,0 +1,128 @@
+<main class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">ENTRENAMIENTO EN CURSO</p>
+      <h1>{{ session()?.routineName || 'Entrenamiento libre' }}</h1>
+      <p class="lede">Marca los ejercicios según los completes.</p>
+    </div>
+    <div class="hero-actions">
+      @if (saving()) {
+        <button type="button" disabled>Empezar de nuevo</button>
+      } @else {
+        <a routerLink="/workouts/start">Empezar de nuevo</a>
+      }
+      <button type="button" class="primary" (click)="finish()" [disabled]="completedCount() === 0">Finalizar Entrenamiento</button>
+    </div>
+  </header>
+
+  @if (!session()) {
+    <section class="card state">
+      <h2>No hay ningún entrenamiento activo.</h2>
+      <p>Primero inicia un entrenamiento basado en una rutina o un entrenamiento libre.</p>
+      <a class="primary" routerLink="/workouts/start">Iniciar entrenamiento</a>
+    </section>
+  } @else {
+    <section class="card progress-card" aria-labelledby="progress-heading">
+      <div class="progress-heading">
+        <h2 id="progress-heading">Progreso del entrenamiento</h2>
+        <strong>{{ completedCount() }} de {{ plannedCount() }} ejercicios completados</strong>
+      </div>
+      <progress [value]="completedCount()" [max]="plannedCount() || 1" aria-label="Progreso de ejercicios completados"></progress>
+    </section>
+
+    <section class="stats">
+      <article class="card stat"><span>Planificados</span><strong>{{ plannedCount() }}</strong></article>
+      <article class="card stat"><span>Completados</span><strong>{{ completedCount() }}</strong></article>
+      <article class="card stat"><span>Pendientes</span><strong>{{ remainingCount() }}</strong></article>
+    </section>
+
+    <section class="exercise-list">
+      @if (session()!.exercises.length === 0) {
+        <article class="card state">
+          <h2>No hay ejercicios en este entrenamiento.</h2>
+          <p>Los entrenamientos libres empiezan vacíos. Vuelve a empezar con una rutina o añade ejercicios desde el inicio.</p>
+          <a class="primary" routerLink="/workouts/start">Volver al inicio</a>
+        </article>
+      }
+
+      @for (item of session()!.exercises; track item.sessionExerciseId) {
+        <article
+          class="card exercise-card"
+          [class.completed]="item.result !== null"
+          role="option"
+          aria-selected="item.result !== null"
+        >
+          <label class="check-wrap">
+            <input
+              type="checkbox"
+              class="check-input"
+              [checked]="item.result !== null"
+              (change)="toggleComplete(item)"
+              [attr.aria-label]="'Marcar ' + item.exercise.name + ' como ' + (item.result !== null ? 'pendiente' : 'completado')"
+            />
+            <span class="check-visual" aria-hidden="true">{{ item.result !== null ? '✓' : '' }}</span>
+          </label>
+
+          <div class="card-body">
+            <div class="card-head">
+              <p class="eyebrow">{{ exerciseTypeLabel(item.exercise.type) }}</p>
+              <h3>{{ item.exercise.name }}</h3>
+              <p class="equip">{{ item.exercise.equipment || 'Equipamiento general' }}</p>
+            </div>
+
+            @if (item.exercise.type === 'strength') {
+              <div class="targets">
+                <span class="tag">Series <strong>{{ displayMetric(item.plannedSets) }}</strong></span>
+                <span class="tag">Repeticiones <strong>{{ displayMetric(item.plannedRepetitions) }}</strong></span>
+                <span class="tag">Peso <strong>{{ displayMetric(item.plannedWeight) }} kg</strong></span>
+                <span class="tag">Descanso <strong>{{ formatRest(item.restSeconds) }}</strong></span>
+              </div>
+            } @else {
+              <div class="targets">
+                <span class="tag">Duración <strong>{{ displayMetric(item.plannedDurationSeconds) }} seg</strong></span>
+                <span class="tag">Distancia <strong>{{ displayMetric(item.plannedDistance) }}</strong></span>
+              </div>
+            }
+
+            @if (item.notes) {
+              <p class="notes">{{ item.notes }}</p>
+            }
+          </div>
+
+          @if (item.restSeconds !== null && item.restSeconds > 0) {
+            <button type="button" class="timer-btn" (click)="openTimer(item)" aria-label="Abrir temporizador de descanso" title="Temporizador">⏱</button>
+          }
+        </article>
+      }
+    </section>
+
+    @if (timerState(); as timer) {
+      <div class="timer-overlay" (click)="closeTimer()">
+        <div class="timer-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Temporizador de descanso">
+          <div class="timer-head">
+            <h2>{{ timer.exerciseName }}</h2>
+            <button type="button" class="timer-close" (click)="closeTimer()" aria-label="Cerrar temporizador">×</button>
+          </div>
+
+          <div class="timer-display" [class.timer-expired]="timer.remaining === 0">{{ formatTimer(timer.remaining) }}</div>
+
+          <div class="timer-controls">
+            @if (timer.remaining === 0) {
+              <p class="timer-done">¡Tiempo!</p>
+              <button type="button" class="primary" (click)="resetTimer()">Reiniciar</button>
+              <button type="button" (click)="closeTimer()">Cerrar</button>
+            } @else {
+              @if (timer.running) {
+                <button type="button" class="primary" (click)="pauseTimer()">Pausa</button>
+              } @else {
+                <button type="button" class="primary" (click)="startTimer()">Iniciar</button>
+              }
+              <button type="button" (click)="resetTimer()">Reiniciar</button>
+              <button type="button" (click)="closeTimer()">Cerrar</button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+</main>

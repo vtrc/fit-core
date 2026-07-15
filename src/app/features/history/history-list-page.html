@@ -1,0 +1,31 @@
+<main class="page">
+  <header class="hero">
+    <div><p class="eyebrow">HISTORIAL</p><h1>Tus entrenamientos completados.</h1><p class="lede">Revisa tus sesiones registradas por fecha.</p></div>
+    <div class="actions"><a routerLink="/dashboard">Volver al panel</a><a routerLink="/statistics">Ver estadísticas</a></div>
+  </header>
+
+  <form class="card filters" (submit)="onSubmit($event)" aria-label="Filtrar historial de entrenamientos">
+    <label><span>Desde</span><input type="date" [formField]="dateRangeForm.from" /></label>
+    <label><span>Hasta</span><input type="date" [formField]="dateRangeForm.to" /></label>
+    <button type="submit" [disabled]="loading()">Aplicar fechas</button>
+    <button type="button" (click)="clearDates()" [disabled]="loading()">Limpiar</button>
+  </form>
+
+  @if (error(); as message) {
+    <p class="banner error" role="alert">{{ message }}</p>
+  }
+  @if (loading()) {
+    <section class="card state" aria-live="polite"><p>Cargando el historial de entrenamientos…</p></section>
+  } @else if (workouts().length === 0) {
+    <section class="card state"><h2>No se encontraron entrenamientos.</h2><p>Completa un entrenamiento para verlo en tu historial.</p><a class="primary" routerLink="/workouts/start">Iniciar entrenamiento</a></section>
+  } @else {
+    <section class="grid" aria-label="Historial de entrenamientos">
+      @for (workout of workouts(); track workout.id) {
+        <article class="card workout-card">
+          <div><p class="eyebrow">{{ formatDate(workout.performedOn) }}</p><h2>{{ workout.routineName }}</h2><p>{{ workout.notes || 'Sin notas del entrenamiento.' }}</p><dl><div><dt>Total</dt><dd>{{ workout.plannedCount }}</dd></div><div><dt>Completados</dt><dd>{{ workout.completedCount }}</dd></div><div><dt>Omitidos</dt><dd>{{ workout.skippedCount }}</dd></div><div><dt>Completitud</dt><dd>{{ workout.completionPercentage }}%</dd></div></dl></div>
+          <a [routerLink]="['/history', workout.id]" [attr.aria-label]="'Ver entrenamiento del ' + formatDate(workout.performedOn)">Ver detalles</a>
+        </article>
+      }
+    </section>
+  }
+</main>

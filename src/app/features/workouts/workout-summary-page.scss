@@ -1,0 +1,21 @@
+:host { display: block; min-height: 100vh; background: var(--parchment); }
+.page { min-height: 100vh; padding: var(--space-8) clamp(var(--space-4), 4vw, var(--space-10)) var(--space-12); }
+.hero, .hero-actions, .layout { display: flex; gap: var(--space-4); }
+.hero { justify-content: space-between; align-items: end; flex-wrap: wrap; margin-bottom: var(--space-6); }
+.hero h1 { margin: .6rem 0; font-size: clamp(2.4rem, 7vw, 4.6rem); line-height: .95; text-wrap: balance; }
+.lede, .notes { color: var(--ink-secondary); }
+.eyebrow { margin: 0; color: var(--rust); font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
+.card, .banner { box-shadow: var(--elevation-card); border-radius: var(--radius-lg); background: var(--paper); padding: var(--space-5); }
+.banner { margin: 0 0 var(--space-4); }
+.error { color: var(--danger); }
+.layout { display: block; }
+.summary-card { max-width: 40rem; display: grid; gap: var(--space-4); }
+.summary-row { display: flex; justify-content: space-between; gap: var(--space-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-3); }
+.field { display: grid; gap: .35rem; }
+.field span { font-weight: 700; }
+textarea { width: 100%; border: 1px solid var(--border-input); border-radius: var(--radius-md); padding: .8rem .9rem; font: inherit; background: var(--paper); }
+.state { display: grid; gap: var(--space-3); justify-items: start; }
+a, button { border: 0; border-radius: var(--radius-md); padding: .8rem var(--space-4); font: inherit; text-decoration: none; cursor: pointer; background: var(--fill-hover); }
+.primary { background: var(--ink); color: var(--paper); }
+.save { width: 100%; }
+button:disabled { opacity: .65; cursor: not-allowed; }

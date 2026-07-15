@@ -1,0 +1,50 @@
+<main class="page">
+  <header class="hero">
+    <div>
+       <p class="eyebrow">RUTINAS</p>
+       <h1>Tus rutinas.</h1>
+      <p class="lede">Crea, revisa y mejora sesiones reutilizables antes de entrenar.</p>
+    </div>
+    <div class="hero-actions">
+       <a routerLink="/dashboard">Volver al panel</a>
+      <a class="primary" routerLink="/routines/new">Crear rutina</a>
+    </div>
+  </header>
+
+  @if (flashMessage(); as message) {
+    <p class="banner success">{{ message }}</p>
+  }
+
+  @if (loading()) {
+    <section class="card state"><p>Cargando rutinas…</p></section>
+  } @else if (error(); as errorMessage) {
+    <section class="card state">
+      <p class="error">{{ errorMessage }}</p>
+      <button type="button" (click)="load()">Reintentar</button>
+    </section>
+  } @else if (routines().length === 0) {
+    <section class="card state">
+       <h2>Aún no tienes rutinas.</h2>
+      <p>Empieza con un plan guardado para que tus próximos entrenamientos tengan estructura.</p>
+      <a class="primary" routerLink="/routines/new">Crea tu primera rutina</a>
+    </section>
+  } @else {
+    <section class="grid">
+      @for (routine of routines(); track routine.id) {
+        <article class="card routine-card">
+          <div class="routine-copy">
+             <p class="eyebrow">Actualizada {{ formatDate(routine.updatedAt) }}</p>
+             <h2>{{ routine.name }}</h2>
+             @if (routine.description) {
+              <p>{{ routine.description }}</p>
+             }
+           </div>
+           <div class="routine-actions">
+              <a class="primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
+              <button type="button" class="danger" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">Borrar Rutina</button>
+           </div>
+        </article>
+      }
+    </section>
+  }
+</main>

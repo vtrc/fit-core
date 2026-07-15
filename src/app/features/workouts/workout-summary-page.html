@@ -1,0 +1,56 @@
+<main class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">RESUMEN DEL ENTRENAMIENTO</p>
+      <h1>Revisa antes de guardar.</h1>
+      <p class="lede">Solo se guardan los resultados de ejercicios completados. Los ejercicios omitidos o eliminados quedan fuera del entrenamiento guardado.</p>
+    </div>
+    <div class="hero-actions">
+      @if (saving()) {
+        <button type="button" disabled>Volver a la sesión</button>
+      } @else {
+        <a routerLink="/workouts/session">Volver a la sesión</a>
+      }
+      <button type="button" (click)="discard()" [disabled]="saving()">Descartar</button>
+    </div>
+  </header>
+
+  @if (!session()) {
+    <section class="card state">
+      <h2>No hay ningún entrenamiento activo.</h2>
+      <p>Inicia un entrenamiento antes de revisar el resumen.</p>
+      <a class="primary" routerLink="/workouts/start">Iniciar entrenamiento</a>
+    </section>
+  } @else {
+      @if (saveError(); as errorMessage) {
+       <p class="banner error" role="alert">{{ errorMessage }}</p>
+     }
+
+    <section class="layout">
+      <aside class="card summary-card">
+        <div class="summary-row"><span>Rutina</span><strong>{{ summary()!.routineName }}</strong></div>
+        <div class="summary-row"><span>Fecha</span><strong>{{ formatDate(summary()!.performedOn) }}</strong></div>
+        @if (summary()!.durationSeconds !== null) {
+          <div class="summary-row"><span>Duración</span><strong>{{ formatDuration(summary()!.durationSeconds!) }}</strong></div>
+        }
+        <div class="summary-row"><span>Planificados</span><strong>{{ summary()!.plannedCount }}</strong></div>
+        <div class="summary-row"><span>Completados</span><strong>{{ summary()!.completedCount }}</strong></div>
+        <div class="summary-row"><span>Omitidos</span><strong>{{ summary()!.skippedCount }}</strong></div>
+        <div class="summary-row"><span>Completitud</span><strong>{{ summary()!.completionPercentage }}%</strong></div>
+
+        <label class="field">
+          <span>Notas del entrenamiento</span>
+          <textarea rows="4" [formField]="notesForm.notes" placeholder="Notas generales opcionales."></textarea>
+        </label>
+
+        @if (completedCount() === 0) {
+          <p class="banner error">Completa al menos un ejercicio antes de guardar.</p>
+        }
+
+        <button type="button" class="primary save" (click)="save()" [disabled]="completedCount() === 0 || saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar entrenamiento' }}
+        </button>
+      </aside>
+    </section>
+  }
+</main>

@@ -1,0 +1,6 @@
+.shell { min-height: 100vh; padding-bottom: 3.5rem; background: var(--parchment); }
+.nav-footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; display: flex; border-top: 1px solid var(--border-default); background: var(--paper); padding-bottom: env(safe-area-inset-bottom); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .55rem 0 .4rem; text-decoration: none; color: var(--ink-muted); font-size: .7rem; border-radius: 0; background: transparent; transition: color .15s; }
+.nav-item.active { color: var(--ink); }
+.nav-icon { width: 1.5rem; height: 1.5rem; display: block; }
+.nav-label { font-weight: 600; }

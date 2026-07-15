@@ -1,0 +1,85 @@
+<aside class="catalog">
+  <header class="catalog-head">
+    <h2>{{ label() }}</h2>
+    <div class="head-actions">
+      <button class="btn btn-ghost" type="button" (click)="refresh()">Actualizar</button>
+      @if (filterMode() !== 'none') {
+        <button class="btn btn-ghost" type="button" (click)="toggleFilters()">
+          {{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (showFilters() && filterMode() !== 'none') {
+    <div class="filter-panel">
+      <div class="filter-row">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" [formField]="filterForm.query" placeholder="Buscar ejercicio…" class="search-input" />
+        </div>
+      </div>
+      <div class="filter-row filter-chips">
+        <div class="chip-field">
+          <select [formField]="filterForm.typeFilter" class="chip-select">
+            <option value="">Todos</option>
+            <option value="strength">Fuerza</option>
+            <option value="cardio">Cardio</option>
+          </select>
+        </div>
+        @if (filterMode() === 'full') {
+          <div class="chip-field">
+            <input type="text" [formField]="filterForm.muscleGroup" placeholder="Grupo muscular" class="chip-input" />
+          </div>
+          <div class="chip-field">
+            <input type="text" [formField]="filterForm.equipment" placeholder="Equipamiento" class="chip-input" />
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <span>Cargando catálogo…</span>
+    </div>
+  } @else if (error(); as err) {
+    <div class="error-state">
+      <p>{{ err }}</p>
+    </div>
+  } @else {
+    <div class="catalog-list">
+      @for (exercise of filtered(); track exercise.id) {
+        <article
+          class="exercise-row"
+          [class.selected]="selectedExerciseIds().has(exercise.id)"
+          (click)="add(exercise)"
+          role="option"
+          tabindex="0"
+          (keydown.enter)="add(exercise)"
+          (keydown.space)="add(exercise); $event.preventDefault()"
+          [attr.aria-selected]="selectedExerciseIds().has(exercise.id)"
+        >
+          <div class="exercise-thumb">
+            @if (exercise.imageUrl) {
+              <img [src]="exercise.imageUrl" [alt]="exercise.name" />
+            } @else {
+              <span>{{ exercise.type === 'strength' ? 'F' : 'C' }}</span>
+            }
+          </div>
+          <div class="exercise-info">
+            <span class="exercise-type">{{ exercise.type === 'strength' ? 'Fuerza' : 'Cardio' }}</span>
+            <h3>{{ exercise.name }}</h3>
+            <span class="exercise-meta">{{ exercise.equipment || 'Equipamiento general' }}</span>
+          </div>
+          <div class="card-check" aria-hidden="true">{{ selectedExerciseIds().has(exercise.id) ? '✓' : '' }}</div>
+        </article>
+      } @empty {
+        <div class="empty-state">
+          <p>Ningún ejercicio coincide con estos filtros.</p>
+        </div>
+      }
+    </div>
+  }
+</aside>

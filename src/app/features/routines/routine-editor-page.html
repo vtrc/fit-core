@@ -1,0 +1,155 @@
+<main class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">{{ isEditMode() ? 'EDIT ROUTINE' : 'NEW ROUTINE' }}</p>
+      <h1>{{ isEditMode() ? 'Refine your plan.' : 'Build a reusable routine.' }}</h1>
+      <p class="lede">Elige ejercicios del catálogo, ordénalos y define tus objetivos.</p>
+    </div>
+
+  </header>
+
+  @if (loading()) {
+    <section class="card state"><p>Cargando el editor de rutinas…</p></section>
+  } @else {
+    <div class="layout">
+      <section class="card editor">
+        @if (saveError(); as errorMessage) {
+          <p class="banner error" role="alert">{{ errorMessage }}</p>
+        }
+
+        @if (validationErrors().length > 0 && attemptedSubmit()) {
+          <div class="banner error" role="alert">
+            <p>Corrige estos problemas antes de guardar:</p>
+            <ul>
+              @for (errorMessage of validationErrors(); track errorMessage) {
+                <li>{{ errorMessage }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <label class="field">
+          <span>Nombre</span>
+          <input
+            type="text"
+            [formField]="routineForm.name"
+            placeholder="Rutina de tren superior / inferior"
+          />
+        </label>
+
+        <label class="field">
+          <span>Descripción</span>
+          <textarea
+            rows="3"
+            [formField]="routineForm.description"
+            placeholder="Notas opcionales sobre intención, tempo o enfoque."
+          ></textarea>
+        </label>
+
+        <section class="selected">
+          <div class="section-heading">
+             <h2>Ejercicios seleccionados</h2>
+             <p>{{ draft().exercises.length }} planificados</p>
+          </div>
+
+          @if (draft().exercises.length === 0) {
+            <div class="empty-inline"><p>Añade al menos un ejercicio del catálogo.</p></div>
+          } @else {
+            <div class="exercise-list">
+              @for (item of draft().exercises; track trackExercise($index, item.exercise.id)) {
+                <article class="exercise-card">
+                  <div class="exercise-header">
+                    <div>
+                      <p class="eyebrow">{{ item.exercise.type }}</p>
+                      <h3>{{ $index + 1 }}. {{ item.exercise.name }}</h3>
+                       <p>{{ item.exercise.equipment || 'Equipamiento general' }}</p>
+                    </div>
+                    <div class="stack actions">
+                       <button type="button" class="icon-button" (click)="moveExercise($index, -1)" [disabled]="$index === 0" aria-label="Subir ejercicio" title="Subir ejercicio">↑</button>
+                       <button type="button" class="icon-button" (click)="moveExercise($index, 1)" [disabled]="$index === draft().exercises.length - 1" aria-label="Bajar ejercicio" title="Bajar ejercicio">↓</button>
+                       <button type="button" class="icon-button danger" (click)="removeExercise($index)" aria-label="Eliminar ejercicio" title="Eliminar ejercicio">×</button>
+                    </div>
+                  </div>
+
+                  @if (item.exercise.type === 'strength') {
+                    <div class="metrics">
+                      <label class="field">
+                        <span>Series</span>
+                        <select [ngModel]="displayNumber(item.plannedSets)" (ngModelChange)="updateExerciseNumber($index, 'plannedSets', $event)">
+                          <option value="">—</option>
+                          @for (v of seriesOptions; track v) {
+                            <option [value]="v">{{ v }}</option>
+                          }
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Repeticiones</span>
+                        <select [ngModel]="displayNumber(item.plannedRepetitions)" (ngModelChange)="updateExerciseNumber($index, 'plannedRepetitions', $event)">
+                          <option value="">—</option>
+                          @for (v of repOptions; track v) {
+                            <option [value]="v">{{ v }}</option>
+                          }
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Peso (kg)</span>
+                        <select [ngModel]="displayNumber(item.plannedWeight)" (ngModelChange)="updateExerciseNumber($index, 'plannedWeight', $event)">
+                          <option value="">—</option>
+                          @for (v of pesoOptions; track v) {
+                            <option [value]="v">{{ v }}</option>
+                          }
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Descanso</span>
+                        <div class="rest-group">
+                          <select [ngModel]="restMinutes(item.restSeconds)" (ngModelChange)="updateRestMinutes($index, $event)">
+                            <option value="">—</option>
+                            @for (v of restMinOptions; track v) {
+                              <option [value]="v">{{ v }}</option>
+                            }
+                          </select>
+                          <span class="rest-unit">min</span>
+                          <select [ngModel]="restSecondsPart(item.restSeconds)" (ngModelChange)="updateRestSeconds($index, $event)">
+                            <option value="">—</option>
+                            @for (v of restSecOptions; track v) {
+                              <option [value]="v">{{ v.toString().padStart(2, '0') }}</option>
+                            }
+                          </select>
+                          <span class="rest-unit">seg</span>
+                        </div>
+                      </label>
+                    </div>
+                  } @else {
+                    <div class="metrics">
+                      <label class="field"><span>Duración (seg.)</span><input type="number" [ngModel]="displayNumber(item.plannedDurationSeconds)" (ngModelChange)="updateExerciseNumber($index, 'plannedDurationSeconds', $event)" /></label>
+                      <label class="field"><span>Distancia</span><input type="number" step="0.1" [ngModel]="displayNumber(item.plannedDistance)" (ngModelChange)="updateExerciseNumber($index, 'plannedDistance', $event)" /></label>
+                    </div>
+                  }
+
+                  <label class="field">
+                    <span>Notas</span>
+                    <textarea rows="2" [ngModel]="item.notes" (ngModelChange)="updateExerciseNotes($index, $event)" placeholder="Indicaciones o notas de preparación opcionales."></textarea>
+                  </label>
+                </article>
+              }
+            </div>
+          }
+        </section>
+
+        <div class="form-actions">
+          <button type="button" class="primary" (click)="save()" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : isEditMode() ? 'Guardar cambios' : 'Crear rutina' }}
+          </button>
+        </div>
+      </section>
+
+      <app-exercise-catalog
+        label="Catálogo de ejercicios"
+        filterMode="full"
+        [selectedExerciseIds]="selectedCatalogIds()"
+        (exerciseAdded)="addExercise($event)"
+      />
+    </div>
+  }
+</main>

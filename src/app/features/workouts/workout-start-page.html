@@ -1,0 +1,48 @@
+<main class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">ENTRENAMIENTOS</p>
+      <h1>Inicia tu entrenamiento.</h1>
+      <p class="lede">Elige una rutina guardada para comenzar.</p>
+    </div>
+  </header>
+
+  @if (error(); as errorMessage) {
+    <p class="banner error" role="alert">{{ errorMessage }}</p>
+  }
+
+  <section class="section-heading">
+    <div>
+      <p class="eyebrow">SAVED ROUTINES</p>
+      <h2>Iniciar desde una rutina guardada</h2>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <section class="card state"><p>Cargando rutinas…</p></section>
+  } @else if (routines().length === 0) {
+    <section class="card state">
+      <h2>No hay rutinas todavía.</h2>
+      <p>Crea una rutina para empezar a entrenar.</p>
+    </section>
+  } @else {
+    <section class="grid">
+      @for (routine of routines(); track routine.id) {
+        <article class="card routine-card">
+          <div>
+            <p class="eyebrow">UPDATED {{ formatDate(routine.updatedAt) }}</p>
+            <h3>{{ routine.name }}</h3>
+            @if (routine.description) {
+              <p>{{ routine.description }}</p>
+            }
+          </div>
+          <div class="inline-actions">
+            <button type="button" (click)="startRoutine(routine)" [disabled]="saving() || startingRoutineId() === routine.id">
+              {{ startingRoutineId() === routine.id ? 'Starting…' : 'Empezar' }}
+            </button>
+          </div>
+        </article>
+      }
+    </section>
+  }
+</main>
