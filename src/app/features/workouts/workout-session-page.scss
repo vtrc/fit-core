@@ -97,16 +97,19 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-4);
-  transition: background 0.15s;
+  padding: var(--space-5);
+  border-left: 3px solid transparent;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .exercise-card.completed {
   background: var(--success-bg);
+  border-left-color: var(--success);
 }
 
 .exercise-card:not(.completed):hover {
   background: rgba(31, 48, 40, 0.02);
+  box-shadow: var(--elevation-card);
 }
 
 /* ── Checkbox ────────────────────────────────────────────── */
