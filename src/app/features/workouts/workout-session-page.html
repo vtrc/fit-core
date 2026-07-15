@@ -96,14 +96,18 @@
                   <span class="metric-value">{{ displayMetric(item.plannedRepetitions) }}</span>
                   <span class="metric-label">Repeticiones</span>
                 </div>
+                @if (item.plannedWeight) {
                 <div class="metric">
                   <span class="metric-value">{{ displayMetric(item.plannedWeight) }}<span class="metric-unit">kg</span></span>
                   <span class="metric-label">Peso</span>
                 </div>
+                }
+                @if (item.restSeconds) {
                 <div class="metric">
                   <span class="metric-value">{{ formatRest(item.restSeconds) }}</span>
                   <span class="metric-label">Descanso</span>
                 </div>
+              }
               } @else {
                 <div class="metric">
                   <span class="metric-value">{{ displayMetric(item.plannedDurationSeconds) }}<span class="metric-unit">s</span></span>

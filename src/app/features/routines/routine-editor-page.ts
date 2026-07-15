@@ -101,7 +101,7 @@ export class RoutineEditarorPage {
 
   protected readonly seriesOptions = Array.from({ length: 20 }, (_, i) => i + 1);
   protected readonly repOptions = Array.from({ length: 50 }, (_, i) => i + 1);
-  protected readonly pesoOptions = Array.from({ length: 76 }, (_, i) => i + 45);
+  protected readonly pesoOptions = Array.from({ length: 76 }, (_, i) => i + 5);
   protected readonly restMinOptions = Array.from({ length: 35 }, (_, i) => i + 1);
   protected readonly restSecOptions = Array.from({ length: 60 }, (_, i) => i);
 
