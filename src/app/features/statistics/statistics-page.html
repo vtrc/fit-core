@@ -5,7 +5,9 @@
       <h1>Tu entrenamiento en cifras.</h1>
       <p class="lede">Todos los valores se calculan a partir de tu historial de entrenamientos.</p>
     </div>
-    <a class="btn-primary" routerLink="/history">Ver historial</a>
+    <div class="hero-actions">
+      <a class="btn-primary" routerLink="/history">Ver historial</a>
+    </div>
   </header>
 
   <form class="card filters" (submit)="onSubmit($event)" aria-label="Filtrar estadísticas por fecha">
