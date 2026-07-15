@@ -21,27 +21,29 @@
   @if (loading()) {
     <section class="card state"><p>Cargando rutinas…</p></section>
   } @else if (routines().length === 0) {
-    <section class="card state">
-      <h2>No hay rutinas todavía.</h2>
-      <p>Crea una rutina para empezar a entrenar.</p>
-    </section>
+    <app-empty-state
+      title="Aún no tienes rutinas."
+      description="Empieza con un plan guardado para que tus próximos entrenamientos tengan estructura."
+      actionText="Crea tu primera rutina"
+      actionRoute="/routines/new"
+    />
   } @else {
     <section class="grid">
       @for (routine of routines(); track routine.id) {
-        <article class="card routine-card">
-          <div>
-            <p class="eyebrow">ACTUALIZADA {{ formatDate(routine.updatedAt) }}</p>
-            <h2>{{ routine.name }}</h2>
-            @if (routine.description) {
-              <p>{{ routine.description }}</p>
-            }
-          </div>
-          <div class="inline-actions">
-            <button class="primary" type="button" (click)="startRoutine(routine)" [disabled]="saving() || startingRoutineId() === routine.id">
-              {{ startingRoutineId() === routine.id ? 'Starting…' : 'Empezar' }}
-            </button>
-          </div>
-        </article>
+        <app-routine-card
+          [eyebrow]="'Actualizada ' + formatDate(routine.updatedAt)"
+          [name]="routine.name"
+          [description]="routine.description"
+        >
+          <button
+            class="btn-primary"
+            type="button"
+            (click)="startRoutine(routine)"
+            [disabled]="saving() || startingRoutineId() === routine.id"
+          >
+            {{ startingRoutineId() === routine.id ? 'Iniciando…' : 'Empezar' }}
+          </button>
+        </app-routine-card>
       }
     </section>
   }

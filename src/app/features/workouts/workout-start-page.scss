@@ -1,53 +1,28 @@
 :host {
-    display: block;
+  display: block;
 }
 
 .hero-actions {
-    display: flex;
-    gap: var(--space-4);
-    align-items: center;
-    flex-wrap: wrap;
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .lede {
-    max-width: 48rem;
-    margin: 0;
+  max-width: 48rem;
+  margin: 0;
 }
 
 .section-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    margin-bottom: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
-.section-heading h2,
-.routine-card h3 {
-    margin: 0.35rem 0;
-}
-
-.grid {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-}
-
-.routine-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: var(--space-4);
-}
-
-.routine-card p:last-child {
-    color: var(--ink-secondary);
-}
-
-.inline-actions {
-    display: flex;
-    gap: var(--space-4);
-    align-items: center;
-    flex-wrap: wrap;
+.section-heading h2 {
+  margin: 0.35rem 0;
 }

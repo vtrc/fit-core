@@ -4,10 +4,13 @@ import { Router } from '@angular/router';
 import type { Routine } from '../../core/domain/models';
 import { RoutinesService } from '../routines/routines.service';
 import { EntrenamientosService } from './workouts.service';
+import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
+import { RoutineCardComponent } from '../../shared/routine-card/routine-card';
 
 @Component({
   selector: 'app-workout-start-page',
   standalone: true,
+  imports: [EmptyStateComponent, RoutineCardComponent],
   templateUrl: './workout-start-page.html',
   styleUrl: './workout-start-page.scss',
 })
