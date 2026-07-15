@@ -1,6 +1,5 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
-
 import type { Routine } from '../../core/domain/models';
 import { RoutinesService } from './routines.service';
 

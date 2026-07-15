@@ -18,9 +18,14 @@
     box-shadow: var(--elevation-card);
 }
 
-.login-panel h1 {
+.logo {
+    display: block;
+    max-width: 8rem;
+    margin: 0 auto var(--space-4);
+}
+
+.login-panel h2 {
     margin: var(--space-4) 0;
-    font-size: clamp(2.2rem, 7vw, 4rem);
     line-height: 0.95;
 }
 
