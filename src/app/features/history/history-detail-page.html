@@ -1,4 +1,4 @@
-<main >
+<main class="page">
   <header class="hero">
     <div>
       <p class="eyebrow">DETALLE DEL ENTRENAMIENTO</p>
@@ -18,44 +18,81 @@
     </section>
   } @else if (workout(); as item) {
     <section class="card summary">
-      <p class="eyebrow">{{ formatDate(item.performedOn) }}</p>
-      <h2>{{ item.routineName }}</h2>
-      <p>{{ item.notes || 'Sin notas del entrenamiento.' }}</p>
-      <dl>
-        <div><dt>Total</dt><dd>{{ item.plannedCount }}</dd></div>
-        <div><dt>Completados</dt><dd>{{ item.completedCount }}</dd></div>
-        <div><dt>Omitidos</dt><dd>{{ item.skippedCount }}</dd></div>
-        <div><dt>Completitud</dt><dd>{{ item.completionPercentage }}%</dd></div>
-      </dl>
+      <div class="summary-header">
+        <div>
+          <p class="eyebrow">{{ formatDate(item.performedOn) }}</p>
+          <h2>{{ item.routineName }}</h2>
+        </div>
+        <span class="completion-badge">{{ item.completionPercentage }}%</span>
+      </div>
+
+      @if (item.notes) {
+        <p class="summary-notes">{{ item.notes }}</p>
+      }
+
+      <div class="summary-stats">
+        <div class="stat">
+          <span class="stat-value">{{ item.plannedCount }}</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ item.completedCount }}</span>
+          <span class="stat-label">Completados</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ item.skippedCount }}</span>
+          <span class="stat-label">Omitidos</span>
+        </div>
+      </div>
     </section>
 
-    <section class="results" aria-label="Estado de ejercicios">
+    <section class="exercises" aria-label="Estado de ejercicios">
       <h2>Estado de ejercicios</h2>
+
       @for (exercise of item.exercises; track $index) {
-        <article class="card result" [class.skipped]="exercise.status === 'skipped'">
-          <div>
-            <p class="eyebrow">{{ exercise.status === 'completed' ? 'COMPLETADO' : 'OMITIDO' }}</p>
-            <h3>{{ exercise.exercise.name }}</h3>
-            <p>{{ exercise.exercise.type === 'strength' ? 'Fuerza' : 'Cardio' }} · {{ exercise.exercise.muscleGroups.join(', ') || 'Sin grupos musculares registrados' }}</p>
+        <article class="card exercise" [class.skipped]="exercise.status === 'skipped'">
+          <div class="exercise-header">
+            <div>
+              <span class="status-badge" [class.completed]="exercise.status === 'completed'" [class.skipped]="exercise.status === 'skipped'">
+                {{ exercise.status === 'completed' ? 'Completado' : 'Omitido' }}
+              </span>
+              <h3>{{ exercise.exercise.name }}</h3>
+              <p class="exercise-meta">{{ exercise.exercise.type === 'strength' ? 'Fuerza' : 'Cardio' }} · {{ exercise.exercise.muscleGroups.join(', ') || 'Sin grupos musculares' }}</p>
+            </div>
           </div>
+
           @if (exercise.result; as result) {
-            @if (result.kind === 'strength') {
-              <dl>
-                <div><dt>Series</dt><dd>{{ result.setsCompleted }}</dd></div>
-                <div><dt>Repeticiones</dt><dd>{{ result.repetitionsTotal }}</dd></div>
-                <div><dt>Peso</dt><dd>{{ result.weight }}</dd></div>
-              </dl>
-            } @else {
-              <dl>
-                <div><dt>Duración</dt><dd>{{ formatDuration(result.durationSeconds) }}</dd></div>
-                <div><dt>Distancia</dt><dd>{{ result.distance }}</dd></div>
-              </dl>
-            }
+            <div class="exercise-results">
+              @if (result.kind === 'strength') {
+                <div class="result-stat">
+                  <span class="result-value">{{ result.setsCompleted }}</span>
+                  <span class="result-label">Series</span>
+                </div>
+                <div class="result-stat">
+                  <span class="result-value">{{ result.repetitionsTotal }}</span>
+                  <span class="result-label">Repeticiones</span>
+                </div>
+                <div class="result-stat">
+                  <span class="result-value">{{ result.weight }}<span class="result-unit">kg</span></span>
+                  <span class="result-label">Peso</span>
+                </div>
+              } @else {
+                <div class="result-stat">
+                  <span class="result-value">{{ formatDuration(result.durationSeconds) }}</span>
+                  <span class="result-label">Duración</span>
+                </div>
+                <div class="result-stat">
+                  <span class="result-value">{{ result.distance }}<span class="result-unit">km</span></span>
+                  <span class="result-label">Distancia</span>
+                </div>
+              }
+            </div>
+
             @if (result.notes) {
-              <p>{{ result.notes }}</p>
+              <p class="exercise-notes">{{ result.notes }}</p>
             }
           } @else {
-            <p>Este ejercicio no se completó.</p>
+            <p class="exercise-empty">Este ejercicio no se completó.</p>
           }
         </article>
       } @empty {
