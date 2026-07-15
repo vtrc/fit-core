@@ -22,27 +22,23 @@
       <button type="button" (click)="load()">Reintentar</button>
     </section>
   } @else if (routines().length === 0) {
-    <section class="card state">
-       <h2>Aún no tienes rutinas.</h2>
-      <p>Empieza con un plan guardado para que tus próximos entrenamientos tengan estructura.</p>
-      <a class="primary" routerLink="/routines/new">Crea tu primera rutina</a>
-    </section>
+    <app-empty-state
+      title="Aún no tienes rutinas."
+      description="Empieza con un plan guardado para que tus próximos entrenamientos tengan estructura."
+      actionText="Crea tu primera rutina"
+      actionRoute="/routines/new"
+    />
   } @else {
     <section class="grid">
       @for (routine of routines(); track routine.id) {
-        <article class="card routine-card">
-          <div class="routine-copy">
-             <p class="eyebrow">Actualizada {{ formatDate(routine.updatedAt) }}</p>
-             <h2>{{ routine.name }}</h2>
-             @if (routine.description) {
-              <p>{{ routine.description }}</p>
-             }
-           </div>
-           <div class="routine-actions">
-              <a class="primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
-              <button type="button" class="danger" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">Borrar Rutina</button>
-           </div>
-        </article>
+        <app-routine-card
+          [eyebrow]="'Actualizada ' + formatDate(routine.updatedAt)"
+          [name]="routine.name"
+          [description]="routine.description"
+        >
+          <a class="btn-primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
+          <button type="button" class="btn-secondary" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">Borrar</button>
+        </app-routine-card>
       }
     </section>
   }

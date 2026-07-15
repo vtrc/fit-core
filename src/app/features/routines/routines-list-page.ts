@@ -2,11 +2,13 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import type { Routine } from '../../core/domain/models';
 import { RoutinesService } from './routines.service';
+import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
+import { RoutineCardComponent } from '../../shared/routine-card/routine-card';
 
 @Component({
   selector: 'app-routines-list-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent],
   templateUrl: './routines-list-page.html',
   styleUrl: './routines-list-page.scss',
 })
