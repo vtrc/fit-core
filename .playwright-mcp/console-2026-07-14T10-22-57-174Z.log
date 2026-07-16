@@ -1,3 +1,0 @@
-[     334ms] [LOG] Angular is running in development mode. @ http://localhost:63540/@fs/Users/victor/projects/fit-core/.angular/cache/22.0.6/fit-core/vite/deps/chunk-YDDPOQWX.js?v=dda91894:14943
-[     712ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://4af6r2tm.eu-central.insforge.app/api/auth/refresh:0
-[     720ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://4af6r2tm.eu-central.insforge.app/api/auth/refresh:0
