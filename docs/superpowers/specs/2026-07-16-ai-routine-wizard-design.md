@@ -18,7 +18,7 @@ The AI chat currently gives generic fitness advice. It should instead collect us
    > *"He creado tu rutina. ¿Quieres guardarla con el nombre 'Rutina Ganar Músculo - 16 jul'? Puedes cambiarlo si lo prefieres."*
 8. User accepts or edits the name.
 9. App inserts into `routines` and `routine_exercises`.
-10. App redirects to `/routines/:id`.
+10. Chat shows a link to `/routines/:id`; it does not navigate automatically.
 
 ---
 
@@ -66,7 +66,7 @@ The user message that triggers the wizard: anything containing "crear rutina", "
 | `generating_preview` | Harness validates the profile, queries exercises, and asks MiniMax to produce a typed draft. |
 | `confirming_name` | AI shows the generated routine summary + proposed name, asks to confirm/edit. |
 | `idle` | Welcome screen with suggestions. |
-| `saved` | Backend returns the routine ID and Angular navigates to its detail page. |
+| `saved` | Backend returns the routine ID and Angular shows a link to its detail page. |
 
 ---
 
@@ -134,7 +134,7 @@ Called only by Angular after confirmation. It receives the approved routine payl
 - Add `wizardState = signal<'idle' | 'collecting_profile' | 'confirming_name'>('idle')`
 - When `wizardState === 'idle'` and user sends a message → set `wizardState = 'collecting_profile'`
 - After user answers all 5 fields → call `routine-agent`, show the generated proposal, and enter `confirming_name`
-- Only after explicit user approval → call `create-routine` → redirect to `/routines/:id`
+- Only after explicit user approval → call `create-routine` → show a link to `/routines/:id` without automatic navigation
 
 ### `ai-chat-page.html`
 - When `wizardState === 'confirming_name'`: show routine summary + name input + confirm button

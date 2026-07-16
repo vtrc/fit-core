@@ -109,9 +109,9 @@ npm run deploy:functions
 
 Send the existing Bearer token and anon key to the new functions, parse JSON responses, and surface HTTP errors.
 
-- [ ] **Step 2: Implement the page state and preview**
+- [ ] **Step 2: Implement the page state, preview, and saved-routine link**
 
-Keep the routine draft ID and proposed name in signals. Render the preview using the validated exercise names and metrics returned by the backend. Navigate only after a successful `createRoutine` response.
+Keep the proposed routine and saved routine ID in signals. Render the preview using the validated exercise names and metrics returned by the backend. After `createRoutine` succeeds, render a `routerLink` to `/routines/:id`; do not navigate automatically.
 
 - [ ] **Step 3: Verify the complete user flow locally**
 
