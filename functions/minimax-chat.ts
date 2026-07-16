@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@insforge/sdk';
-import { generateText, Output, tool } from 'npm:ai';
+import { generateText } from 'npm:ai';
 import { createOpenAICompatible } from 'npm:@ai-sdk/openai-compatible';
 import { z } from 'npm:zod';
 
@@ -137,25 +137,20 @@ async function generateRoutineProposal(profile: unknown, req: Request): Promise<
   if (!token || !anonKey) throw new Error('Authentication required');
   const client = createClient({ baseUrl: Deno.env.get('INSFORGE_URL') ?? 'https://4af6r2tm.eu-central.insforge.app', anonKey });
   client.setAccessToken(token);
-  const searchExercises = tool({
-    description: 'Returns real gym exercises from the catalog.',
-    inputSchema: z.object({ type: z.enum(['strength', 'cardio']).optional() }),
-    execute: async ({ type }) => {
-      let query = client.database.from('exercises').select('id, name, type, equipment, muscle_groups, supported_metrics');
-      if (type) query = query.eq('type', type);
-      const { data, error } = await query.order('name', { ascending: true });
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
-  });
+  const { data: catalog, error: catalogError } = await client.database
+    .from('exercises')
+    .select('id, name, type, equipment, muscle_groups, supported_metrics')
+    .order('name', { ascending: true });
+  if (catalogError) throw new Error(catalogError.message);
   const model = createOpenAICompatible({ name: 'minimax', baseURL: 'https://api.minimax.io/v1', headers: { Authorization: `Bearer ${Deno.env.get('MINIMAX_API_KEY') ?? ''}` } });
-  const { output } = await generateText({
-    model: model('MiniMax-M2.7'), tools: { searchExercises }, output: Output.object({ schema: routineProposalSchema }),
-    prompt: `Crea una rutina usando exclusivamente ejercicios devueltos por searchExercises. Perfil: ${JSON.stringify(validatedProfile)}. Asigna series, repeticiones, peso y descansos según objetivo y nivel. Para cardio usa duración o distancia y deja fuerza a null. El nombre empieza por Rutina.`,
-    stopWhen: ({ steps }) => steps.length >= 3,
+  const { text } = await generateText({
+    model: model('MiniMax-M2.7'),
+    prompt: `Crea una rutina usando exclusivamente ejercicios del catálogo ${JSON.stringify(catalog ?? [])}. Perfil: ${JSON.stringify(validatedProfile)}. Asigna series, repeticiones, peso y descansos según objetivo y nivel. Para cardio usa duración o distancia y deja fuerza a null. El nombre empieza por Rutina. Devuelve SOLO un JSON válido con name, description y exercises usando los exercise_id del catálogo.`,
   });
-  const proposal = routineProposalSchema.parse(output);
-  const { data: catalog } = await client.database.from('exercises').select('id, name').in('id', proposal.exercises.map((exercise) => exercise.exercise_id));
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start < 0 || end <= start) throw new Error('MiniMax did not return a routine proposal');
+  const proposal = routineProposalSchema.parse(JSON.parse(text.slice(start, end + 1)));
   const names = new Map((catalog ?? []).map((exercise) => [exercise.id, exercise.name]));
   return {
     ...proposal,
