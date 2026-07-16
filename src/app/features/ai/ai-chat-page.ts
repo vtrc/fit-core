@@ -61,6 +61,7 @@ export class AiChatPage {
           this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(renamed) }]);
           return;
         }
+        this.routineProposal.set(null);
         this.loading.set(true);
         try {
           const result = await this.aiChat.sendRoutineMessage(content, proposal, this.lastProfile ?? undefined);
