@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ViewChild, inject, signal, effect, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AiChatService, ChatMessage, RoutineProposal, RoutineProfile } from './ai-chat.service';
 import { renderMarkdown } from './markdown.utils';
@@ -23,8 +23,19 @@ export class AiChatPage {
   protected readonly routineId = signal<string | null>(null);
   private routineMode = false;
   private lastProfile: RoutineProfile | null = null;
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLElement>;
 
   private abortController: AbortController | null = null;
+
+  constructor() {
+    effect(() => {
+      this.messages();
+      this.loading();
+      setTimeout(() => {
+        this.scrollContainer?.nativeElement?.scrollTo({ top: this.scrollContainer.nativeElement.scrollHeight, behavior: 'smooth' });
+      });
+    });
+  }
 
   async sendMessage(): Promise<void> {
     const content = this.inputMessage().trim();
@@ -65,7 +76,7 @@ export class AiChatPage {
             this.routineProposal.set(genProposal);
             this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(genProposal) }]);
           } else {
-            this.messages.update(msgs => [...msgs, { role: 'assistant', content: result.message ?? 'Necesito más datos para continuar.' }]);
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: result.message ?? '¿Qué más necesito saber de ti para crear tu rutina?' }]);
           }
         } catch (err) {
           this.error.set(err instanceof Error ? err.message : 'No se pudo generar la rutina.');
@@ -90,10 +101,10 @@ export class AiChatPage {
           this.routineProposal.set(genProposal);
           this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(genProposal) }]);
         } else {
-          this.messages.update(msgs => [...msgs, { role: 'assistant', content: result.message ?? 'Necesito más datos para continuar.' }]);
+          this.messages.update(msgs => [...msgs, { role: 'assistant', content: result.message ?? '¿Qué más necesito saber de ti para crear tu rutina?' }]);
         }
       } catch (err) {
-        this.error.set(err instanceof Error ? err.message : 'No se pudo generar la rutina.');
+        this.error.set(err instanceof Error ? err.message : 'Vaya, algo salió mal generando tu rutina. Inténtalo de nuevo.');
       } finally {
         this.loading.set(false);
       }
@@ -200,7 +211,11 @@ export class AiChatPage {
   }
 
   private formatProposal(proposal: RoutineProposal): string {
-    const exercises = proposal.exercises.map((exercise, index) => `${index + 1}. **${exercise.exercise_name ?? 'Ejercicio'}** — ${exercise.planned_sets ?? exercise.planned_duration_seconds} ${exercise.planned_sets ? 'series x ' + exercise.planned_repetitions + ' repeticiones' : 'segundos'}`).join('\n');
+    const exercises = proposal.exercises.map((exercise, index) => {
+      const sets = exercise.planned_sets ? `${exercise.planned_sets} series x ${exercise.planned_repetitions} repeticiones` : `${exercise.planned_duration_seconds} segundos`;
+      const weight = exercise.planned_weight ? ` @ ${exercise.planned_weight}kg` : '';
+      return `${index + 1}. **${exercise.exercise_name ?? 'Ejercicio'}** — ${sets}${weight}`;
+    }).join('\n');
     return `## ${proposal.name}\n\n${proposal.description}\n\n${exercises}\n\n¿La rutina es correcta? Responde **sí** para guardarla o indica qué quieres cambiar.`;
   }
 }

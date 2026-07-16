@@ -7,7 +7,7 @@
     }
   </header>
 
-  <main class="chat-container" role="log" aria-live="polite">
+  <main class="chat-container" #scrollContainer role="log" aria-live="polite">
     @if (messages().length === 0) {
       <div class="welcome">
         <div class="welcome-icon">

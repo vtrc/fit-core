@@ -142,13 +142,18 @@ function fillExerciseDetails(exercise: CatalogEntry, profile: z.infer<typeof rou
   if (exercise.type === 'cardio') {
     return { ...base, planned_sets: null, planned_repetitions: null, planned_weight: null, planned_duration_seconds: profile.level === 'beginner' ? 600 : profile.level === 'intermediate' ? 900 : 1200, planned_distance: null, rest_seconds: null };
   }
+  const isCompound = (exercise.muscle_groups?.length ?? 0) >= 2;
+  const levelMultiplier = profile.level === 'beginner' ? 0.5 : profile.level === 'intermediate' ? 0.7 : 0.9;
+  const bodyweightRatio = isCompound ? levelMultiplier : levelMultiplier * 0.35;
+  const rawWeight = profile.weightKg * bodyweightRatio;
+  const suggestedWeight = exercise.equipment ? Math.round(rawWeight / 2.5) * 2.5 : null;
   if (profile.goal === 'strength') {
-    return { ...base, planned_sets: 4, planned_repetitions: profile.level === 'beginner' ? 8 : profile.level === 'intermediate' ? 6 : 5, planned_weight: null, planned_duration_seconds: null, planned_distance: null, rest_seconds: 90 };
+    return { ...base, planned_sets: 4, planned_repetitions: profile.level === 'beginner' ? 8 : profile.level === 'intermediate' ? 6 : 5, planned_weight: suggestedWeight, planned_duration_seconds: null, planned_distance: null, rest_seconds: 90 };
   }
   if (profile.goal === 'fat_loss') {
-    return { ...base, planned_sets: 3, planned_repetitions: profile.level === 'beginner' ? 12 : 15, planned_weight: null, planned_duration_seconds: null, planned_distance: null, rest_seconds: 45 };
+    return { ...base, planned_sets: 3, planned_repetitions: profile.level === 'beginner' ? 12 : 15, planned_weight: suggestedWeight, planned_duration_seconds: null, planned_distance: null, rest_seconds: 45 };
   }
-  return { ...base, planned_sets: 3, planned_repetitions: profile.level === 'beginner' ? 10 : 12, planned_weight: null, planned_duration_seconds: null, planned_distance: null, rest_seconds: 60 };
+  return { ...base, planned_sets: 3, planned_repetitions: profile.level === 'beginner' ? 10 : 12, planned_weight: suggestedWeight, planned_duration_seconds: null, planned_distance: null, rest_seconds: 60 };
 }
 
 function generateName(profile: z.infer<typeof routineProfileSchema>): string {
@@ -237,7 +242,7 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
         model: 'MiniMax-M2.7',
         messages: [
           { role: 'system', content: 'Eres un entrenador personal. Devuelve SOLO JSON sin explicaciones.' },
-          { role: 'user', content: `Rutina actual: ${currentNames}. Usuario dice: "${message}". Modifica la lista de ejercicios según su feedback. Devuelve SOLO un array JSON con los nombres de los ejercicios.` },
+          { role: 'user', content: `Rutina actual: ${currentNames} (${prop.exercises.length} ejercicios). Usuario dice: "${message}". Respeta EXACTAMENTE lo que pide: si dice más ejercicios, añade; si dice menos, quita. Si pide un número concreto, ese número es OBLIGATORIO. Devuelve SOLO un array JSON con los nombres exactos del catálogo.` },
         ],
       }),
     });
@@ -252,9 +257,9 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
       const entry = nameToEntry.get(String(raw).toLowerCase().trim());
       if (entry) selected.push(entry);
     }
-    if (selected.length === 0) return { state: 'collecting_requirements', missing: ['exercises'], message: 'No pude encontrar ejercicios que coincidan con tu solicitud. Intenta de nuevo.' };
+    if (selected.length === 0) return { state: 'collecting_requirements', missing: ['exercises'], message: 'Vaya, no encontré ejercicios que encajen con tu petición. Cuéntamelo de otra forma y lo ajusto.' };
     const validatedProfile = profile ? routineProfileSchema.parse(profile) : null;
-    if (!validatedProfile) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito tu perfil para ajustar la rutina.' };
+    if (!validatedProfile) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito tu perfil para ajustar la rutina con tus datos. Cuéntame edad, peso, objetivo, nivel y días.' };
     const exercises = selected.map((e, i) => fillExerciseDetails(e, validatedProfile, i));
     return {
       state: 'profile_ready',
@@ -289,7 +294,7 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
   const mmData = JSON.parse(mmText);
   const text = mmData?.choices?.[0]?.message?.content ?? '';
   const jsonMatch = text.match(/\{[^{}]*\}/);
-  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: `Necesito tu edad (${AGE_MIN}-${AGE_MAX}), peso en kg (${WEIGHT_MIN}-${WEIGHT_MAX}), objetivo (fuerza/cardio/perder grasa/general), nivel (principiante/intermedio/avanzado) y días por semana (${DAYS_MIN}-${DAYS_MAX}). Ej: "25 años, 70kg, fuerza, intermedio, 3 días".` };
+  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: `¡Casi! Para crear tu rutina personalizada necesito unos datos sobre ti:\n\n- Tu **edad** (${AGE_MIN}-${AGE_MAX} años)\n- Tu **peso** (${WEIGHT_MIN}-${WEIGHT_MAX} kg)\n- Tu **objetivo** (fuerza, cardio, perder grasa o general)\n- Tu **nivel** (principiante, intermedio o avanzado)\n- **Días** que puedes entrenar por semana (${DAYS_MIN}-${DAYS_MAX})\n\nEjemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   const raw = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
   const numericKeys = new Set(['age', 'weightKg', 'daysPerWeek']);
   const clean: Record<string, unknown> = {};
@@ -305,20 +310,20 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
   const missing = Object.entries(routineProfileSchema.shape).filter(([key]) => clean[key] === undefined).map(([key]) => key);
   if (missing.length > 0) {
     const labels: Record<string, string> = {
-      age: `edad (${AGE_MIN}-${AGE_MAX} años)`,
-      weightKg: `peso (${WEIGHT_MIN}-${WEIGHT_MAX} kg)`,
-      goal: 'objetivo (fuerza/cardio/perder grasa/general)',
-      level: 'nivel (principiante/intermedio/avanzado)',
-      daysPerWeek: `días por semana (${DAYS_MIN}-${DAYS_MAX})`,
+      age: `la **edad** (${AGE_MIN}-${AGE_MAX} años)`,
+      weightKg: `el **peso** (${WEIGHT_MIN}-${WEIGHT_MAX} kg)`,
+      goal: 'el **objetivo** (fuerza/cardio/perder grasa/general)',
+      level: 'el **nivel** (principiante/intermedio/avanzado)',
+      daysPerWeek: `los **días por semana** (${DAYS_MIN}-${DAYS_MAX})`,
     };
     const list = missing.map((key) => labels[key] ?? key).join(', ');
-    return { state: 'collecting_requirements', missing, message: `Datos inválidos o faltantes: necesito ${list}. Ej: "25 años, 70kg, fuerza, intermedio, 3 días".` };
+    return { state: 'collecting_requirements', missing, message: `¡Voy bien! Solo me falta${missing.length > 1 ? 'n' : ''} ${list}.\n\nEj: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   }
   const parsed = routineProfileSchema.safeParse(clean);
   if (!parsed.success) {
-    const fieldLabels: Record<string, string> = { age: `la edad (${AGE_MIN}-${AGE_MAX})`, weightKg: `el peso (${WEIGHT_MIN}-${WEIGHT_MAX}kg)`, goal: 'el objetivo', level: 'el nivel', daysPerWeek: `los días por semana (${DAYS_MIN}-${DAYS_MAX})` };
+    const fieldLabels: Record<string, string> = { age: `la edad (entre ${AGE_MIN} y ${AGE_MAX} años)`, weightKg: `el peso (entre ${WEIGHT_MIN} y ${WEIGHT_MAX} kg)`, goal: 'el objetivo (fuerza/cardio/perder grasa/general)', level: 'el nivel (principiante/intermedio/avanzado)', daysPerWeek: `los días (de ${DAYS_MIN} a ${DAYS_MAX} por semana)` };
     const issues = parsed.error.issues.map((issue) => fieldLabels[issue.path[0] as string] ?? issue.path[0]).join(', ');
-    return { state: 'collecting_requirements', missing: parsed.error.issues.map((issue) => String(issue.path[0])), message: `Revisa ${issues}. Ejemplo: "25 años, 70kg, fuerza, intermedio, 3 días".` };
+    return { state: 'collecting_requirements', missing: parsed.error.issues.map((issue) => String(issue.path[0])), message: `Ups, revisa ${issues}. Por ejemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   }
   return { state: 'profile_ready', profile: parsed.data };
 }
