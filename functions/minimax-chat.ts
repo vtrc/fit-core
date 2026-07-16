@@ -117,6 +117,7 @@ const routineProfileSchema = z.object({
   level: z.enum(['beginner', 'intermediate', 'advanced']),
   daysPerWeek: z.number().int().min(1).max(7),
 });
+const partialProfileSchema = routineProfileSchema.partial();
 
 const routineProposalSchema = z.object({
   name: z.string().min(1).max(120),
@@ -154,6 +155,20 @@ async function generateRoutineProposal(profile: unknown, req: Request): Promise<
     stopWhen: ({ steps }) => steps.length >= 3,
   });
   return routineProposalSchema.parse(output);
+}
+
+async function handleRoutineMessage(message: string, req: Request): Promise<unknown> {
+  const model = createOpenAICompatible({ name: 'minimax', baseURL: 'https://api.minimax.io/v1', headers: { Authorization: `Bearer ${Deno.env.get('MINIMAX_API_KEY') ?? ''}` } });
+  const { output: profile } = await generateText({
+    model: model('MiniMax-M2.7'),
+    output: Output.object({ schema: partialProfileSchema }),
+    prompt: `Extrae del mensaje los datos para crear una rutina. No inventes datos ausentes. Objetivos: strength, cardio, fat_loss o general. Niveles: beginner, intermediate o advanced. Mensaje: ${message}`,
+  });
+  const missing = Object.entries(routineProfileSchema.shape).filter(([key]) => profile[key as keyof typeof profile] === undefined).map(([key]) => key);
+  if (missing.length > 0) {
+    return { state: 'collecting_requirements', missing, message: 'Para crear tu rutina necesito: edad, peso, objetivo (fuerza/cardio), nivel y días por semana.' };
+  }
+  return { state: 'awaiting_approval', proposal: await generateRoutineProposal(profile, req) };
 }
 
 async function persistRoutine(req: Request, userId: string, routine: ApprovedRoutine, corsHeaders: Record<string, string>): Promise<Response> {
@@ -233,7 +248,11 @@ export default async function(req: Request): Promise<Response> {
   }
 
   try {
-    const { messages, stream, action, routine, profile } = await req.json();
+    const { messages, stream, action, routine, profile, message } = await req.json();
+
+    if (action === 'routine_message') {
+      return new Response(JSON.stringify(await handleRoutineMessage(message, req)), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     if (action === 'generate_routine') {
       const proposal = await generateRoutineProposal(profile, req);

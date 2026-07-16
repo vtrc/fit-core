@@ -41,6 +41,10 @@ export class AiChatService {
     return response.proposal as RoutineProposal;
   }
 
+  async sendRoutineMessage(message: string): Promise<{ state: string; message?: string; proposal?: RoutineProposal; missing?: string[] }> {
+    return this.callRoutineAction({ action: 'routine_message', message });
+  }
+
   async approveRoutine(routine: RoutineProposal): Promise<{ id: string }> {
     return this.callRoutineAction({ action: 'approve_routine', routine }) as Promise<{ id: string }>;
   }
