@@ -78,7 +78,7 @@ export class AiChatService {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
           apikey: environment.insforgeAnonKey,
         },
-        body: JSON.stringify({ messages, stream: true }),
+        body: JSON.stringify({ messages, stream: false }),
         signal,
       },
     );
@@ -88,73 +88,11 @@ export class AiChatService {
       throw new Error((body as any)?.error || `Error ${response.status}`);
     }
 
-    const reader = response.body!.pipeThrough(new TextDecoderStream()).getReader();
-    let buffer = '';
-    let inThink = false;
+    const body = await response.json();
+    if (signal?.aborted) return;
 
-    try {
-      while (!signal?.aborted) {
-        const { done, value } = await reader.read();
-        buffer += value ?? '';
-        const lines = buffer.split(/\r?\n/);
-        buffer = done ? '' : lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data:')) continue;
-          const data = line.slice(5).trim();
-          if (data === '[DONE]') return;
-
-          try {
-            const parsed = JSON.parse(data);
-            const delta = parsed?.choices?.[0]?.delta?.content;
-            if (!delta) continue;
-
-            const cleaned = this.stripThinkTags(delta, inThink);
-            inThink = cleaned.inThink;
-            if (cleaned.result) yield cleaned.result;
-          } catch {
-            // Ignore malformed events and continue with the remaining response.
-          }
-        }
-
-        if (done) break;
-      }
-    } finally {
-      reader.releaseLock();
-    }
+    const content = body?.choices?.[0]?.message?.content;
+    if (typeof content === 'string' && content) yield content;
   }
 
-  private stripThinkTags(
-    chunk: string,
-    initialInThink: boolean,
-  ): { result: string; inThink: boolean } {
-    let remaining = true;
-    let inThink = initialInThink;
-    let result = '';
-    let cursor = chunk;
-
-    while (remaining && cursor.length > 0) {
-      if (inThink) {
-        const end = cursor.indexOf('</think>');
-        if (end === -1) {
-          remaining = false;
-        } else {
-          cursor = cursor.slice(end + 8);
-          inThink = false;
-        }
-      } else {
-        const start = cursor.indexOf('<think>');
-        if (start === -1) {
-          result += cursor;
-          remaining = false;
-        } else {
-          result += cursor.slice(0, start);
-          cursor = cursor.slice(start + 7);
-          inThink = true;
-        }
-      }
-    }
-
-    return { result, inThink };
-  }
 }
