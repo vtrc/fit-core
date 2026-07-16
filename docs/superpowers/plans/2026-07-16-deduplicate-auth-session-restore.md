@@ -1,3 +1,22 @@
+# Deduplicate Auth Session Restore Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Prevent concurrent startup refresh calls from invalidating InsForge's rotating CSRF token.
+
+**Architecture:** `AuthService` will own a single in-flight restoration promise. Its constructor and `authGuard` will continue using the same public `restoreSession()` method, but concurrent calls will await that shared promise. The promise will be cleared when settled so an explicit later restore still reaches the SDK.
+
+**Tech Stack:** Angular 22, TypeScript, Vitest, `@insforge/sdk` 1.4.
+
+## Global Constraints
+
+- Do not change InsForge OAuth or backend CSRF configuration.
+- Do not commit an InsForge anon key; existing environment placeholders remain unchanged.
+- Keep the current behavior that 401 and 403 clear the user without setting a visible auth error.
+- Preserve the public `restoreSession(): Promise<void>` API.
+
+---
+
 ### Task 1: Serialize Session Restoration
 
 **Files:**

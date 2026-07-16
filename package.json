@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "deploy:angular": "ng build && npx @insforge/cli deployments deploy .",
+    "deploy:functions": "npx @insforge/cli functions deploy minimax-chat --file ./functions/minimax-chat.ts --name \"MiniMax Chat\""
   },
   "private": true,
   "packageManager": "npm@10.9.8",

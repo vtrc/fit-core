@@ -115,7 +115,10 @@ export class WorkoutSessionPage {
     if (restSeconds === null) return '—';
     const min = Math.floor(restSeconds / 60);
     const sec = restSeconds % 60;
-    return min > 0 ? `${min} min ${sec} s` : `${sec} s`;
+    if (min > 0 && sec > 0) return `${min} min ${sec} s`;
+    if (min > 0) return `${min} min`;
+    if (sec > 0) return `${sec} s`;
+    return '—';
   }
 
   protected displayMetric(value: number | null): string | number {

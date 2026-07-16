@@ -4,6 +4,7 @@ import { authGuard } from './core/auth/auth.guard';
 import { AppShell } from './shared/shell/shell';
 import { DashboardPage } from './features/dashboard/dashboard-page';
 import { LoginPage } from './features/auth/login-page';
+import { AiChatPage } from './features/ai/ai-chat-page';
 import { RoutineDetailPage } from './features/routines/routine-detail-page';
 import { RoutineEditarorPage } from './features/routines/routine-editor-page';
 import { RoutinesListPage } from './features/routines/routines-list-page';
@@ -32,6 +33,7 @@ export const routes: Routes = [
       { path: 'history', component: HistoryListPage },
       { path: 'history/:id', component: HistoryDetailPage },
       { path: 'statistics', component: StatisticsPage },
+      { path: 'ai', component: AiChatPage },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: '**', redirectTo: 'dashboard' },
     ],
