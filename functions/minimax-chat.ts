@@ -165,11 +165,13 @@ async function generateRoutineProposal(profile: unknown, req: Request): Promise<
 
 async function handleRoutineMessage(message: string, req: Request): Promise<unknown> {
   const model = createOpenAICompatible({ name: 'minimax', baseURL: 'https://api.minimax.io/v1', headers: { Authorization: `Bearer ${Deno.env.get('MINIMAX_API_KEY') ?? ''}` } });
-  const { output: profile } = await generateText({
+  const { text } = await generateText({
     model: model('MiniMax-M2.7'),
-    output: Output.object({ schema: partialProfileSchema }),
-    prompt: `Extrae del mensaje los datos para crear una rutina. No inventes datos ausentes. Objetivos: strength, cardio, fat_loss o general. Niveles: beginner, intermediate o advanced. Mensaje: ${message}`,
+    prompt: `Extrae del mensaje los datos para crear una rutina. No inventes datos ausentes. Devuelve SOLO JSON válido, sin markdown ni explicaciones, usando estas claves: age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek. Mensaje: ${message}`,
   });
+  const jsonMatch = text.match(/\{[^{}]*\}/);
+  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito edad, peso, objetivo, nivel y días por semana para crear la rutina.' };
+  const profile = partialProfileSchema.parse(JSON.parse(jsonMatch[0]));
   const missing = Object.entries(routineProfileSchema.shape).filter(([key]) => profile[key as keyof typeof profile] === undefined).map(([key]) => key);
   if (missing.length > 0) {
     return { state: 'collecting_requirements', missing, message: 'Para crear tu rutina necesito: edad, peso, objetivo (fuerza/cardio), nivel y días por semana.' };
