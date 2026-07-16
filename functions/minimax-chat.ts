@@ -123,7 +123,7 @@ const routineProposalSchema = z.object({
   name: z.string().min(1).max(120),
   description: z.string().min(1).max(500),
   exercises: z.array(z.object({
-    exercise_id: z.string().uuid(), position: z.number().int().nonnegative(),
+    exercise_id: z.string().uuid(), exercise_name: z.string().optional(), position: z.number().int().nonnegative(),
     planned_sets: z.number().int().positive().nullable(), planned_repetitions: z.number().int().positive().nullable(),
     planned_weight: z.number().nonnegative().nullable(), planned_duration_seconds: z.number().int().positive().nullable(),
     planned_distance: z.number().positive().nullable(), rest_seconds: z.number().int().nonnegative().nullable(), notes: z.string().nullable(),
@@ -154,7 +154,13 @@ async function generateRoutineProposal(profile: unknown, req: Request): Promise<
     prompt: `Crea una rutina usando exclusivamente ejercicios devueltos por searchExercises. Perfil: ${JSON.stringify(validatedProfile)}. Asigna series, repeticiones, peso y descansos según objetivo y nivel. Para cardio usa duración o distancia y deja fuerza a null. El nombre empieza por Rutina.`,
     stopWhen: ({ steps }) => steps.length >= 3,
   });
-  return routineProposalSchema.parse(output);
+  const proposal = routineProposalSchema.parse(output);
+  const { data: catalog } = await client.database.from('exercises').select('id, name').in('id', proposal.exercises.map((exercise) => exercise.exercise_id));
+  const names = new Map((catalog ?? []).map((exercise) => [exercise.id, exercise.name]));
+  return {
+    ...proposal,
+    exercises: proposal.exercises.map((exercise) => ({ ...exercise, exercise_name: names.get(exercise.exercise_id) ?? 'Ejercicio' })),
+  };
 }
 
 async function handleRoutineMessage(message: string, req: Request): Promise<unknown> {

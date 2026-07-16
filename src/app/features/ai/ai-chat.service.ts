@@ -21,6 +21,7 @@ export interface RoutineProposal {
   description: string;
   exercises: Array<{
     exercise_id: string;
+    exercise_name?: string;
     position: number;
     planned_sets: number | null;
     planned_repetitions: number | null;

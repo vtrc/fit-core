@@ -35,6 +35,20 @@ export class AiChatPage {
     if (this.routineMode || /crear|generar|rutina/i.test(content)) {
       this.routineMode = true;
       this.inputMessage.set('');
+      const proposal = this.routineProposal();
+      if (proposal && /^(sí|si|correcta|correcto|acepto|guardar|ok)/i.test(content)) {
+        await this.approveRoutine();
+        return;
+      }
+      if (proposal) {
+        const nameMatch = content.match(/(?:nombre|llámala|llamala)\s*[:=]?\s*(.+)$/i);
+        if (nameMatch) {
+          const renamed = { ...proposal, name: nameMatch[1].trim() };
+          this.routineProposal.set(renamed);
+          this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(renamed) }]);
+          return;
+        }
+      }
       try {
         const result = await this.aiChat.sendRoutineMessage(content);
         const proposal = result.proposal;
@@ -150,7 +164,7 @@ export class AiChatPage {
   }
 
   private formatProposal(proposal: RoutineProposal): string {
-    const exercises = proposal.exercises.map((exercise, index) => `${index + 1}. **${exercise.exercise_id}** — ${exercise.planned_sets ?? exercise.planned_duration_seconds} ${exercise.planned_sets ? 'series x ' + exercise.planned_repetitions + ' repeticiones' : 'segundos'}`).join('\n');
+    const exercises = proposal.exercises.map((exercise, index) => `${index + 1}. **${exercise.exercise_name ?? 'Ejercicio'}** — ${exercise.planned_sets ?? exercise.planned_duration_seconds} ${exercise.planned_sets ? 'series x ' + exercise.planned_repetitions + ' repeticiones' : 'segundos'}`).join('\n');
     return `## ${proposal.name}\n\n${proposal.description}\n\n${exercises}\n\n¿La rutina es correcta? Responde **sí** para guardarla o indica qué quieres cambiar.`;
   }
 }
