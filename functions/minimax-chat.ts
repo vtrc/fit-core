@@ -1,10 +1,15 @@
 import { createClient } from 'npm:@insforge/sdk';
-import { generateText } from 'npm:ai';
-import { createOpenAICompatible } from 'npm:@ai-sdk/openai-compatible';
 import { z } from 'npm:zod';
 
 const RATE_LIMIT = 10;
 const RATE_WINDOW = 60 * 1000;
+
+const AGE_MIN = 14;
+const AGE_MAX = 99;
+const WEIGHT_MIN = 40;
+const WEIGHT_MAX = 120;
+const DAYS_MIN = 1;
+const DAYS_MAX = 7;
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
@@ -111,11 +116,11 @@ interface ApprovedRoutine {
 }
 
 const routineProfileSchema = z.object({
-  age: z.number().int().min(13).max(100),
-  weightKg: z.number().positive().max(400),
+  age: z.number().int().min(AGE_MIN).max(AGE_MAX),
+  weightKg: z.number().min(WEIGHT_MIN).max(WEIGHT_MAX),
   goal: z.enum(['strength', 'cardio', 'fat_loss', 'general']),
   level: z.enum(['beginner', 'intermediate', 'advanced']),
-  daysPerWeek: z.number().int().min(1).max(7),
+  daysPerWeek: z.number().int().min(DAYS_MIN).max(DAYS_MAX),
 });
 const partialProfileSchema = routineProfileSchema.partial();
 
@@ -130,6 +135,32 @@ const routineProposalSchema = z.object({
   })).min(1),
 });
 
+type CatalogEntry = { id: string; name: string; type: string; equipment: string | null; muscle_groups: string[] };
+
+function fillExerciseDetails(exercise: CatalogEntry, profile: z.infer<typeof routineProfileSchema>, position: number): z.infer<typeof routineProposalSchema>['exercises'][number] {
+  const base = { exercise_id: exercise.id, position, notes: null };
+  if (exercise.type === 'cardio') {
+    return { ...base, planned_sets: null, planned_repetitions: null, planned_weight: null, planned_duration_seconds: profile.level === 'beginner' ? 600 : profile.level === 'intermediate' ? 900 : 1200, planned_distance: null, rest_seconds: null };
+  }
+  if (profile.goal === 'strength') {
+    return { ...base, planned_sets: 4, planned_repetitions: profile.level === 'beginner' ? 8 : profile.level === 'intermediate' ? 6 : 5, planned_weight: null, planned_duration_seconds: null, planned_distance: null, rest_seconds: 90 };
+  }
+  if (profile.goal === 'fat_loss') {
+    return { ...base, planned_sets: 3, planned_repetitions: profile.level === 'beginner' ? 12 : 15, planned_weight: null, planned_duration_seconds: null, planned_distance: null, rest_seconds: 45 };
+  }
+  return { ...base, planned_sets: 3, planned_repetitions: profile.level === 'beginner' ? 10 : 12, planned_weight: null, planned_duration_seconds: null, planned_distance: null, rest_seconds: 60 };
+}
+
+function generateName(profile: z.infer<typeof routineProfileSchema>): string {
+  const goalLabels: Record<string, string> = { strength: 'Fuerza', cardio: 'Cardio', fat_loss: 'Pérdida de Grasa', general: 'General' };
+  return `Rutina de ${goalLabels[profile.goal] ?? 'Entrenamiento'} - Nivel ${profile.level}`;
+}
+
+function generateDescription(profile: z.infer<typeof routineProfileSchema>): string {
+  const days = profile.daysPerWeek;
+  return `Rutina personalizada para ${profile.goal === 'strength' ? 'ganar fuerza' : profile.goal === 'cardio' ? 'mejorar resistencia cardiovascular' : profile.goal === 'fat_loss' ? 'perder grasa' : 'mantenerse en forma'} entrenando ${days} día${days > 1 ? 's' : ''} por semana.`;
+}
+
 async function generateRoutineProposal(profile: unknown, req: Request): Promise<unknown> {
   const validatedProfile = routineProfileSchema.parse(profile);
   const token = req.headers.get('Authorization')?.slice(7);
@@ -140,40 +171,156 @@ async function generateRoutineProposal(profile: unknown, req: Request): Promise<
   const { data: catalog, error: catalogError } = await client.database
     .from('exercises')
     .select('id, name, type, equipment, muscle_groups')
-    .order('name', { ascending: true })
-    .limit(60);
+    .order('name', { ascending: true });
   if (catalogError) throw new Error(catalogError.message);
-  const model = createOpenAICompatible({ name: 'minimax', baseURL: 'https://api.minimax.io/v1', headers: { Authorization: `Bearer ${Deno.env.get('MINIMAX_API_KEY') ?? ''}` } });
-  const { text } = await generateText({
-    model: model('MiniMax-M2.7'),
-    prompt: `Crea una rutina usando exclusivamente ejercicios del catálogo ${JSON.stringify(catalog ?? [])}. Perfil: ${JSON.stringify(validatedProfile)}. Asigna series, repeticiones, peso y descansos según objetivo y nivel. Para cardio usa duración o distancia y deja fuerza a null. El nombre empieza por Rutina. Devuelve SOLO un JSON válido con name, description y exercises usando los exercise_id del catálogo.`,
+  const entries = (catalog ?? []) as CatalogEntry[];
+  const nameToEntry = new Map(entries.map((e) => [e.name.toLowerCase().trim(), e]));
+  const idToEntry = new Map(entries.map((e) => [e.id, e]));
+  const availableNames = entries.map((e) => e.name).join(', ');
+  const mmKey = Deno.env.get('MINIMAX_API_KEY') ?? '';
+  const mmRes = await fetch('https://api.minimax.io/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${mmKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'MiniMax-M2.7',
+      messages: [
+        { role: 'system', content: 'Eres un entrenador personal. Devuelve SOLO JSON sin explicaciones.' },
+        { role: 'user', content: `De estos ejercicios: ${availableNames}. Perfil: ${JSON.stringify(validatedProfile)}. Elige 5-8 ejercicios. Devuelve SOLO un array JSON con los nombres exactos.` },
+      ],
+    }),
   });
-  const cleanText = text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim();
-  const start = cleanText.indexOf('{');
-  const end = cleanText.lastIndexOf('}');
-  if (start < 0 || end <= start) throw new Error('MiniMax did not return a routine proposal');
-  const proposal = routineProposalSchema.parse(JSON.parse(cleanText.slice(start, end + 1)));
-  const names = new Map((catalog ?? []).map((exercise) => [exercise.id, exercise.name]));
+  const mmText = await mmRes.text();
+  if (!mmRes.ok) throw new Error(`MiniMax API raw error: ${mmRes.status} ${mmText}`);
+  const mmData = JSON.parse(mmText);
+  const text = mmData?.choices?.[0]?.message?.content ?? '';
+  const rawList: string[] = JSON.parse(text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim());
+  const selected: CatalogEntry[] = [];
+  for (const raw of rawList) {
+    const entry = nameToEntry.get(String(raw).toLowerCase().trim());
+    if (entry) selected.push(entry);
+  }
+  if (selected.length === 0) throw new Error('No se pudieron seleccionar ejercicios');
+  const exercises = selected.map((e, i) => fillExerciseDetails(e, validatedProfile, i));
   return {
-    ...proposal,
-    exercises: proposal.exercises.map((exercise) => ({ ...exercise, exercise_name: names.get(exercise.exercise_id) ?? 'Ejercicio' })),
+    name: generateName(validatedProfile),
+    description: generateDescription(validatedProfile),
+    exercises: exercises.map((e) => ({ ...e, exercise_name: idToEntry.get(e.exercise_id)?.name ?? 'Ejercicio' })),
   };
 }
 
-async function handleRoutineMessage(message: string, req: Request): Promise<unknown> {
-  const model = createOpenAICompatible({ name: 'minimax', baseURL: 'https://api.minimax.io/v1', headers: { Authorization: `Bearer ${Deno.env.get('MINIMAX_API_KEY') ?? ''}` } });
-  const { text } = await generateText({
-    model: model('MiniMax-M2.7'),
-    prompt: `Extrae del mensaje los datos para crear una rutina. No inventes datos ausentes. Devuelve SOLO JSON válido, sin markdown ni explicaciones, usando estas claves: age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek. Mensaje: ${message}`,
-  });
-  const jsonMatch = text.match(/\{[^{}]*\}/);
-  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito edad, peso, objetivo, nivel y días por semana para crear la rutina.' };
-  const profile = partialProfileSchema.parse(JSON.parse(jsonMatch[0]));
-  const missing = Object.entries(routineProfileSchema.shape).filter(([key]) => profile[key as keyof typeof profile] === undefined).map(([key]) => key);
-  if (missing.length > 0) {
-    return { state: 'collecting_requirements', missing, message: 'Para crear tu rutina necesito: edad, peso, objetivo (fuerza/cardio), nivel y días por semana.' };
+async function loadCatalog(token: string, anonKey: string): Promise<{ entries: CatalogEntry[]; nameToEntry: Map<string, CatalogEntry>; idToEntry: Map<string, CatalogEntry> }> {
+  const client = createClient({ baseUrl: Deno.env.get('INSFORGE_URL') ?? 'https://4af6r2tm.eu-central.insforge.app', anonKey });
+  client.setAccessToken(token);
+  const { data: catalog, error: catalogError } = await client.database
+    .from('exercises')
+    .select('id, name, type, equipment, muscle_groups')
+    .order('name', { ascending: true });
+  if (catalogError) throw new Error(catalogError.message);
+  const entries = (catalog ?? []) as CatalogEntry[];
+  return {
+    entries,
+    nameToEntry: new Map(entries.map((e) => [e.name.toLowerCase().trim(), e])),
+    idToEntry: new Map(entries.map((e) => [e.id, e])),
+  };
+}
+
+async function handleRoutineMessage(message: string, proposal?: unknown, profile?: unknown, token?: string, anonKey?: string, messages?: Array<{ role: string; content: string }>): Promise<unknown> {
+  const mmKey = Deno.env.get('MINIMAX_API_KEY') ?? '';
+
+  if (proposal) {
+    const prop = proposal as { name: string; description: string; exercises: Array<{ exercise_name?: string }> };
+    const currentNames = prop.exercises.map((e: { exercise_name?: string }) => e.exercise_name).join(', ');
+    const mmRes = await fetch('https://api.minimax.io/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${mmKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'MiniMax-M2.7',
+        messages: [
+          { role: 'system', content: 'Eres un entrenador personal. Devuelve SOLO JSON sin explicaciones.' },
+          { role: 'user', content: `Rutina actual: ${currentNames}. Usuario dice: "${message}". Modifica la lista de ejercicios según su feedback. Devuelve SOLO un array JSON con los nombres de los ejercicios.` },
+        ],
+      }),
+    });
+    const mmText = await mmRes.text();
+    if (!mmRes.ok) throw new Error(`MiniMax API error: ${mmRes.status} ${mmText}`);
+    const mmData = JSON.parse(mmText);
+    const text = mmData?.choices?.[0]?.message?.content ?? '';
+    const rawList: string[] = JSON.parse(text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim());
+    const { nameToEntry, idToEntry } = await loadCatalog(token ?? '', anonKey ?? '');
+    const selected: CatalogEntry[] = [];
+    for (const raw of rawList) {
+      const entry = nameToEntry.get(String(raw).toLowerCase().trim());
+      if (entry) selected.push(entry);
+    }
+    if (selected.length === 0) return { state: 'collecting_requirements', missing: ['exercises'], message: 'No pude encontrar ejercicios que coincidan con tu solicitud. Intenta de nuevo.' };
+    const validatedProfile = profile ? routineProfileSchema.parse(profile) : null;
+    if (!validatedProfile) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito tu perfil para ajustar la rutina.' };
+    const exercises = selected.map((e, i) => fillExerciseDetails(e, validatedProfile, i));
+    return {
+      state: 'profile_ready',
+      proposal: {
+        name: prop.name,
+        description: prop.description,
+        exercises: exercises.map((e) => ({ ...e, exercise_name: idToEntry.get(e.exercise_id)?.name ?? 'Ejercicio' })),
+      },
+      profile: validatedProfile,
+    };
   }
-  return { state: 'awaiting_approval', proposal: await generateRoutineProposal(profile, req) };
+
+  const conversationContext = (messages ?? [])
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
+    .map((m) => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.content}`)
+    .join('\n');
+  const extractPrompt = `De toda la conversación, extrae estos datos si aparecen: age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek. No inventes datos. Devuelve SOLO un objeto JSON con los campos que encuentres. Conversación:\n${conversationContext}\n\nMensaje actual: ${message}`;
+
+  const mmRes = await fetch('https://api.minimax.io/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${mmKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'MiniMax-M2.7',
+      messages: [
+        { role: 'system', content: 'Eres un asistente de fitness. Devuelve SOLO JSON sin explicaciones.' },
+        { role: 'user', content: extractPrompt },
+      ],
+    }),
+  });
+  const mmText = await mmRes.text();
+  if (!mmRes.ok) throw new Error(`MiniMax API error: ${mmRes.status} ${mmText}`);
+  const mmData = JSON.parse(mmText);
+  const text = mmData?.choices?.[0]?.message?.content ?? '';
+  const jsonMatch = text.match(/\{[^{}]*\}/);
+  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: `Necesito tu edad (${AGE_MIN}-${AGE_MAX}), peso en kg (${WEIGHT_MIN}-${WEIGHT_MAX}), objetivo (fuerza/cardio/perder grasa/general), nivel (principiante/intermedio/avanzado) y días por semana (${DAYS_MIN}-${DAYS_MAX}). Ej: "25 años, 70kg, fuerza, intermedio, 3 días".` };
+  const raw = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+  const numericKeys = new Set(['age', 'weightKg', 'daysPerWeek']);
+  const clean: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (value === null) continue;
+    if (numericKeys.has(key) && typeof value === 'string') {
+      const n = Number(value);
+      clean[key] = Number.isNaN(n) ? value : n;
+    } else {
+      clean[key] = value;
+    }
+  }
+  const missing = Object.entries(routineProfileSchema.shape).filter(([key]) => clean[key] === undefined).map(([key]) => key);
+  if (missing.length > 0) {
+    const labels: Record<string, string> = {
+      age: `edad (${AGE_MIN}-${AGE_MAX} años)`,
+      weightKg: `peso (${WEIGHT_MIN}-${WEIGHT_MAX} kg)`,
+      goal: 'objetivo (fuerza/cardio/perder grasa/general)',
+      level: 'nivel (principiante/intermedio/avanzado)',
+      daysPerWeek: `días por semana (${DAYS_MIN}-${DAYS_MAX})`,
+    };
+    const list = missing.map((key) => labels[key] ?? key).join(', ');
+    return { state: 'collecting_requirements', missing, message: `Datos inválidos o faltantes: necesito ${list}. Ej: "25 años, 70kg, fuerza, intermedio, 3 días".` };
+  }
+  const parsed = routineProfileSchema.safeParse(clean);
+  if (!parsed.success) {
+    const fieldLabels: Record<string, string> = { age: `la edad (${AGE_MIN}-${AGE_MAX})`, weightKg: `el peso (${WEIGHT_MIN}-${WEIGHT_MAX}kg)`, goal: 'el objetivo', level: 'el nivel', daysPerWeek: `los días por semana (${DAYS_MIN}-${DAYS_MAX})` };
+    const issues = parsed.error.issues.map((issue) => fieldLabels[issue.path[0] as string] ?? issue.path[0]).join(', ');
+    return { state: 'collecting_requirements', missing: parsed.error.issues.map((issue) => String(issue.path[0])), message: `Revisa ${issues}. Ejemplo: "25 años, 70kg, fuerza, intermedio, 3 días".` };
+  }
+  return { state: 'profile_ready', profile: parsed.data };
 }
 
 async function persistRoutine(req: Request, userId: string, routine: ApprovedRoutine, corsHeaders: Record<string, string>): Promise<Response> {
@@ -237,6 +384,8 @@ export default async function(req: Request): Promise<Response> {
 
   const authHeader = req.headers.get('Authorization');
   const userId = extractUserIdFromToken(authHeader);
+  const token = authHeader?.slice(7);
+  const anonKey = req.headers.get('apikey') ?? '';
 
   if (!userId) {
     return new Response(
@@ -253,10 +402,10 @@ export default async function(req: Request): Promise<Response> {
   }
 
   try {
-    const { messages, stream, action, routine, profile, message } = await req.json();
+    const { messages, stream, action, routine, profile, message, proposal } = await req.json();
 
     if (action === 'routine_message') {
-      return new Response(JSON.stringify(await handleRoutineMessage(message, req)), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify(await handleRoutineMessage(message, proposal, profile, token, anonKey, messages as Array<{ role: string; content: string }> | undefined)), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     if (action === 'generate_routine') {

@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AiChatService, ChatMessage, RoutineProposal } from './ai-chat.service';
+import { AiChatService, ChatMessage, RoutineProposal, RoutineProfile } from './ai-chat.service';
 import { renderMarkdown } from './markdown.utils';
 
 @Component({
@@ -16,11 +16,13 @@ export class AiChatPage {
   protected readonly messages = signal<ChatMessage[]>([]);
   protected readonly inputMessage = signal('');
   protected readonly streaming = signal(false);
+  protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly renderMarkdown = renderMarkdown;
   protected readonly routineProposal = signal<RoutineProposal | null>(null);
   protected readonly routineId = signal<string | null>(null);
   private routineMode = false;
+  private lastProfile: RoutineProfile | null = null;
 
   private abortController: AbortController | null = null;
 
@@ -48,18 +50,52 @@ export class AiChatPage {
           this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(renamed) }]);
           return;
         }
+        this.loading.set(true);
+        try {
+          const result = await this.aiChat.sendRoutineMessage(content, proposal, this.lastProfile ?? undefined);
+          const newProposal = result.proposal;
+          if (newProposal) {
+            this.routineProposal.set(newProposal);
+            this.lastProfile = result.profile ?? this.lastProfile;
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(newProposal) }]);
+          } else if (result.state === 'profile_ready') {
+            this.lastProfile = result.profile!;
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: 'Generando rutina...' }]);
+            const genProposal = await this.aiChat.generateRoutine(result.profile!);
+            this.routineProposal.set(genProposal);
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(genProposal) }]);
+          } else {
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: result.message ?? 'Necesito más datos para continuar.' }]);
+          }
+        } catch (err) {
+          this.error.set(err instanceof Error ? err.message : 'No se pudo generar la rutina.');
+        } finally {
+          this.loading.set(false);
+        }
+        return;
       }
+      // initial routine message — no proposal yet, extract profile
+      this.loading.set(true);
       try {
-        const result = await this.aiChat.sendRoutineMessage(content);
-        const proposal = result.proposal;
-        if (proposal) {
-          this.routineProposal.set(proposal);
-          this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(proposal) }]);
+        const result = await this.aiChat.sendRoutineMessage(content, undefined, undefined, this.messages());
+        const newProposal = result.proposal;
+        if (newProposal) {
+          this.routineProposal.set(newProposal);
+          this.lastProfile = result.profile ?? this.lastProfile;
+          this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(newProposal) }]);
+        } else if (result.state === 'profile_ready') {
+          this.lastProfile = result.profile!;
+          this.messages.update(msgs => [...msgs, { role: 'assistant', content: 'Generando rutina...' }]);
+          const genProposal = await this.aiChat.generateRoutine(result.profile!);
+          this.routineProposal.set(genProposal);
+          this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(genProposal) }]);
         } else {
           this.messages.update(msgs => [...msgs, { role: 'assistant', content: result.message ?? 'Necesito más datos para continuar.' }]);
         }
       } catch (err) {
         this.error.set(err instanceof Error ? err.message : 'No se pudo generar la rutina.');
+      } finally {
+        this.loading.set(false);
       }
       return;
     }

@@ -42,8 +42,8 @@ export class AiChatService {
     return response.proposal as RoutineProposal;
   }
 
-  async sendRoutineMessage(message: string): Promise<{ state: string; message?: string; proposal?: RoutineProposal; missing?: string[] }> {
-    return this.callRoutineAction({ action: 'routine_message', message });
+  async sendRoutineMessage(message: string, currentProposal?: RoutineProposal, profile?: RoutineProfile, messages?: ChatMessage[]): Promise<{ state: string; message?: string; proposal?: RoutineProposal; missing?: string[]; profile?: RoutineProfile }> {
+    return this.callRoutineAction({ action: 'routine_message', message, proposal: currentProposal, profile, messages });
   }
 
   async approveRoutine(routine: RoutineProposal): Promise<{ id: string }> {
