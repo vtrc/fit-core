@@ -147,10 +147,11 @@ async function generateRoutineProposal(profile: unknown, req: Request): Promise<
     model: model('MiniMax-M2.7'),
     prompt: `Crea una rutina usando exclusivamente ejercicios del catálogo ${JSON.stringify(catalog ?? [])}. Perfil: ${JSON.stringify(validatedProfile)}. Asigna series, repeticiones, peso y descansos según objetivo y nivel. Para cardio usa duración o distancia y deja fuerza a null. El nombre empieza por Rutina. Devuelve SOLO un JSON válido con name, description y exercises usando los exercise_id del catálogo.`,
   });
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
+  const cleanText = text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim();
+  const start = cleanText.indexOf('{');
+  const end = cleanText.lastIndexOf('}');
   if (start < 0 || end <= start) throw new Error('MiniMax did not return a routine proposal');
-  const proposal = routineProposalSchema.parse(JSON.parse(text.slice(start, end + 1)));
+  const proposal = routineProposalSchema.parse(JSON.parse(cleanText.slice(start, end + 1)));
   const names = new Map((catalog ?? []).map((exercise) => [exercise.id, exercise.name]));
   return {
     ...proposal,
@@ -347,6 +348,7 @@ export default async function(req: Request): Promise<Response> {
 
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);
+    console.error('minimax-chat runtime error', e);
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
