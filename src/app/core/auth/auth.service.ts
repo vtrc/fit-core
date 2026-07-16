@@ -25,6 +25,7 @@ export class AuthService {
 
   private async restoreSessionInternal(): Promise<void> {
     this.loading.set(true);
+    await this.insforge.ready;
     const { data, error } = await this.insforge.client.auth.getCurrentUser();
     this.user.set(error ? null : (data?.user ?? null));
     this.error.set(this.isUnauthenticated(error) ? null : (error?.message ?? null));
@@ -33,10 +34,14 @@ export class AuthService {
 
   async signInWithGoogle(): Promise<void> {
     this.error.set(null);
-    const { error } = await this.insforge.client.auth.signInWithOAuth('google', {
+    const { data, error } = await this.insforge.client.auth.signInWithOAuth('google', {
       redirectTo: `${window.location.origin}/dashboard`,
     });
-    if (error) this.error.set(error.message);
+    if (error) {
+      this.error.set(error.message);
+      return;
+    }
+    if (data?.url) window.location.assign(data.url);
   }
 
   async signOut(): Promise<void> {
@@ -45,6 +50,7 @@ export class AuthService {
       this.error.set(error.message);
       return;
     }
+    this.insforge.clearStoredSession?.();
     this.user.set(null);
   }
 

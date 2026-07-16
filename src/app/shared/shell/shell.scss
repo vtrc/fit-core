@@ -1,6 +1,8 @@
 .shell {
-    min-height: 100vh;
+    --footer-height: calc(3.5rem + env(safe-area-inset-bottom));
+    min-height: 100dvh;
     padding: 1rem 1.6rem;
+    padding-bottom: var(--footer-height);
     background: var(--parchment);
 }
 
