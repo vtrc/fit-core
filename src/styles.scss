@@ -115,6 +115,12 @@ img {
   color: var(--ink-secondary);
 }
 
+.markdown-content a {
+  color: var(--ink);
+  text-decoration: underline;
+  word-break: break-word;
+}
+
 .hero {
   display: flex;
   justify-content: space-between;
