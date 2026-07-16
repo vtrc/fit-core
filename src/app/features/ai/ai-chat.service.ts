@@ -48,16 +48,15 @@ export class AiChatService {
     try {
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (value) buffer += value;
 
-        buffer += value;
-        const events = buffer.split('\n\n');
-        buffer = events.pop() || '';
+        const events = buffer.split(/\r?\n\r?\n/);
+        buffer = done ? '' : events.pop() || '';
 
         for (const event of events) {
-          for (const line of event.split('\n')) {
-            if (!line.startsWith('data: ')) continue;
-            const data = line.slice(6).trim();
+          for (const line of event.split(/\r?\n/)) {
+            if (!line.startsWith('data:')) continue;
+            const data = line.slice(5).trim();
             if (data === '[DONE]') return;
 
             try {
@@ -78,6 +77,8 @@ export class AiChatService {
             }
           }
         }
+
+        if (done) break;
       }
     } finally {
       reader.cancel();
