@@ -1,3 +1,8 @@
+import { createClient } from 'npm:@insforge/sdk';
+import { generateText, Output, tool } from 'npm:ai';
+import { createOpenAICompatible } from 'npm:@ai-sdk/openai-compatible';
+import { z } from 'npm:zod';
+
 const RATE_LIMIT = 10;
 const RATE_WINDOW = 60 * 1000;
 
@@ -89,6 +94,119 @@ function stripThinkTags(delta: string, initialInThink: boolean): { cleaned: stri
   return { cleaned: result, inThink };
 }
 
+interface ApprovedRoutine {
+  name: string;
+  description?: string | null;
+  exercises: Array<{
+    exercise_id: string;
+    position?: number;
+    planned_sets: number | null;
+    planned_repetitions: number | null;
+    planned_weight: number | null;
+    planned_duration_seconds: number | null;
+    planned_distance: number | null;
+    rest_seconds: number | null;
+    notes: string | null;
+  }>;
+}
+
+const routineProfileSchema = z.object({
+  age: z.number().int().min(13).max(100),
+  weightKg: z.number().positive().max(400),
+  goal: z.enum(['strength', 'cardio', 'fat_loss', 'general']),
+  level: z.enum(['beginner', 'intermediate', 'advanced']),
+  daysPerWeek: z.number().int().min(1).max(7),
+});
+
+const routineProposalSchema = z.object({
+  name: z.string().min(1).max(120),
+  description: z.string().min(1).max(500),
+  exercises: z.array(z.object({
+    exercise_id: z.string().uuid(), position: z.number().int().nonnegative(),
+    planned_sets: z.number().int().positive().nullable(), planned_repetitions: z.number().int().positive().nullable(),
+    planned_weight: z.number().nonnegative().nullable(), planned_duration_seconds: z.number().int().positive().nullable(),
+    planned_distance: z.number().positive().nullable(), rest_seconds: z.number().int().nonnegative().nullable(), notes: z.string().nullable(),
+  })).min(1),
+});
+
+async function generateRoutineProposal(profile: unknown, req: Request): Promise<unknown> {
+  const validatedProfile = routineProfileSchema.parse(profile);
+  const token = req.headers.get('Authorization')?.slice(7);
+  const anonKey = req.headers.get('apikey');
+  if (!token || !anonKey) throw new Error('Authentication required');
+  const client = createClient({ baseUrl: Deno.env.get('INSFORGE_URL') ?? 'https://4af6r2tm.eu-central.insforge.app', anonKey });
+  client.setAccessToken(token);
+  const searchExercises = tool({
+    description: 'Returns real gym exercises from the catalog.',
+    inputSchema: z.object({ type: z.enum(['strength', 'cardio']).optional() }),
+    execute: async ({ type }) => {
+      let query = client.database.from('exercises').select('id, name, type, equipment, muscle_groups, supported_metrics');
+      if (type) query = query.eq('type', type);
+      const { data, error } = await query.order('name', { ascending: true });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+  const model = createOpenAICompatible({ name: 'minimax', baseURL: 'https://api.minimax.io/v1', headers: { Authorization: `Bearer ${Deno.env.get('MINIMAX_API_KEY') ?? ''}` } });
+  const { output } = await generateText({
+    model: model('MiniMax-M2.7'), tools: { searchExercises }, output: Output.object({ schema: routineProposalSchema }),
+    prompt: `Crea una rutina usando exclusivamente ejercicios devueltos por searchExercises. Perfil: ${JSON.stringify(validatedProfile)}. Asigna series, repeticiones, peso y descansos según objetivo y nivel. Para cardio usa duración o distancia y deja fuerza a null. El nombre empieza por Rutina.`,
+    stopWhen: ({ steps }) => steps.length >= 3,
+  });
+  return routineProposalSchema.parse(output);
+}
+
+async function persistRoutine(req: Request, userId: string, routine: ApprovedRoutine, corsHeaders: Record<string, string>): Promise<Response> {
+  const name = routine.name?.trim();
+  if (!name || !routine.exercises?.length) {
+    return new Response(JSON.stringify({ error: 'A name and at least one exercise are required' }), { status: 400, headers: corsHeaders });
+  }
+
+  const anonKey = req.headers.get('apikey');
+  if (!anonKey) return new Response(JSON.stringify({ error: 'Missing apikey' }), { status: 401, headers: corsHeaders });
+
+  const client = createClient({
+    baseUrl: Deno.env.get('INSFORGE_URL') ?? 'https://4af6r2tm.eu-central.insforge.app',
+    anonKey,
+  });
+  client.setAccessToken(req.headers.get('Authorization')!.slice(7));
+
+  const exerciseIds = routine.exercises.map((exercise) => exercise.exercise_id);
+  const { data: exercises, error: exerciseError } = await client.database.from('exercises').select('id').in('id', exerciseIds);
+  if (exerciseError) return new Response(JSON.stringify({ error: exerciseError.message }), { status: 500, headers: corsHeaders });
+  if ((exercises ?? []).length !== new Set(exerciseIds).size) {
+    return new Response(JSON.stringify({ error: 'The routine contains an exercise that is not in the catalog' }), { status: 400, headers: corsHeaders });
+  }
+
+  const { data: created, error: routineError } = await client.database
+    .from('routines')
+    .insert([{ user_id: userId, name, description: routine.description?.trim() || null }])
+    .select('id')
+    .single();
+  if (routineError) return new Response(JSON.stringify({ error: routineError.message }), { status: 500, headers: corsHeaders });
+
+  const rows = routine.exercises.map((exercise, index) => ({
+    user_id: userId,
+    routine_id: created.id,
+    exercise_id: exercise.exercise_id,
+    position: exercise.position ?? index,
+    planned_sets: exercise.planned_sets ?? null,
+    planned_repetitions: exercise.planned_repetitions ?? null,
+    planned_weight: exercise.planned_weight ?? null,
+    planned_duration_seconds: exercise.planned_duration_seconds ?? null,
+    planned_distance: exercise.planned_distance ?? null,
+    rest_seconds: exercise.rest_seconds ?? null,
+    notes: exercise.notes ?? null,
+  }));
+  const { error: insertError } = await client.database.from('routine_exercises').insert(rows);
+  if (insertError) {
+    await client.database.from('routines').delete().eq('id', created.id).eq('user_id', userId);
+    return new Response(JSON.stringify({ error: insertError.message }), { status: 500, headers: corsHeaders });
+  }
+
+  return new Response(JSON.stringify({ id: created.id }), { status: 200, headers: corsHeaders });
+}
+
 export default async function(req: Request): Promise<Response> {
   const origin = req.headers.get('Origin') || 'https://4af6r2tm.insforge.site';
   const corsHeaders = buildCorsHeaders(origin);
@@ -115,7 +233,19 @@ export default async function(req: Request): Promise<Response> {
   }
 
   try {
-    const { messages, stream } = await req.json();
+    const { messages, stream, action, routine, profile } = await req.json();
+
+    if (action === 'generate_routine') {
+      const proposal = await generateRoutineProposal(profile, req);
+      return new Response(JSON.stringify({ state: 'awaiting_approval', proposal }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (action === 'approve_routine') {
+      return persistRoutine(req, userId, routine, corsHeaders);
+    }
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
