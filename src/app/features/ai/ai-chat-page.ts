@@ -71,7 +71,7 @@ export class AiChatPage {
             this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(newProposal) }]);
           } else if (result.state === 'profile_ready') {
             this.lastProfile = result.profile!;
-            this.messages.update(msgs => [...msgs, { role: 'assistant', content: 'Generando rutina...' }]);
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: '¡Perfecto! Estoy creando tu rutina personalizada... 🔥' }]);
             const genProposal = await this.aiChat.generateRoutine(result.profile!);
             this.routineProposal.set(genProposal);
             this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(genProposal) }]);
@@ -79,7 +79,8 @@ export class AiChatPage {
             this.messages.update(msgs => [...msgs, { role: 'assistant', content: result.message ?? '¿Qué más necesito saber de ti para crear tu rutina?' }]);
           }
         } catch (err) {
-          this.error.set(err instanceof Error ? err.message : 'No se pudo generar la rutina.');
+          this.error.set(err instanceof Error ? err.message : 'Algo salió mal, ¿probamos de nuevo?');
+
         } finally {
           this.loading.set(false);
         }
@@ -206,7 +207,7 @@ export class AiChatPage {
       this.messages.update(msgs => [...msgs, { role: 'assistant', content: `La rutina se ha guardado correctamente. [Ver rutina](/routines/${result.id})` }]);
       this.routineProposal.set(null);
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'No se pudo guardar la rutina.');
+      this.error.set(err instanceof Error ? err.message : 'Vaya, no pude guardar la rutina. Inténtalo de nuevo.');
     }
   }
 

@@ -146,7 +146,7 @@ function fillExerciseDetails(exercise: CatalogEntry, profile: z.infer<typeof rou
   const levelMultiplier = profile.level === 'beginner' ? 0.5 : profile.level === 'intermediate' ? 0.7 : 0.9;
   const bodyweightRatio = isCompound ? levelMultiplier : levelMultiplier * 0.35;
   const rawWeight = profile.weightKg * bodyweightRatio;
-  const suggestedWeight = exercise.equipment ? Math.round(rawWeight / 2.5) * 2.5 : null;
+  const suggestedWeight = exercise.equipment ? Math.round(rawWeight) : null;
   if (profile.goal === 'strength') {
     return { ...base, planned_sets: 4, planned_repetitions: profile.level === 'beginner' ? 8 : profile.level === 'intermediate' ? 6 : 5, planned_weight: suggestedWeight, planned_duration_seconds: null, planned_distance: null, rest_seconds: 90 };
   }
@@ -257,9 +257,9 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
       const entry = nameToEntry.get(String(raw).toLowerCase().trim());
       if (entry) selected.push(entry);
     }
-    if (selected.length === 0) return { state: 'collecting_requirements', missing: ['exercises'], message: 'Vaya, no encontré ejercicios que encajen con tu petición. Cuéntamelo de otra forma y lo ajusto.' };
+    if (selected.length === 0) return { state: 'collecting_requirements', missing: ['exercises'], message: '¡Ups! No encontré ejercicios del catálogo que encajen con lo que pides. Intenta decirme los nombres de otro modo y los ajusto.' };
     const validatedProfile = profile ? routineProfileSchema.parse(profile) : null;
-    if (!validatedProfile) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito tu perfil para ajustar la rutina con tus datos. Cuéntame edad, peso, objetivo, nivel y días.' };
+    if (!validatedProfile) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito tus datos para ajustar la rutina. Cuéntame tu edad, peso, objetivo, nivel y días de entrenamiento.' };
     const exercises = selected.map((e, i) => fillExerciseDetails(e, validatedProfile, i));
     return {
       state: 'profile_ready',
@@ -294,7 +294,7 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
   const mmData = JSON.parse(mmText);
   const text = mmData?.choices?.[0]?.message?.content ?? '';
   const jsonMatch = text.match(/\{[^{}]*\}/);
-  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: `¡Casi! Para crear tu rutina personalizada necesito unos datos sobre ti:\n\n- Tu **edad** (${AGE_MIN}-${AGE_MAX} años)\n- Tu **peso** (${WEIGHT_MIN}-${WEIGHT_MAX} kg)\n- Tu **objetivo** (fuerza, cardio, perder grasa o general)\n- Tu **nivel** (principiante, intermedio o avanzado)\n- **Días** que puedes entrenar por semana (${DAYS_MIN}-${DAYS_MAX})\n\nEjemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
+  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: `¡Perfecto! Quiero conocerte un poco para crear la rutina ideal para ti 🏋️\n\nCuéntame:\n- Tu **edad** (entre ${AGE_MIN} y ${AGE_MAX} años)\n- Tu **peso** (entre ${WEIGHT_MIN} y ${WEIGHT_MAX} kg)\n- Tu **objetivo** (ganar fuerza, cardio, perder grasa o mantenerte)\n- Tu **nivel** (principiante, intermedio o avanzado)\n- **Días** que puedes entrenar (de ${DAYS_MIN} a ${DAYS_MAX})\n\nPor ejemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   const raw = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
   const numericKeys = new Set(['age', 'weightKg', 'daysPerWeek']);
   const clean: Record<string, unknown> = {};
@@ -310,20 +310,20 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
   const missing = Object.entries(routineProfileSchema.shape).filter(([key]) => clean[key] === undefined).map(([key]) => key);
   if (missing.length > 0) {
     const labels: Record<string, string> = {
-      age: `la **edad** (${AGE_MIN}-${AGE_MAX} años)`,
-      weightKg: `el **peso** (${WEIGHT_MIN}-${WEIGHT_MAX} kg)`,
-      goal: 'el **objetivo** (fuerza/cardio/perder grasa/general)',
-      level: 'el **nivel** (principiante/intermedio/avanzado)',
-      daysPerWeek: `los **días por semana** (${DAYS_MIN}-${DAYS_MAX})`,
+      age: `tu **edad** (${AGE_MIN}-${AGE_MAX} años)`,
+      weightKg: `tu **peso** (${WEIGHT_MIN}-${WEIGHT_MAX} kg)`,
+      goal: 'tu **objetivo** (fuerza/cardio/perder grasa/general)',
+      level: 'tu **nivel** (principiante/intermedio/avanzado)',
+      daysPerWeek: `los **días** que entrenas (${DAYS_MIN}-${DAYS_MAX})`,
     };
     const list = missing.map((key) => labels[key] ?? key).join(', ');
-    return { state: 'collecting_requirements', missing, message: `¡Voy bien! Solo me falta${missing.length > 1 ? 'n' : ''} ${list}.\n\nEj: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
+    return { state: 'collecting_requirements', missing, message: `¡Genial, voy bien! Solo dime ${list} y terminamos.\n\nEjemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   }
   const parsed = routineProfileSchema.safeParse(clean);
   if (!parsed.success) {
-    const fieldLabels: Record<string, string> = { age: `la edad (entre ${AGE_MIN} y ${AGE_MAX} años)`, weightKg: `el peso (entre ${WEIGHT_MIN} y ${WEIGHT_MAX} kg)`, goal: 'el objetivo (fuerza/cardio/perder grasa/general)', level: 'el nivel (principiante/intermedio/avanzado)', daysPerWeek: `los días (de ${DAYS_MIN} a ${DAYS_MAX} por semana)` };
+    const fieldLabels: Record<string, string> = { age: `la edad (tiene que ser entre ${AGE_MIN} y ${AGE_MAX})`, weightKg: `el peso (entre ${WEIGHT_MIN} y ${WEIGHT_MAX} kg)`, goal: 'el objetivo (fuerza/cardio/perder grasa/general)', level: 'el nivel (principiante/intermedio/avanzado)', daysPerWeek: `los días (de ${DAYS_MIN} a ${DAYS_MAX})` };
     const issues = parsed.error.issues.map((issue) => fieldLabels[issue.path[0] as string] ?? issue.path[0]).join(', ');
-    return { state: 'collecting_requirements', missing: parsed.error.issues.map((issue) => String(issue.path[0])), message: `Ups, revisa ${issues}. Por ejemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
+    return { state: 'collecting_requirements', missing: parsed.error.issues.map((issue) => String(issue.path[0])), message: `Casi casi 🙌 Revisa ${issues}. Por ejemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   }
   return { state: 'profile_ready', profile: parsed.data };
 }
