@@ -100,31 +100,30 @@ export class AiChatService {
         const { done, value } = await reader.read();
         if (value) buffer += value;
 
-        const events = buffer.split(/\r?\n\r?\n/);
-        buffer = done ? '' : events.pop() || '';
+        const lines = buffer.split(/\r?\n/);
+        buffer = done ? '' : lines.pop() || '';
 
-        for (const event of events) {
-          for (const line of event.split(/\r?\n/)) {
-            if (!line.startsWith('data:')) continue;
-            const data = line.slice(5).trim();
-            if (data === '[DONE]') return;
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue;
+          const data = line.slice(5).trim();
+          if (data === '[DONE]') return;
 
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed?.choices?.[0]?.delta?.content;
-              if (!delta) continue;
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed?.choices?.[0]?.delta?.content;
+            if (!delta) continue;
 
-              const cleaned = this.stripThinkTags(delta, inThink);
-              if (signal?.aborted) {
-                inThink = false;
-                cleaned.inThink = false;
-              } else {
-                inThink = cleaned.inThink;
-              }
-              if (cleaned.result) yield cleaned.result;
-            } catch {
-              // skip malformed JSON
+            const cleaned = this.stripThinkTags(delta, inThink);
+            if (signal?.aborted) {
+              inThink = false;
+              cleaned.inThink = false;
+            } else {
+              inThink = cleaned.inThink;
             }
+            if (cleaned.result) yield cleaned.result;
+          } catch {
+            // Keep incomplete JSON in the buffer for the next network chunk.
+            buffer = `${line}\n${buffer}`;
           }
         }
 
