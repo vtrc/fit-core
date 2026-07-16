@@ -133,7 +133,8 @@ Called only by Angular after confirmation. It receives the approved routine payl
 ### `ai-chat-page.ts`
 - Add `wizardState = signal<'idle' | 'collecting_profile' | 'confirming_name'>('idle')`
 - When `wizardState === 'idle'` and user sends a message → set `wizardState = 'collecting_profile'`
-- After user answers all 5 fields → call `create-routine` → redirect
+- After user answers all 5 fields → call `routine-agent`, show the generated proposal, and enter `confirming_name`
+- Only after explicit user approval → call `create-routine` → redirect to `/routines/:id`
 
 ### `ai-chat-page.html`
 - When `wizardState === 'confirming_name'`: show routine summary + name input + confirm button
