@@ -8,12 +8,22 @@ export class AuthService {
   readonly user = signal<UserSchema | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+  private restoreSessionPromise: Promise<void> | null = null;
 
   constructor(private readonly insforge: InsforgeClientService) {
     void this.restoreSession();
   }
 
-  async restoreSession(): Promise<void> {
+  restoreSession(): Promise<void> {
+    if (this.restoreSessionPromise) return this.restoreSessionPromise;
+
+    this.restoreSessionPromise = this.restoreSessionInternal().finally(() => {
+      this.restoreSessionPromise = null;
+    });
+    return this.restoreSessionPromise;
+  }
+
+  private async restoreSessionInternal(): Promise<void> {
     this.loading.set(true);
     const { data, error } = await this.insforge.client.auth.getCurrentUser();
     this.user.set(error ? null : (data?.user ?? null));

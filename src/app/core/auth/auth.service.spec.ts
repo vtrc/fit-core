@@ -51,6 +51,35 @@ describe('AuthService', () => {
     expect(service.error()).toBeNull();
   });
 
+  it('shares an in-flight session restoration', async () => {
+    let resolveUser!: (result: { data: { user: null }; error: null }) => void;
+    getCurrentUser.mockImplementation(
+      () => new Promise((resolve) => (resolveUser = resolve)),
+    );
+
+    const service = TestBed.inject(AuthService);
+    const secondRestore = service.restoreSession();
+
+    expect(getCurrentUser).toHaveBeenCalledTimes(1);
+
+    resolveUser({ data: { user: null }, error: null });
+    await secondRestore;
+  });
+
+  it('clears the in-flight session restoration after a rejection', async () => {
+    const failure = new Error('network failed');
+    getCurrentUser
+      .mockRejectedValueOnce(failure)
+      .mockResolvedValueOnce({ data: { user: null }, error: null });
+
+    const service = TestBed.inject(AuthService);
+
+    await expect(service.restoreSession()).rejects.toThrow(failure);
+    await service.restoreSession();
+
+    expect(getCurrentUser).toHaveBeenCalledTimes(2);
+  });
+
   it('delegates Google sign-in to InsForge with the dashboard redirect', async () => {
     const service = TestBed.inject(AuthService);
 
