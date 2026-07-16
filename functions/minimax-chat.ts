@@ -139,8 +139,9 @@ async function generateRoutineProposal(profile: unknown, req: Request): Promise<
   client.setAccessToken(token);
   const { data: catalog, error: catalogError } = await client.database
     .from('exercises')
-    .select('id, name, type, equipment, muscle_groups, supported_metrics')
-    .order('name', { ascending: true });
+    .select('id, name, type, equipment, muscle_groups')
+    .order('name', { ascending: true })
+    .limit(60);
   if (catalogError) throw new Error(catalogError.message);
   const model = createOpenAICompatible({ name: 'minimax', baseURL: 'https://api.minimax.io/v1', headers: { Authorization: `Bearer ${Deno.env.get('MINIMAX_API_KEY') ?? ''}` } });
   const { text } = await generateText({
