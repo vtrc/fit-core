@@ -88,25 +88,39 @@ export class AiChatService {
       throw new Error((body as any)?.error || `Error ${response.status}`);
     }
 
-    const body = await response.text();
+    const reader = response.body!.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = '';
     let inThink = false;
 
-    for (const line of body.split(/\r?\n/)) {
-      if (signal?.aborted || !line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if (data === '[DONE]') return;
+    try {
+      while (!signal?.aborted) {
+        const { done, value } = await reader.read();
+        buffer += value ?? '';
+        const lines = buffer.split(/\r?\n/);
+        buffer = done ? '' : lines.pop() || '';
 
-      try {
-        const parsed = JSON.parse(data);
-        const delta = parsed?.choices?.[0]?.delta?.content;
-        if (!delta) continue;
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue;
+          const data = line.slice(5).trim();
+          if (data === '[DONE]') return;
 
-        const cleaned = this.stripThinkTags(delta, inThink);
-        inThink = cleaned.inThink;
-        if (cleaned.result) yield cleaned.result;
-      } catch {
-        // Ignore malformed events and continue with the remaining response.
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed?.choices?.[0]?.delta?.content;
+            if (!delta) continue;
+
+            const cleaned = this.stripThinkTags(delta, inThink);
+            inThink = cleaned.inThink;
+            if (cleaned.result) yield cleaned.result;
+          } catch {
+            // Ignore malformed events and continue with the remaining response.
+          }
+        }
+
+        if (done) break;
       }
+    } finally {
+      reader.releaseLock();
     }
   }
 
