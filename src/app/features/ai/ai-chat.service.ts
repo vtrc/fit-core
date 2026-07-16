@@ -88,50 +88,25 @@ export class AiChatService {
       throw new Error((body as any)?.error || `Error ${response.status}`);
     }
 
-    const reader = response.body!
-      .pipeThrough(new TextDecoderStream())
-      .getReader();
-
-    let buffer = '';
+    const body = await response.text();
     let inThink = false;
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (value) buffer += value;
+    for (const line of body.split(/\r?\n/)) {
+      if (signal?.aborted || !line.startsWith('data:')) continue;
+      const data = line.slice(5).trim();
+      if (data === '[DONE]') return;
 
-        const events = buffer.split(/\r?\n(?:\r?\n)+/);
-        buffer = done ? '' : events.pop() || '';
+      try {
+        const parsed = JSON.parse(data);
+        const delta = parsed?.choices?.[0]?.delta?.content;
+        if (!delta) continue;
 
-        for (const event of events) {
-          for (const line of event.split(/\r?\n/)) {
-            if (!line.startsWith('data:')) continue;
-            const data = line.slice(5).trim();
-            if (data === '[DONE]') return;
-
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed?.choices?.[0]?.delta?.content;
-              if (!delta) continue;
-
-              const cleaned = this.stripThinkTags(delta, inThink);
-              if (signal?.aborted) {
-                inThink = false;
-                cleaned.inThink = false;
-              } else {
-                inThink = cleaned.inThink;
-              }
-              if (cleaned.result) yield cleaned.result;
-            } catch {
-              // Ignore malformed events; the stream will continue with the next event.
-            }
-          }
-        }
-
-        if (done) break;
+        const cleaned = this.stripThinkTags(delta, inThink);
+        inThink = cleaned.inThink;
+        if (cleaned.result) yield cleaned.result;
+      } catch {
+        // Ignore malformed events and continue with the remaining response.
       }
-    } finally {
-      reader.cancel();
     }
   }
 
