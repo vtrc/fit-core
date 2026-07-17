@@ -1,4 +1,10 @@
-<main >
+<main
+  (touchstart)="onTouchStart($event)"
+  (touchmove)="onTouchMove($event)"
+  (touchend)="onTouchEnd()"
+  [style.transform]="pullTransform()"
+  [style.transition]="pullTransition()"
+>
   <header class="hero">
     <div>
        <p class="eyebrow">RUTINAS</p>
@@ -14,8 +20,18 @@
     <p class="banner success">{{ message }}</p>
   }
 
+  @if (pullToRefresh()) {
+    <div class="ptr-indicator">
+      <span class="ptr-spinner"></span>
+    </div>
+  }
+
   @if (loading()) {
-    <section class="card state"><p>Cargando rutinas…</p></section>
+    <section class="grid">
+      <div class="skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div></div>
+    </section>
   } @else if (error(); as errorMessage) {
     <section class="card state">
       <p class="error">{{ errorMessage }}</p>
@@ -32,6 +48,8 @@
     <section class="grid">
       @for (routine of routines(); track routine.id) {
         <app-routine-card
+          appSwipeToDelete
+          (swiped)="deleteRoutine(routine.id)"
           [eyebrow]="'Actualizada ' + formatDate(routine.updatedAt)"
           [name]="routine.name"
           [description]="routine.description"

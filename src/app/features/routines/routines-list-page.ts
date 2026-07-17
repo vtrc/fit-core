@@ -4,11 +4,12 @@ import type { Routine } from '../../core/domain/models';
 import { RoutinesService } from './routines.service';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
 import { RoutineCardComponent } from '../../shared/routine-card/routine-card';
+import { SwipeToDeleteDirective } from './swipe-to-delete.directive';
 
 @Component({
   selector: 'app-routines-list-page',
   standalone: true,
-  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent],
+  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, SwipeToDeleteDirective],
   templateUrl: './routines-list-page.html',
   styleUrl: './routines-list-page.scss',
 })
@@ -21,12 +22,17 @@ export class RoutinesListPage {
   protected readonly error = signal<string | null>(null);
   protected readonly routines = signal<Routine[]>([]);
   protected readonly deletingId = signal<string | null>(null);
+  protected readonly pullToRefresh = signal(false);
+  protected readonly pullTransform = signal('');
+  protected readonly pullTransition = signal('');
+
+  private touchStartY = 0;
+  private touchCurrentY = 0;
+  private isPulling = false;
+
   protected readonly flashMessage = computed(() => {
     const deleted = this.route.snapshot.queryParamMap.get('deleted');
-    if (deleted === '1') {
-      return 'Routine deleted.';
-    }
-
+    if (deleted === '1') return 'Routine deleted.';
     const created = this.route.snapshot.queryParamMap.get('created');
     return created === '1' ? 'Rutina guardada.' : null;
   });
@@ -43,10 +49,12 @@ export class RoutinesListPage {
       next: (routines) => {
         this.routines.set(routines);
         this.loading.set(false);
+        this.pullDragEnd();
       },
       error: (error: unknown) => {
         this.error.set(this.toMessage(error, 'We could not load your routines.'));
         this.loading.set(false);
+        this.pullDragEnd();
       },
     });
 
@@ -72,6 +80,46 @@ export class RoutinesListPage {
         this.deletingId.set(null);
       },
     });
+  }
+
+  protected onTouchStart(event: TouchEvent): void {
+    if (window.scrollY > 0) return;
+    this.touchStartY = event.touches[0].clientY;
+    this.isPulling = false;
+  }
+
+  protected onTouchMove(event: TouchEvent): void {
+    if (window.scrollY > 0) return;
+    this.touchCurrentY = event.touches[0].clientY;
+    const diff = this.touchCurrentY - this.touchStartY;
+
+    if (diff > 0) {
+      this.isPulling = true;
+      this.pullTransition.set('');
+      const damped = Math.min(diff * 0.4, 80);
+      this.pullTransform.set(`translateY(${damped}px)`);
+      this.pullToRefresh.set(damped >= 60);
+    }
+  }
+
+  protected onTouchEnd(): void {
+    if (!this.isPulling) return;
+
+    if (this.pullToRefresh()) {
+      this.pullTransition.set('transform 0.2s ease');
+      this.pullTransform.set('translateY(0)');
+      this.pullToRefresh.set(false);
+      this.load();
+    } else {
+      this.pullDragEnd();
+    }
+  }
+
+  private pullDragEnd(): void {
+    this.pullTransition.set('transform 0.2s ease');
+    this.pullTransform.set('translateY(0)');
+    this.pullToRefresh.set(false);
+    this.isPulling = false;
   }
 
   private toMessage(error: unknown, fallback: string): string {
