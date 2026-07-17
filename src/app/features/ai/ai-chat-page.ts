@@ -50,27 +50,18 @@ export class AiChatPage {
       this.routineMode = true;
       this.inputMessage.set('');
       const proposal = this.routineProposal();
-      if (proposal && /^(sí|si|correcta|correcto|acepto|guardar|ok)/i.test(content)) {
-        await this.approveRoutine();
-        return;
-      }
       if (proposal) {
-        const nameMatch = content.match(/(?:nombre|llámala|llamala)\s*[:=]?\s*(.+)$/i);
-        if (nameMatch) {
-          const renamed = { ...proposal, name: nameMatch[1].trim() };
-          this.routineProposal.set(renamed);
-          this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(renamed) }]);
-          return;
-        }
         this.routineProposal.set(null);
         this.loading.set(true);
         try {
           const result = await this.aiChat.sendRoutineMessage(content, proposal, this.lastProfile ?? undefined);
-          const newProposal = result.proposal;
-          if (newProposal) {
-            this.routineProposal.set(newProposal);
+          if (result.action === 'approve') {
+            this.routineId.set(result.id!);
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: `La rutina se ha guardado correctamente.\n\n[Ver rutina](/routines/${result.id})` }]);
+          } else if (result.action === 'rename' || result.action === 'modify') {
+            this.routineProposal.set(result.proposal!);
             this.lastProfile = result.profile ?? this.lastProfile;
-            this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(newProposal) }]);
+            this.messages.update(msgs => [...msgs, { role: 'assistant', content: this.formatProposal(result.proposal!) }]);
           } else if (result.state === 'profile_ready') {
             this.lastProfile = result.profile!;
             this.messages.update(msgs => [...msgs, { role: 'assistant', content: '¡Perfecto! Estoy creando tu rutina personalizada... 🔥' }]);
@@ -82,7 +73,6 @@ export class AiChatPage {
           }
         } catch (err) {
           this.error.set(err instanceof Error ? err.message : 'Algo salió mal, ¿probamos de nuevo?');
-
         } finally {
           this.loading.set(false);
         }
@@ -202,15 +192,9 @@ export class AiChatPage {
 
   async approveRoutine(): Promise<void> {
     const proposal = this.routineProposal();
-    if (!proposal) return;
-    try {
-      const result = await this.aiChat.approveRoutine(proposal);
-      this.routineId.set(result.id);
-      this.messages.update(msgs => [...msgs, { role: 'assistant', content: `La rutina se ha guardado correctamente.\n\n[Ver rutina](/routines/${result.id})` }]);
-      this.routineProposal.set(null);
-    } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Vaya, no pude guardar la rutina. Inténtalo de nuevo.');
-    }
+    if (!proposal || this.streaming() || this.loading()) return;
+    this.inputMessage.set('Sí');
+    await this.sendMessage();
   }
 
   private formatProposal(proposal: RoutineProposal): string {

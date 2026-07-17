@@ -229,11 +229,11 @@ async function loadCatalog(token: string, anonKey: string): Promise<{ entries: C
   };
 }
 
-async function handleRoutineMessage(message: string, proposal?: unknown, profile?: unknown, token?: string, anonKey?: string, messages?: Array<{ role: string; content: string }>): Promise<unknown> {
+async function handleRoutineMessage(message: string, userId: string, proposal?: unknown, profile?: unknown, token?: string, anonKey?: string, messages?: Array<{ role: string; content: string }>): Promise<unknown> {
   const mmKey = Deno.env.get('MINIMAX_API_KEY') ?? '';
 
   if (proposal) {
-    const prop = proposal as { name: string; description: string; exercises: Array<{ exercise_name?: string }> };
+    const prop = proposal as { name: string; description: string; exercises: Array<{ exercise_name?: string; exercise_id: string; planned_sets: number | null; planned_repetitions: number | null; planned_weight: number | null; planned_duration_seconds: number | null; planned_distance: number | null; rest_seconds: number | null; notes: string | null; position: number }> };
     const currentNames = prop.exercises.map((e: { exercise_name?: string }) => e.exercise_name).join(', ');
     const mmRes = await fetch('https://api.minimax.io/v1/chat/completions', {
       method: 'POST',
@@ -241,8 +241,8 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
       body: JSON.stringify({
         model: 'MiniMax-M2.7',
         messages: [
-          { role: 'system', content: 'Eres un entrenador personal. Devuelve SOLO JSON sin explicaciones.' },
-          { role: 'user', content: `Rutina actual: ${currentNames} (${prop.exercises.length} ejercicios). Usuario dice: "${message}". Respeta EXACTAMENTE lo que pide: si dice más ejercicios, añade; si dice menos, quita. Si pide un número concreto, ese número es OBLIGATORIO. Devuelve SOLO un array JSON con los nombres exactos del catálogo.` },
+          { role: 'system', content: 'Eres un entrenador personal. Responde SOLO JSON sin explicaciones.' },
+          { role: 'user', content: `Rutina actual: ${currentNames} (${prop.exercises.length} ejercicios, nombre: "${prop.name}").\nUsuario: "${message}"\n\nDetermina qué quiere hacer:\n1. "approve" — si está conforme, quiere guardar, dice sí/correcto/está bien/me gusta/ok/guardar\n2. "rename" — si quiere cambiar el nombre (ej: "llámala X", "nombre: X", "ponle X")\n3. "modify" — si quiere cambiar los ejercicios (añadir/quitar/reemplazar)\n\nDevuelve JSON:\n- Si approve: {"intent":"approve"}\n- Si rename: {"intent":"rename","name":"nuevo nombre"}\n- Si modify: {"intent":"modify","exercises":["nombre1","nombre2",...]}` },
         ],
       }),
     });
@@ -250,26 +250,42 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
     if (!mmRes.ok) throw new Error(`MiniMax API error: ${mmRes.status} ${mmText}`);
     const mmData = JSON.parse(mmText);
     const text = mmData?.choices?.[0]?.message?.content ?? '';
-    const rawList: string[] = JSON.parse(text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim());
-    const { nameToEntry, idToEntry } = await loadCatalog(token ?? '', anonKey ?? '');
-    const selected: CatalogEntry[] = [];
-    for (const raw of rawList) {
-      const entry = nameToEntry.get(String(raw).toLowerCase().trim());
-      if (entry) selected.push(entry);
+    const parsed = JSON.parse(text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim());
+
+    if (parsed.intent === 'approve') {
+      const client = createClient({ baseUrl: Deno.env.get('INSFORGE_URL') ?? 'https://4af6r2tm.eu-central.insforge.app', anonKey: anonKey ?? '' });
+      client.setAccessToken(token ?? '');
+      const id = await saveRoutineToDb(client, userId, prop as ApprovedRoutine);
+      return { action: 'approve', id };
     }
-    if (selected.length === 0) return { state: 'collecting_requirements', missing: ['exercises'], message: '¡Ups! No encontré ejercicios del catálogo que encajen con lo que pides. Intenta decirme los nombres de otro modo y los ajusto.' };
-    const validatedProfile = profile ? routineProfileSchema.parse(profile) : null;
-    if (!validatedProfile) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito tus datos para ajustar la rutina. Cuéntame tu edad, peso, objetivo, nivel y días de entrenamiento.' };
-    const exercises = selected.map((e, i) => fillExerciseDetails(e, validatedProfile, i));
-    return {
-      state: 'profile_ready',
-      proposal: {
-        name: prop.name,
-        description: prop.description,
-        exercises: exercises.map((e) => ({ ...e, exercise_name: idToEntry.get(e.exercise_id)?.name ?? 'Ejercicio' })),
-      },
-      profile: validatedProfile,
-    };
+
+    if (parsed.intent === 'rename' && parsed.name) {
+      return { action: 'rename', proposal: { ...prop, name: parsed.name.trim() } };
+    }
+
+    if (parsed.intent === 'modify' && Array.isArray(parsed.exercises)) {
+      const { nameToEntry, idToEntry } = await loadCatalog(token ?? '', anonKey ?? '');
+      const selected: CatalogEntry[] = [];
+      for (const raw of parsed.exercises) {
+        const entry = nameToEntry.get(String(raw).toLowerCase().trim());
+        if (entry) selected.push(entry);
+      }
+      if (selected.length === 0) return { state: 'collecting_requirements', missing: ['exercises'], message: '¡Ups! No encontré ejercicios del catálogo que encajen con lo que pides. Intenta decirme los nombres de otro modo y los ajusto.' };
+      const validatedProfile = profile ? routineProfileSchema.parse(profile) : null;
+      if (!validatedProfile) return { state: 'collecting_requirements', missing: ['profile'], message: 'Necesito tus datos para ajustar la rutina. Cuéntame tu edad, peso, objetivo, nivel y días de entrenamiento.' };
+      const exercises = selected.map((e, i) => fillExerciseDetails(e, validatedProfile, i));
+      return {
+        action: 'modify',
+        proposal: {
+          name: prop.name,
+          description: prop.description,
+          exercises: exercises.map((e) => ({ ...e, exercise_name: idToEntry.get(e.exercise_id)?.name ?? 'Ejercicio' })),
+        },
+        profile: validatedProfile,
+      };
+    }
+
+    return { action: 'modify', proposal };
   }
 
   const conversationContext = (messages ?? [])
@@ -328,34 +344,21 @@ async function handleRoutineMessage(message: string, proposal?: unknown, profile
   return { state: 'profile_ready', profile: parsed.data };
 }
 
-async function persistRoutine(req: Request, userId: string, routine: ApprovedRoutine, corsHeaders: Record<string, string>): Promise<Response> {
+async function saveRoutineToDb(client: ReturnType<typeof createClient>, userId: string, routine: ApprovedRoutine): Promise<string> {
   const name = routine.name?.trim();
-  if (!name || !routine.exercises?.length) {
-    return new Response(JSON.stringify({ error: 'A name and at least one exercise are required' }), { status: 400, headers: corsHeaders });
-  }
+  if (!name || !routine.exercises?.length) throw new Error('A name and at least one exercise are required');
 
-  const anonKey = req.headers.get('apikey');
-  if (!anonKey) return new Response(JSON.stringify({ error: 'Missing apikey' }), { status: 401, headers: corsHeaders });
-
-  const client = createClient({
-    baseUrl: Deno.env.get('INSFORGE_URL') ?? 'https://4af6r2tm.eu-central.insforge.app',
-    anonKey,
-  });
-  client.setAccessToken(req.headers.get('Authorization')!.slice(7));
-
-  const exerciseIds = routine.exercises.map((exercise) => exercise.exercise_id);
+  const exerciseIds = routine.exercises.map((e) => e.exercise_id);
   const { data: exercises, error: exerciseError } = await client.database.from('exercises').select('id').in('id', exerciseIds);
-  if (exerciseError) return new Response(JSON.stringify({ error: exerciseError.message }), { status: 500, headers: corsHeaders });
-  if ((exercises ?? []).length !== new Set(exerciseIds).size) {
-    return new Response(JSON.stringify({ error: 'The routine contains an exercise that is not in the catalog' }), { status: 400, headers: corsHeaders });
-  }
+  if (exerciseError) throw new Error(exerciseError.message);
+  if ((exercises ?? []).length !== new Set(exerciseIds).size) throw new Error('The routine contains an exercise that is not in the catalog');
 
   const { data: created, error: routineError } = await client.database
     .from('routines')
     .insert([{ user_id: userId, name, description: routine.description?.trim() || null }])
     .select('id')
     .single();
-  if (routineError) return new Response(JSON.stringify({ error: routineError.message }), { status: 500, headers: corsHeaders });
+  if (routineError) throw new Error(routineError.message);
 
   const rows = routine.exercises.map((exercise, index) => ({
     user_id: userId,
@@ -373,10 +376,23 @@ async function persistRoutine(req: Request, userId: string, routine: ApprovedRou
   const { error: insertError } = await client.database.from('routine_exercises').insert(rows);
   if (insertError) {
     await client.database.from('routines').delete().eq('id', created.id).eq('user_id', userId);
-    return new Response(JSON.stringify({ error: insertError.message }), { status: 500, headers: corsHeaders });
+    throw new Error(insertError.message);
   }
 
-  return new Response(JSON.stringify({ id: created.id }), { status: 200, headers: corsHeaders });
+  return created.id;
+}
+
+async function persistRoutine(req: Request, userId: string, routine: ApprovedRoutine, corsHeaders: Record<string, string>): Promise<Response> {
+  try {
+    const anonKey = req.headers.get('apikey');
+    if (!anonKey) return new Response(JSON.stringify({ error: 'Missing apikey' }), { status: 401, headers: corsHeaders });
+    const client = createClient({ baseUrl: Deno.env.get('INSFORGE_URL') ?? 'https://4af6r2tm.eu-central.insforge.app', anonKey });
+    client.setAccessToken(req.headers.get('Authorization')!.slice(7));
+    const id = await saveRoutineToDb(client, userId, routine);
+    return new Response(JSON.stringify({ id }), { status: 200, headers: corsHeaders });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), { status: 500, headers: corsHeaders });
+  }
 }
 
 export default async function(req: Request): Promise<Response> {
@@ -410,7 +426,7 @@ export default async function(req: Request): Promise<Response> {
     const { messages, stream, action, routine, profile, message, proposal } = await req.json();
 
     if (action === 'routine_message') {
-      return new Response(JSON.stringify(await handleRoutineMessage(message, proposal, profile, token, anonKey, messages as Array<{ role: string; content: string }> | undefined)), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify(await handleRoutineMessage(message, userId, proposal, profile, token, anonKey, messages as Array<{ role: string; content: string }> | undefined)), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     if (action === 'generate_routine') {

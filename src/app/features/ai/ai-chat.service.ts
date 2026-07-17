@@ -41,6 +41,8 @@ export interface RoutineMessageResponse {
   proposal?: RoutineProposal;
   missing?: string[];
   profile?: RoutineProfile;
+  action?: 'approve' | 'rename' | 'modify';
+  id?: string;
 }
 
 @Injectable({ providedIn: 'root' })
