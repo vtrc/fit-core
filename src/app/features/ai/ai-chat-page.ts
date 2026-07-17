@@ -205,7 +205,7 @@ export class AiChatPage {
     try {
       const result = await this.aiChat.approveRoutine(proposal);
       this.routineId.set(result.id);
-      this.messages.update(msgs => [...msgs, { role: 'assistant', content: `La rutina se ha guardado correctamente. [Ver rutina](/routines/${result.id})` }]);
+      this.messages.update(msgs => [...msgs, { role: 'assistant', content: `La rutina se ha guardado correctamente.\n\n[Ver rutina](/routines/${result.id})` }]);
       this.routineProposal.set(null);
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Vaya, no pude guardar la rutina. Inténtalo de nuevo.');
