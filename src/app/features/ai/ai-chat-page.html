@@ -69,7 +69,7 @@
         <div class="message-content">
           <div class="message-bubble">
             @if (msg.role === 'assistant') {
-            <div class="markdown-content" [innerHTML]="renderMarkdown(msg.content)"></div>
+            <div class="markdown-content" [innerHTML]="renderMarkdownFn!(msg.content)"></div>
             } @else {
             {{ msg.content }}
             }

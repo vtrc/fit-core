@@ -1,7 +1,7 @@
-import { Component, viewChild, inject, signal, effect, ElementRef } from '@angular/core';
+import { Component, viewChild, inject, signal, effect, ElementRef, injectAsync } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AiChatService, ChatMessage, RoutineProposal, RoutineProfile } from './ai-chat.service';
-import { renderMarkdown } from './markdown.utils';
+import { MarkdownRenderer } from './markdown-renderer';
 
 @Component({
   selector: 'app-ai-chat-page',
@@ -17,11 +17,12 @@ export class AiChatPage {
   protected readonly inputMessage = signal('');
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly renderMarkdown = renderMarkdown;
+  protected readonly renderMarkdown = injectAsync(() => import('./markdown-renderer').then(m => m.MarkdownRenderer));
   protected readonly routineProposal = signal<RoutineProposal | null>(null);
   protected readonly routineId = signal<string | null>(null);
   private lastProfile: RoutineProfile | null = null;
   private scrollContainer = viewChild<ElementRef<HTMLDivElement>>('scrollContainer');
+  protected renderMarkdownFn: ((markdown: string) => string) | null = null;
 
   constructor() {
     effect(() => {
@@ -32,6 +33,10 @@ export class AiChatPage {
         setTimeout(() => el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }));
       }
     });
+  }
+  async ngOnInit() {
+    const render = await this.renderMarkdown()
+    this.renderMarkdownFn = (markdown: string) => render.renderMarkdown(markdown);
   }
 
   async sendMessage(): Promise<void> {

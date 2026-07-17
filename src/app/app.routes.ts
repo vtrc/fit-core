@@ -2,38 +2,26 @@ import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
 import { AppShell } from './shared/shell/shell';
-import { DashboardPage } from './features/dashboard/dashboard-page';
-import { LoginPage } from './features/auth/login-page';
-import { AiChatPage } from './features/ai/ai-chat-page';
-import { RoutineDetailPage } from './features/routines/routine-detail-page';
-import { RoutineEditarorPage } from './features/routines/routine-editor-page';
-import { RoutinesListPage } from './features/routines/routines-list-page';
-import { WorkoutSessionPage } from './features/workouts/workout-session-page';
-import { WorkoutStartPage } from './features/workouts/workout-start-page';
-import { WorkoutSummaryPage } from './features/workouts/workout-summary-page';
-import { HistoryListPage } from './features/history/history-list-page';
-import { HistoryDetailPage } from './features/history/history-detail-page';
-import { StatisticsPage } from './features/statistics/statistics-page';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginPage },
+  { path: 'login', loadComponent: () => import('./features/auth/login-page').then(m => m.LoginPage) },
   {
     path: '',
     canActivate: [authGuard],
     component: AppShell,
     children: [
-      { path: 'dashboard', component: DashboardPage },
-      { path: 'routines', component: RoutinesListPage },
-      { path: 'routines/new', component: RoutineEditarorPage },
-      { path: 'routines/:id', component: RoutineDetailPage },
-      { path: 'routines/:id/edit', component: RoutineEditarorPage },
-      { path: 'workouts/start', component: WorkoutStartPage },
-      { path: 'workouts/session', component: WorkoutSessionPage },
-      { path: 'workouts/summary', component: WorkoutSummaryPage },
-      { path: 'history', component: HistoryListPage },
-      { path: 'history/:id', component: HistoryDetailPage },
-      { path: 'statistics', component: StatisticsPage },
-      { path: 'ai', component: AiChatPage },
+      { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard-page').then(m => m.DashboardPage) },
+      { path: 'routines', loadComponent: () => import('./features/routines/routines-list-page').then(m => m.RoutinesListPage) },
+      { path: 'routines/new', loadComponent: () => import('./features/routines/routine-editor-page').then(m => m.RoutineEditarorPage) },
+      { path: 'routines/:id', loadComponent: () => import('./features/routines/routine-detail-page').then(m => m.RoutineDetailPage) },
+      { path: 'routines/:id/edit', loadComponent: () => import('./features/routines/routine-editor-page').then(m => m.RoutineEditarorPage) },
+      { path: 'workouts/start', loadComponent: () => import('./features/workouts/workout-start-page').then(m => m.WorkoutStartPage) },
+      { path: 'workouts/session', loadComponent: () => import('./features/workouts/workout-session-page').then(m => m.WorkoutSessionPage) },
+      { path: 'workouts/summary', loadComponent: () => import('./features/workouts/workout-summary-page').then(m => m.WorkoutSummaryPage) },
+      { path: 'history', loadComponent: () => import('./features/history/history-list-page').then(m => m.HistoryListPage) },
+      { path: 'history/:id', loadComponent: () => import('./features/history/history-detail-page').then(m => m.HistoryDetailPage) },
+      { path: 'statistics', loadComponent: () => import('./features/statistics/statistics-page').then(m => m.StatisticsPage) },
+      { path: 'ai', loadComponent: () => import('./features/ai/ai-chat-page').then(m => m.AiChatPage) },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: '**', redirectTo: 'dashboard' },
     ],
