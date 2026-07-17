@@ -5,11 +5,12 @@ import { RoutinesService } from './routines.service';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
 import { RoutineCardComponent } from '../../shared/routine-card/routine-card';
 import { SwipeToDeleteDirective } from './swipe-to-delete.directive';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-routines-list-page',
   standalone: true,
-  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, SwipeToDeleteDirective],
+  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, SwipeToDeleteDirective, PageHeaderComponent],
   templateUrl: './routines-list-page.html',
   styleUrl: './routines-list-page.scss',
 })

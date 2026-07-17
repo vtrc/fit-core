@@ -1,11 +1,9 @@
 <main class="page">
-  <header class="hero">
-    <div>
-      <p class="eyebrow">DETALLE DEL ENTRENAMIENTO</p>
-      <h1>Registro del entrenamiento.</h1>
-    </div>
+  <app-page-header eyebrow="DETALLE DEL ENTRENAMIENTO" title="Registro del entrenamiento." />
+
+  <div class="page-toolbar">
     <a class="btn-secondary" routerLink="/history">Volver al historial</a>
-  </header>
+  </div>
 
   @if (loading()) {
     <section class="card skeleton-card">

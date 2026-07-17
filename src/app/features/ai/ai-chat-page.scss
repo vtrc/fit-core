@@ -13,32 +13,17 @@
   background: var(--parchment);
 }
 
-.page-header {
+.chat-toolbar {
   flex-shrink: 0;
-  padding: var(--space-6) var(--space-5) var(--space-4);
-  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-2) var(--space-5);
   background: var(--paper);
-
-  h1 {
-    margin: var(--space-1) 0 0;
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    letter-spacing: -0.01em;
-    color: var(--ink);
-  }
-
-  .eyebrow {
-    margin: 0;
-    color: var(--rust);
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .btn-clear {
-  margin-top: var(--space-3);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-1) var(--space-3);
   background: transparent;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
@@ -420,12 +405,8 @@
 }
 
 @media (max-width: 640px) {
-  .page-header {
-    padding: var(--space-4);
-
-    h1 {
-      font-size: 1.5rem;
-    }
+  .chat-toolbar {
+    padding: var(--space-2) var(--space-4);
   }
 
   .chat-container {

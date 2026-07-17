@@ -1,10 +1,7 @@
 :host {
   display: block;
-}
-
-.hero-actions {
-  display: flex;
-  gap: var(--space-4);
+  margin-inline: calc(-1 * var(--shell-padding-x, 1rem));
+  margin-top: calc(-1 * var(--shell-padding-y, 1rem));
 }
 
 .success {

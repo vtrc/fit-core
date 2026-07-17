@@ -2,11 +2,12 @@ import { Component, viewChild, inject, signal, effect, ElementRef, injectAsync }
 import { FormsModule } from '@angular/forms';
 import { AiChatService, ChatMessage, RoutineProposal, RoutineProfile } from './ai-chat.service';
 import { MarkdownRenderer } from './markdown-renderer';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-ai-chat-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, PageHeaderComponent],
   templateUrl: './ai-chat-page.html',
   styleUrl: './ai-chat-page.scss',
 })

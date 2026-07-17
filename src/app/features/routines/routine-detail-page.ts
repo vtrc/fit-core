@@ -3,11 +3,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import type { RoutineDetail } from './routines.service';
 import { RoutinesService } from './routines.service';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-routine-detail-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PageHeaderComponent],
   templateUrl: './routine-detail-page.html',
   styleUrl: './routine-detail-page.scss',
 })

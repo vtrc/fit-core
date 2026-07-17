@@ -1,14 +1,9 @@
 <main class="page">
-  <header class="hero">
-    <div>
-      <p class="eyebrow">ESTADÍSTICAS</p>
-      <h1>Tu entrenamiento en cifras.</h1>
-      <p class="lede">Todos los valores se calculan a partir de tu historial de entrenamientos.</p>
-    </div>
-    <div class="hero-actions">
-      <a class="btn-primary" routerLink="/history">Ver historial</a>
-    </div>
-  </header>
+  <app-page-header eyebrow="ESTADÍSTICAS" title="Tu entrenamiento en cifras." lede="Todos los valores se calculan a partir de tu historial de entrenamientos." />
+
+  <div class="page-toolbar">
+    <a class="btn-primary" routerLink="/history">Ver historial</a>
+  </div>
 
   <form class="card filters" (submit)="onSubmit($event)" aria-label="Filtrar estadísticas por fecha">
     <div class="filters-row">

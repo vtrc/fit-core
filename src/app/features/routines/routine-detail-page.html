@@ -1,17 +1,12 @@
 <main class="page">
-  <header class="hero">
-    <div>
-      <p class="eyebrow">DETALLE DE LA RUTINA</p>
-      <h1>{{ routine()?.name || 'Rutina' }}</h1>
-      <p class="lede">{{ routine()?.description || 'Sin descripción.' }}</p>
-    </div>
-    <div class="hero-actions">
-      <a routerLink="/routines">Volver a las rutinas</a>
-      @if (routine(); as currentRoutine) {
-        <a class="btn-primary" [routerLink]="['/routines', currentRoutine.id, 'edit']">Editar</a>
-      }
-    </div>
-  </header>
+  <app-page-header eyebrow="DETALLE DE LA RUTINA" [title]="routine()?.name || 'Rutina'" [lede]="routine()?.description || 'Sin descripción.'" />
+
+  <div class="page-toolbar">
+    <a routerLink="/routines">Volver a las rutinas</a>
+    @if (routine(); as currentRoutine) {
+      <a class="btn-primary" [routerLink]="['/routines', currentRoutine.id, 'edit']">Editar</a>
+    }
+  </div>
 
   @if (route.snapshot.queryParamMap.get('saved') === '1') {
     <p class="banner success">Rutina guardada.</p>

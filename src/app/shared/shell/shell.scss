@@ -1,9 +1,12 @@
 .shell {
   --footer-height: calc(4rem + env(safe-area-inset-bottom));
+  --shell-padding-x: 1rem;
+  --shell-padding-y: 1rem;
   min-height: 100dvh;
-  padding: 1rem 1rem;
+  padding: var(--shell-padding-y) var(--shell-padding-x);
   padding-bottom: var(--footer-height);
   background: var(--parchment);
+  overflow-x: clip;
 }
 
 .nav-footer {
@@ -52,7 +55,7 @@
 
 @media (min-width: 640px) {
   .shell {
-    padding: 1rem 1.6rem;
+    --shell-padding-x: 1.6rem;
     padding-bottom: var(--footer-height);
   }
 }

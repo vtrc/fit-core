@@ -3,11 +3,12 @@ import { form, FormField, debounce } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 
 import { EntrenamientosService, type WorkoutSummaryModel } from './workouts.service';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-workout-summary-page',
   standalone: true,
-  imports: [FormField, RouterLink],
+  imports: [FormField, RouterLink, PageHeaderComponent],
   templateUrl: './workout-summary-page.html',
   styleUrl: './workout-summary-page.scss',
 })

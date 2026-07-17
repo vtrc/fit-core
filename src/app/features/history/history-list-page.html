@@ -1,14 +1,9 @@
 <main class="page">
-  <header class="hero">
-    <div>
-      <p class="eyebrow">HISTORIAL</p>
-      <h1>Tus entrenamientos.</h1>
-      <p class="lede">Revisa tus sesiones registradas por fecha.</p>
-    </div>
-    <div class="hero-actions">
-      <a class="btn-primary" routerLink="/statistics">Ver estadísticas</a>
-    </div>
-  </header>
+  <app-page-header eyebrow="HISTORIAL" title="Tus entrenamientos." lede="Revisa tus sesiones registradas por fecha." />
+
+  <div class="page-toolbar">
+    <a class="btn-primary" routerLink="/statistics">Ver estadísticas</a>
+  </div>
 
   <form class="card filters" (submit)="onSubmit($event)" aria-label="Filtrar historial de entrenamientos">
     <div class="filters-row">

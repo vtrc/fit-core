@@ -1,11 +1,5 @@
 <main >
-  <header class="hero">
-    <div>
-      <p class="eyebrow">ENTRENAMIENTOS</p>
-      <h1>Inicia tu entrenamiento.</h1>
-      <p class="lede">Elige una rutina guardada para comenzar.</p>
-    </div>
-  </header>
+  <app-page-header eyebrow="ENTRENAMIENTOS" title="Inicia tu entrenamiento." lede="Elige una rutina guardada para comenzar." />
 
   @if (error(); as errorMessage) {
     <p class="banner error" role="alert">{{ errorMessage }}</p>

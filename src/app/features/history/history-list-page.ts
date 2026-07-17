@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 
 import { HistoryService, type DateRange, type WorkoutHistoryItem } from './history.service';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-history-list-page',
   standalone: true,
-  imports: [FormField, RouterLink, EmptyStateComponent],
+  imports: [FormField, RouterLink, EmptyStateComponent, PageHeaderComponent],
   templateUrl: './history-list-page.html',
   styleUrl: './history-list-page.scss',
 })

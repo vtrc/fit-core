@@ -11,6 +11,7 @@ import {
   validateRoutineInput,
 } from './routines.service';
 import { ExerciseCatalogComponent } from '../../shared/exercise-catalog/exercise-catalog';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 interface ExerciseDraft {
   exercise: Exercise;
@@ -39,7 +40,7 @@ type NumericField =
 @Component({
   selector: 'app-routine-editor-page',
   standalone: true,
-  imports: [FormsModule, FormField, ExerciseCatalogComponent],
+  imports: [FormsModule, FormField, ExerciseCatalogComponent, PageHeaderComponent],
   templateUrl: './routine-editor-page.html',
   styleUrl: './routine-editor-page.scss',
 })

@@ -5,16 +5,11 @@
   [style.transform]="pullTransform()"
   [style.transition]="pullTransition()"
 >
-  <header class="hero">
-    <div>
-       <p class="eyebrow">RUTINAS</p>
-       <h1>Tus rutinas.</h1>
-      <p class="lede">Crea, revisa y mejora sesiones reutilizables antes de entrenar.</p>
-    </div>
-    <div class="hero-actions">
-      <a class="btn-primary" routerLink="/routines/new">Crear rutina</a>
-    </div>
-  </header>
+  <app-page-header eyebrow="RUTINAS" title="Tus rutinas." lede="Crea, revisa y mejora sesiones reutilizables antes de entrenar." />
+
+  <div class="page-toolbar">
+    <a class="btn-primary" routerLink="/routines/new">Crear rutina</a>
+  </div>
 
   @if (flashMessage(); as message) {
     <p class="banner success">{{ message }}</p>

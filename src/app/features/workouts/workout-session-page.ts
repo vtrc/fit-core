@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 
 import type { ExerciseType } from '../../core/domain/models';
 import { EntrenamientosService, type WorkoutSessionExercise } from './workouts.service';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 interface TimerState {
   exerciseName: string;
@@ -14,7 +15,7 @@ interface TimerState {
 @Component({
   selector: 'app-workout-session-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PageHeaderComponent],
   templateUrl: './workout-session-page.html',
   styleUrl: './workout-session-page.scss',
 })

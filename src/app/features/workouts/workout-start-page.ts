@@ -6,11 +6,12 @@ import { RoutinesService } from '../routines/routines.service';
 import { EntrenamientosService } from './workouts.service';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
 import { RoutineCardComponent } from '../../shared/routine-card/routine-card';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-workout-start-page',
   standalone: true,
-  imports: [EmptyStateComponent, RoutineCardComponent],
+  imports: [EmptyStateComponent, RoutineCardComponent, PageHeaderComponent],
   templateUrl: './workout-start-page.html',
   styleUrl: './workout-start-page.scss',
 })

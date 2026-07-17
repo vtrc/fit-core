@@ -1,11 +1,11 @@
 <div class="page-host">
-  <header class="page-header">
-    <p class="eyebrow">Asistente IA</p>
-    <h1>Tu asistente de fitness</h1>
-    @if (messages().length > 0) {
+  <app-page-header eyebrow="Asistente IA" title="Tu asistente de fitness" />
+
+  @if (messages().length > 0) {
+  <div class="chat-toolbar">
     <button class="btn-clear" (click)="clearChat()">Limpiar chat</button>
-    }
-  </header>
+  </div>
+  }
 
   <main class="chat-container" #scrollContainer role="log" aria-live="polite">
     @if (messages().length === 0) {

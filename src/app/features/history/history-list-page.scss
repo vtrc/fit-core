@@ -1,15 +1,11 @@
 :host {
   display: block;
+  margin-inline: calc(-1 * var(--shell-padding-x, 1rem));
+  margin-top: calc(-1 * var(--shell-padding-y, 1rem));
 }
 
 .filters {
   margin-bottom: var(--space-4);
-}
-
-.hero-actions {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
 }
 
 .workout-list {

@@ -1,19 +1,14 @@
 <main class="page">
-  <header class="hero">
-    <div>
-      <p class="eyebrow">ENTRENAMIENTO EN CURSO</p>
-      <h1>{{ session()?.routineName || 'Entrenamiento libre' }}</h1>
-      <p class="lede">Marca los ejercicios según los completes.</p>
-    </div>
-    <div class="hero-actions">
-      @if (saving()) {
-        <button type="button" class="btn-secondary" disabled>Empezar de nuevo</button>
-      } @else {
-        <a class="btn-secondary" routerLink="/workouts/start">Empezar de nuevo</a>
-      }
-      <button type="button" class="btn-primary" (click)="finish()" [disabled]="completedCount() === 0">Finalizar</button>
-    </div>
-  </header>
+  <app-page-header eyebrow="ENTRENAMIENTO EN CURSO" [title]="session()?.routineName || 'Entrenamiento libre'" lede="Marca los ejercicios según los completes." />
+
+  <div class="page-toolbar">
+    @if (saving()) {
+      <button type="button" class="btn-secondary" disabled>Empezar de nuevo</button>
+    } @else {
+      <a class="btn-secondary" routerLink="/workouts/start">Empezar de nuevo</a>
+    }
+    <button type="button" class="btn-primary" (click)="finish()" [disabled]="completedCount() === 0">Finalizar</button>
+  </div>
 
   @if (!session()) {
     <section class="card state">

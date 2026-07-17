@@ -3,9 +3,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import type { WorkoutDetails } from './history.service';
 import { HistoryService } from './history.service';
+import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
-  selector: 'app-history-detail-page', standalone: true, imports: [RouterLink],
+  selector: 'app-history-detail-page', standalone: true, imports: [RouterLink, PageHeaderComponent],
   templateUrl: './history-detail-page.html',
   styleUrl: './history-detail-page.scss',
 })

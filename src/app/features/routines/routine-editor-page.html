@@ -1,12 +1,5 @@
 <main >
-  <header class="hero">
-    <div>
-      <p class="eyebrow">{{ isEditMode() ? 'EDITA TU RUTINA' : 'NUEVA RUTINA' }}</p>
-      <h1>{{ isEditMode() ? 'Redefine tu plan.' : 'Construye una rutina reutilizable.' }}</h1>
-      <p class="lede">Elige ejercicios del catálogo, ordénalos y define tus objetivos.</p>
-    </div>
-
-  </header>
+  <app-page-header [eyebrow]="isEditMode() ? 'EDITA TU RUTINA' : 'NUEVA RUTINA'" [title]="isEditMode() ? 'Redefine tu plan.' : 'Construye una rutina reutilizable.'" lede="Elige ejercicios del catálogo, ordénalos y define tus objetivos." />
 
   @if (loading()) {
     <section class="card editor">

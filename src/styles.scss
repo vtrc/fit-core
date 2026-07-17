@@ -115,26 +115,30 @@ img {
   color: var(--ink-secondary);
 }
 
-.hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  margin-bottom: var(--space-8);
-}
-
-.hero h1 {
-  font-size: clamp(2rem, 6vw, 3.2rem);
-  line-height: 1;
-  text-wrap: balance;
-  letter-spacing: -0.02em;
-}
-
-.hero-actions {
+.page-toolbar {
   display: flex;
   gap: var(--space-3);
   flex-wrap: wrap;
+  padding: var(--space-3) var(--space-5);
+  background: var(--paper);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.page-toolbar:empty {
+  display: none;
+}
+
+/* ── Page main content layout ────────────────────────────── */
+
+main:has(> app-page-header) {
+  > :not(app-page-header):not(.page-toolbar) {
+    margin-inline: var(--shell-padding-x, 1rem) !important;
+  }
+
+  > :nth-child(2):not(.page-toolbar),
+  > .page-toolbar + * {
+    margin-top: var(--space-4);
+  }
 }
 
 .eyebrow {
@@ -146,12 +150,6 @@ img {
   text-transform: uppercase;
 }
 
-.lede {
-  color: var(--ink-secondary);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-top: var(--space-2);
-}
 
 /* ── Cards & banners ──────────────────────────────────────── */
 
@@ -207,34 +205,14 @@ button:disabled {
 
 @media (max-width: 640px) {
 
-  .hero {
-    align-items: start;
-    gap: var(--space-3);
-    margin-bottom: var(--space-5);
-  }
-
-  .hero h1 {
-    font-size: clamp(1.8rem, 10vw, 2.4rem);
-  }
-
-  .hero-actions {
+  .page-toolbar {
     width: 100%;
-  }
-
-  .hero-actions a,
-  .hero-actions button {
-    flex: 1;
-    text-align: center;
   }
 }
 
 @media (max-width: 480px) {
-  .hero .lede {
+  .page-header .lede {
     display: none;
-  }
-
-  .hero {
-    margin-bottom: var(--space-4);
   }
 }
 
@@ -418,16 +396,24 @@ button:disabled {
 /* ── Route view transitions ───────────────────────────────── */
 
 ::view-transition-old(root) {
-  animation: route-exit 180ms cubic-bezier(0.4, 0, 1, 1) both;
+  animation: route-exit 280ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 ::view-transition-new(root) {
-  animation: route-enter 260ms cubic-bezier(0, 0, 0.2, 1) both;
+  animation: route-enter 360ms cubic-bezier(0, 0, 0.2, 1) both;
 }
 
 ::view-transition-old(nav),
 ::view-transition-new(nav) {
   animation: none;
+}
+
+::view-transition-old(page-header) {
+  animation: header-fade-out 220ms ease-out both;
+}
+
+::view-transition-new(page-header) {
+  animation: header-fade-in 220ms ease-out both;
 }
 
 @keyframes route-exit {
@@ -444,9 +430,24 @@ button:disabled {
   }
 }
 
+@keyframes header-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes header-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+
   ::view-transition-old(root),
-  ::view-transition-new(root) {
+  ::view-transition-new(root),
+  ::view-transition-old(page-header),
+  ::view-transition-new(page-header) {
     animation-duration: 1ms;
   }
 }

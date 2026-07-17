@@ -1,19 +1,14 @@
 <main >
-  <header class="hero">
-    <div>
-      <p class="eyebrow">RESUMEN DEL ENTRENAMIENTO</p>
-      <h1>Revisa antes de guardar.</h1>
-      <p class="lede">Solo se guardan los resultados de ejercicios completados. Los ejercicios omitidos o eliminados quedan fuera del entrenamiento guardado.</p>
-    </div>
-    <div class="hero-actions">
-      @if (saving()) {
-        <button type="button" class="btn-secondary" disabled>Volver a la sesión</button>
-      } @else {
-        <a class="btn-secondary" routerLink="/workouts/session">Volver a la sesión</a>
-      }
-      <button type="button" class="btn-primary" (click)="discard()" [disabled]="saving()">Descartar</button>
-    </div>
-  </header>
+  <app-page-header eyebrow="RESUMEN DEL ENTRENAMIENTO" title="Revisa antes de guardar." lede="Solo se guardan los resultados de ejercicios completados. Los ejercicios omitidos o eliminados quedan fuera del entrenamiento guardado." />
+
+  <div class="page-toolbar">
+    @if (saving()) {
+      <button type="button" class="btn-secondary" disabled>Volver a la sesión</button>
+    } @else {
+      <a class="btn-secondary" routerLink="/workouts/session">Volver a la sesión</a>
+    }
+    <button type="button" class="btn-primary" (click)="discard()" [disabled]="saving()">Descartar</button>
+  </div>
 
   @if (!session()) {
     <section class="card state">
