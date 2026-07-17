@@ -8,9 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "deploy:angular": "ng build && npx @insforge/cli deployments deploy .",
-    "deploy:functions": "npm run build:function && npx @insforge/cli functions deploy minimax-chat --file ./functions/minimax-chat.ts --name \"MiniMax Chat\"",
-    "build:function": "npx esbuild functions/minimax-chat/index.ts --bundle --platform=neutral --format=esm \"--external:npm:*\" --outfile=functions/minimax-chat.ts",
-    "deploy:all": "npm run deploy:angular && npm run deploy:functions"
+    "build:functions:all": "npx esbuild functions/minimax-chat/index.ts --bundle --platform=neutral --format=esm \"--external:npm:*\" --outfile=functions/minimax-chat.ts",
+    "deploy:functions:all": "npm run build:functions:all && npx @insforge/cli functions deploy minimax-chat --file ./functions/minimax-chat.ts --name \"MiniMax Chat\"",
+    "deploy:all": "npm run deploy:angular && npm run deploy:functions:all"
   },
   "private": true,
   "packageManager": "npm@10.9.8",
