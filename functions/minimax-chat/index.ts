@@ -5,7 +5,7 @@ import { persistRoutine } from './persistence.ts';
 import { SYSTEM_PROMPT } from './constants.ts';
 
 export default async function(req: Request): Promise<Response> {
-  const origin = req.headers.get('Origin') || 'https://4af6r2tm.insforge.site';
+  const origin = req.headers.get('Origin')!;
   const corsHeaders = buildCorsHeaders(origin);
 
   if (req.method === 'OPTIONS') {

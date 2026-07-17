@@ -23,23 +23,25 @@ export async function handleRoutineMessage(
     .map((m) => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.content}`)
     .join('\n');
 
-  const classifyPrompt = `Eres un entrenador personal. Responde SOLO JSON sin explicaciones.
+  const classifyPrompt = `
+    Eres un entrenador personal. Responde SOLO JSON sin explicaciones.
 
-Conversación:
-${conversationContext}
+    Conversación:
+    ${conversationContext}
 
-Mensaje actual: "${message}"
+    Mensaje actual: "${message}"
 
-Determina si el usuario quiere CREAR O MODIFICAR una rutina, o es conversación GENERAL.
+    Determina si el usuario quiere CREAR O MODIFICAR una rutina, o es conversación GENERAL.
 
-RUTINA — si habla de crear/generar/modificar una rutina o da datos de perfil (edad/peso/objetivo/nivel/días):
-  Extrae SOLO los campos que aparezcan (no inventes): age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek.
-  → {"intent":"routine","age":...,"weightKg":...,"goal":"...","level":"...","daysPerWeek":...}
+    RUTINA — si habla de crear/generar/modificar una rutina o da datos de perfil (edad/peso/objetivo/nivel/días):
+      Extrae SOLO los campos que aparezcan (no inventes): age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek.
+      → {"intent":"routine","age":...,"weightKg":...,"goal":"...","level":"...","daysPerWeek":...}
 
-CHAT — si es saludo, consejo, motivación, pregunta general, etc:
-  → {"intent":"chat","response":"tu respuesta como entrenador en markdown"}`;
+    CHAT — si es saludo, consejo, motivación, pregunta general, etc:
+      → {"intent":"chat","response":"tu respuesta como entrenador en markdown"}
+  `;
 
-  const mmRes = await fetch('https://api.minimax.io/v1/chat/completions', {
+  const miniMaxRes = await fetch('https://api.minimax.io/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${mmKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -50,9 +52,9 @@ CHAT — si es saludo, consejo, motivación, pregunta general, etc:
       ],
     }),
   });
-  const mmText = await mmRes.text();
-  if (!mmRes.ok) throw new Error(`MiniMax API error: ${mmRes.status} ${mmText}`);
-  const mmData = JSON.parse(mmText);
+  const miniMaxText = await miniMaxRes.text();
+  if (!miniMaxRes.ok) throw new Error(`MiniMax API error: ${miniMaxRes.status} ${miniMaxText}`);
+  const mmData = JSON.parse(miniMaxText);
   const text = mmData?.choices?.[0]?.message?.content ?? '';
   const parsed = parseMiniMaxJson(text) as { intent: string; response?: string; age?: unknown; weightKg?: unknown; goal?: string; level?: string; daysPerWeek?: unknown };
 
@@ -106,7 +108,7 @@ function buildMissingProfileResponse(missing: string[]): unknown {
   return {
     state: 'collecting_requirements',
     missing,
-    message: `¡Genial, voy bien! Solo dime ${list} y terminamos.\n\nEjemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*`,
+    message: `¡Genial! Solo dime ${list} y terminamos.\n\nEjemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*`,
   };
 }
 

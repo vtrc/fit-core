@@ -27,11 +27,14 @@ export async function generateRoutineProposal(profile: unknown, token: string, a
 
   const client = createClient({ baseUrl: URL_BASE, anonKey });
   client.setAccessToken(token);
+
   const { data: catalog, error: catalogError } = await client.database
     .from('exercises')
     .select('id, name, type, equipment, muscle_groups')
     .order('name', { ascending: true });
+
   if (catalogError) throw new Error(catalogError.message);
+
   const entries = (catalog ?? []) as CatalogEntry[];
   const nameToEntry = new Map(entries.map((e) => [e.name.toLowerCase().trim(), e]));
   const idToEntry = new Map(entries.map((e) => [e.id, e]));
@@ -50,6 +53,7 @@ export async function generateRoutineProposal(profile: unknown, token: string, a
   });
   const mmText = await mmRes.text();
   if (!mmRes.ok) throw new Error(`MiniMax API raw error: ${mmRes.status} ${mmText}`);
+
   const mmData = JSON.parse(mmText);
   const text = mmData?.choices?.[0]?.message?.content ?? '';
   const rawList: string[] = JSON.parse(text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim());
@@ -103,18 +107,21 @@ export async function handleProposalFeedback(
         { role: 'system', content: 'Eres un entrenador personal. Responde SOLO JSON sin explicaciones.' },
         {
           role: 'user',
-          content: `Rutina actual: ${currentNames} (${prop.exercises.length} ejercicios, nombre: "${prop.name}").
-Usuario: "${message}"
+          content: 
+          `
+          Rutina actual: ${currentNames} (${prop.exercises.length} ejercicios, nombre: "${prop.name}").
+          Usuario: "${message}"
 
-Determina qué quiere hacer:
-1. "approve" — si está conforme, quiere guardar, dice sí/correcto/está bien/me gusta/ok/guardar
-2. "rename" — si quiere cambiar el nombre (ej: "llámala X", "nombre: X", "ponle X")
-3. "modify" — si quiere cambiar los ejercicios (añadir/quitar/reemplazar)
+          Determina qué quiere hacer:
+          1. "approve" — si está conforme, quiere guardar, dice sí/correcto/está bien/me gusta/ok/guardar
+          2. "rename" — si quiere cambiar el nombre (ej: "llámala X", "nombre: X", "ponle X")
+          3. "modify" — si quiere cambiar los ejercicios (añadir/quitar/reemplazar)
 
-Devuelve JSON:
-- Si approve: {"intent":"approve"}
-- Si rename: {"intent":"rename","name":"nuevo nombre"}
-- Si modify: {"intent":"modify","exercises":["nombre1","nombre2",...]}`,
+          Devuelve JSON:
+          - Si approve: {"intent":"approve"}
+          - Si rename: {"intent":"rename","name":"nuevo nombre"}
+          - Si modify: {"intent":"modify","exercises":["nombre1","nombre2",...]}
+        `,
         },
       ],
     }),

@@ -8,9 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "deploy:angular": "ng build && npx @insforge/cli deployments deploy .",
-    "build:functions:all": "node scripts/build-functions.mjs",
-    "deploy:functions:all": "npm run build:functions:all && for d in functions/*/; do n=$(basename \"$d\"); npx @insforge/cli functions deploy \"$n\" --file \"dist/functions/$n.ts\" --name \"$n\"; done",
-    "deploy:all": "npm run deploy:angular && npm run deploy:functions:all"
+    "build:functions": "node scripts/build-functions.mjs",
+    "deploy:functions": "npm run build:functions && for d in functions/*/; do n=$(basename \"$d\"); npx @insforge/cli functions deploy \"$n\" --file \"dist/functions/$n.ts\" --name \"$n\"; done",
+    "deploy:all": "npm run deploy:functions && npm run deploy:angular"
   },
   "private": true,
   "packageManager": "npm@10.9.8",
