@@ -1,4 +1,4 @@
-import { Component, ViewChild, inject, signal, effect, ElementRef } from '@angular/core';
+import { Component, viewChild, inject, signal, effect, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AiChatService, ChatMessage, RoutineProposal, RoutineProfile } from './ai-chat.service';
 import { renderMarkdown } from './markdown.utils';
@@ -23,7 +23,7 @@ export class AiChatPage {
   protected readonly routineId = signal<string | null>(null);
   private routineMode = false;
   private lastProfile: RoutineProfile | null = null;
-  @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLElement>;
+  private scrollContainer = viewChild<ElementRef<HTMLDivElement>>('scrollContainer');
 
   private abortController: AbortController | null = null;
 
@@ -31,9 +31,10 @@ export class AiChatPage {
     effect(() => {
       this.messages();
       this.loading();
-      setTimeout(() => {
-        this.scrollContainer?.nativeElement?.scrollTo({ top: this.scrollContainer.nativeElement.scrollHeight, behavior: 'smooth' });
-      });
+      const el = this.scrollContainer()?.nativeElement;
+      if (el) {
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      }
     });
   }
 
