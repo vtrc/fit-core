@@ -5,7 +5,6 @@ import { InsforgeClientService } from '../../core/insforge/insforge-client';
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
-  aborted?: boolean;
 }
 
 export interface RoutineProfile {
@@ -41,8 +40,9 @@ export interface RoutineMessageResponse {
   proposal?: RoutineProposal;
   missing?: string[];
   profile?: RoutineProfile;
-  action?: 'approve' | 'rename' | 'modify';
+  action?: 'approve' | 'rename' | 'modify' | 'chat';
   id?: string;
+  content?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -64,24 +64,7 @@ export class AiChatService {
     return this.post({ action: 'routine_message', message, proposal: currentProposal, profile, messages });
   }
 
-  async approveRoutine(routine: RoutineProposal): Promise<{ id: string }> {
-    return this.post({ action: 'approve_routine', routine });
-  }
-
-  async *sendMessageStream(
-    messages: ChatMessage[],
-    signal?: AbortSignal,
-  ): AsyncGenerator<string> {
-    const { choices } = await this.post<{ choices: { message: { content: string } }[] }>(
-      { messages, stream: false },
-      signal,
-    );
-    if (signal?.aborted) return;
-    const content = choices?.[0]?.message?.content;
-    if (content) yield content;
-  }
-
-  private async post<T>(body: unknown, signal?: AbortSignal): Promise<T> {
+  private async post<T>(body: unknown): Promise<T> {
     await this.insforge.ready;
     const token = this.insforge.getAccessToken();
     const response = await fetch(this.endpoint, {
@@ -92,7 +75,6 @@ export class AiChatService {
         apikey: environment.insforgeAnonKey,
       },
       body: JSON.stringify(body),
-      signal,
     });
     const result: T = await response.json();
     if (!response.ok) throw new Error((result as { error?: string })?.error || `Error ${response.status}`);

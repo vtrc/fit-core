@@ -292,7 +292,21 @@ async function handleRoutineMessage(message: string, userId: string, proposal?: 
     .filter((m) => m.role === 'user' || m.role === 'assistant')
     .map((m) => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.content}`)
     .join('\n');
-  const extractPrompt = `De toda la conversación, extrae estos datos si aparecen: age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek. No inventes datos. Devuelve SOLO un objeto JSON con los campos que encuentres. Conversación:\n${conversationContext}\n\nMensaje actual: ${message}`;
+  const classifyPrompt = `Eres un entrenador personal. Responde SOLO JSON sin explicaciones.
+
+Conversación:
+${conversationContext}
+
+Mensaje actual: "${message}"
+
+Determina si el usuario quiere CREAR O MODIFICAR una rutina, o es conversación GENERAL.
+
+RUTINA — si habla de crear/generar/modificar una rutina o da datos de perfil (edad/peso/objetivo/nivel/días):
+  Extrae SOLO los campos que aparezcan (no inventes): age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek.
+  → {"intent":"routine","age":...,"weightKg":...,"goal":"...","level":"...","daysPerWeek":...}
+
+CHAT — si es saludo, consejo, motivación, pregunta general, etc:
+  → {"intent":"chat","response":"tu respuesta como entrenador en markdown"}`;
 
   const mmRes = await fetch('https://api.minimax.io/v1/chat/completions', {
     method: 'POST',
@@ -300,8 +314,8 @@ async function handleRoutineMessage(message: string, userId: string, proposal?: 
     body: JSON.stringify({
       model: 'MiniMax-M2.7',
       messages: [
-        { role: 'system', content: 'Eres un asistente de fitness. Devuelve SOLO JSON sin explicaciones.' },
-        { role: 'user', content: extractPrompt },
+        { role: 'system', content: 'Eres un entrenador personal. Responde SOLO JSON sin explicaciones.' },
+        { role: 'user', content: classifyPrompt },
       ],
     }),
   });
@@ -309,9 +323,13 @@ async function handleRoutineMessage(message: string, userId: string, proposal?: 
   if (!mmRes.ok) throw new Error(`MiniMax API error: ${mmRes.status} ${mmText}`);
   const mmData = JSON.parse(mmText);
   const text = mmData?.choices?.[0]?.message?.content ?? '';
-  const jsonMatch = text.match(/\{[^{}]*\}/);
-  if (!jsonMatch) return { state: 'collecting_requirements', missing: ['profile'], message: `¡Perfecto! Quiero conocerte un poco para crear la rutina ideal para ti 🏋️\n\nCuéntame:\n- Tu **edad** (entre ${AGE_MIN} y ${AGE_MAX} años)\n- Tu **peso** (entre ${WEIGHT_MIN} y ${WEIGHT_MAX} kg)\n- Tu **objetivo** (ganar fuerza, cardio, perder grasa o mantenerte)\n- Tu **nivel** (principiante, intermedio o avanzado)\n- **Días** que puedes entrenar (de ${DAYS_MIN} a ${DAYS_MAX})\n\nPor ejemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
-  const raw = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+  const parsed = JSON.parse(text.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/```json|```/gi, '').trim());
+
+  if (parsed.intent === 'chat') {
+    return { action: 'chat', content: 'Soy un asistente especializado en crear rutinas de entrenamiento personalizadas 💪 Cuéntame tu objetivo, nivel y días disponibles y te preparo una rutina a medida. ¿Empezamos?' };
+  }
+
+  const raw = parsed.intent === 'routine' ? parsed : {};
   const numericKeys = new Set(['age', 'weightKg', 'daysPerWeek']);
   const clean: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(raw)) {
@@ -335,13 +353,13 @@ async function handleRoutineMessage(message: string, userId: string, proposal?: 
     const list = missing.map((key) => labels[key] ?? key).join(', ');
     return { state: 'collecting_requirements', missing, message: `¡Genial, voy bien! Solo dime ${list} y terminamos.\n\nEjemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   }
-  const parsed = routineProfileSchema.safeParse(clean);
-  if (!parsed.success) {
+  const parsedIntent = routineProfileSchema.safeParse(clean);
+  if (!parsedIntent.success) {
     const fieldLabels: Record<string, string> = { age: `la edad (tiene que ser entre ${AGE_MIN} y ${AGE_MAX})`, weightKg: `el peso (entre ${WEIGHT_MIN} y ${WEIGHT_MAX} kg)`, goal: 'el objetivo (fuerza/cardio/perder grasa/general)', level: 'el nivel (principiante/intermedio/avanzado)', daysPerWeek: `los días (de ${DAYS_MIN} a ${DAYS_MAX})` };
-    const issues = parsed.error.issues.map((issue) => fieldLabels[issue.path[0] as string] ?? issue.path[0]).join(', ');
-    return { state: 'collecting_requirements', missing: parsed.error.issues.map((issue) => String(issue.path[0])), message: `Casi casi 🙌 Revisa ${issues}. Por ejemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
+    const issues = parsedIntent.error.issues.map((issue) => fieldLabels[issue.path[0] as string] ?? issue.path[0]).join(', ');
+    return { state: 'collecting_requirements', missing: parsedIntent.error.issues.map((issue) => String(issue.path[0])), message: `Casi casi 🙌 Revisa ${issues}. Por ejemplo: *"25 años, 70kg, fuerza, intermedio, 3 días"*` };
   }
-  return { state: 'profile_ready', profile: parsed.data };
+  return { state: 'profile_ready', profile: parsedIntent.data };
 }
 
 async function saveRoutineToDb(client: ReturnType<typeof createClient>, userId: string, routine: ApprovedRoutine): Promise<string> {
