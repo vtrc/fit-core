@@ -82,7 +82,9 @@ export class WorkoutSummaryPage {
   protected formatDuration(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return minutes > 0 ? `${minutes} min ${remainingSeconds} s` : `${remainingSeconds} s`;
+    if (minutes > 0 && remainingSeconds > 0) return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+    if (minutes > 0) return `${minutes}:00`;
+    return `0:${String(remainingSeconds).padStart(2, '0')}`;
   }
 
   private createDraftSummary(): WorkoutSummaryModel | null {

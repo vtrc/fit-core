@@ -1,35 +1,77 @@
-## Task 2: Define the InsForge schema and security policies
+### Task 2: Shell — mobile padding, 44px nav tap targets
 
 **Files:**
-- Create: `insforge/migrations/001_training_tracker.sql`
-- Create: `src/app/core/domain/models.ts`
-- Test: `src/app/core/domain/models.spec.ts`
+- Modify: `src/app/shared/shell/shell.scss`
 
-**Interfaces:**
-- Produces tables and TypeScript models for `exercises`, `routines`, `routine_exercises`, `workouts`, and `workout_results`.
-- Every user-owned record exposes `user_id` and uses UUID identifiers.
+**Produces:** Reduced horizontal padding on mobile (1rem vs 1.6rem). Bottom nav taller (4rem) with 44px min-height items. Nav label text smaller (0.65rem) to compensate.
 
-- [ ] **Step 1: Write model tests for strength and cardio result shapes**
+- [ ] **Replace entire shell.scss**
 
-Cover that strength results accept `weight`, `sets_completed`, and `repetitions_total`, while cardio results accept `duration_seconds`, `distance`, and machine-specific optional metrics.
+```scss
+.shell {
+  --footer-height: calc(4rem + env(safe-area-inset-bottom));
+  min-height: 100dvh;
+  padding: 1rem 1rem;
+  padding-bottom: var(--footer-height);
+  background: var(--parchment);
+}
 
-- [ ] **Step 2: Add the SQL migration**
+.nav-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  border-top: 1px solid var(--border-default);
+  background: var(--paper);
+  padding-bottom: env(safe-area-inset-bottom);
+}
 
-Create the shared catalog tables and user-owned tables with foreign keys, timestamps, exercise type checks (`strength` or `cardio`), and non-negative numeric checks. Add indexes on `user_id`, workout date, and exercise ID.
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0;
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--ink-muted);
+  font-size: 0.65rem;
+  border-radius: 0;
+  background: transparent;
+  transition: color 0.15s;
+}
 
-- [ ] **Step 3: Add RLS policies**
+.nav-item.active {
+  color: var(--ink);
+}
 
-Enable RLS on all tables. Allow authenticated users to read the shared catalog. Allow users to select, insert, update, and delete routines and workouts only when `user_id = auth.uid()`; enforce the same ownership through related routine and workout records.
+.nav-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  display: block;
+}
 
-- [ ] **Step 4: Add matching TypeScript domain models**
+.nav-label {
+  font-weight: 600;
+}
 
-Define discriminated unions for `StrengthExerciseResult` and `CardioExerciseResult`, plus `Exercise`, `Routine`, `RoutineExercise`, `Workout`, and `WorkoutResult`.
+@media (min-width: 640px) {
+  .shell {
+    padding: 1rem 1.6rem;
+    padding-bottom: var(--footer-height);
+  }
+}
+```
 
-- [ ] **Step 5: Apply and verify the migration**
+- [ ] **Verify build**
 
-Run `npx @insforge/cli db migrations apply` and then query the schema with `npx @insforge/cli db query "select table_name from information_schema.tables where table_schema = 'public' order by table_name" --json`.
+```bash
+npx ng build
+```
 
-- [ ] **Step 6: Commit the schema**
-
-Run `git add fit-core/insforge fit-core/src/app/core/domain && git commit -m "feat: add training tracker schema"`.
+---
 

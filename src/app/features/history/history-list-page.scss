@@ -2,6 +2,10 @@
   display: block;
 }
 
+.filters {
+  margin-bottom: var(--space-4);
+}
+
 .hero-actions {
   display: flex;
   gap: var(--space-3);
@@ -111,6 +115,21 @@
 
 .workout-link:hover {
   background: #ddd4c4;
+}
+
+@media (max-width: 480px) {
+  .workout-item {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .workout-stats {
+    padding: var(--space-3) 0;
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+  }
 }
 
 .arrow {

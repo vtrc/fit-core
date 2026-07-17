@@ -197,6 +197,21 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 
+@media (max-width: 480px) {
+  .exercise {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .result-value {
+    font-size: 1.1rem;
+  }
+}
+
 @media (min-width: 640px) {
   .exercise-results {
     grid-template-columns: repeat(3, 1fr);

@@ -40,6 +40,14 @@ export async function generateRoutineProposal(profile: unknown, token: string, a
   const idToEntry = new Map(entries.map((e) => [e.id, e]));
   const availableNames = entries.map((e) => e.name).join(', ');
 
+  const goalExerciseGuidance: Record<string, string> = {
+    strength: 'Prioriza ejercicios compuestos pesados (sentadilla, press de banca, peso muerto, remo). Selecciona ejercicios de fuerza con barra o mancuernas.',
+    cardio: 'Prioriza ejercicios de cardio (cinta, bicicleta, remo, saltar cuerda). Elige ejercicios aeróbicos de resistencia.',
+    fat_loss: 'Prioriza ejercicios compuestos multiarticulares, circuitos de alta intensidad, o ejercicios que trabajen gran parte del cuerpo para maximizar el gasto calórico. Busca ejercicios que quemen muchas calorías.',
+    general: 'Combina ejercicios de fuerza y cardio de forma equilibrada.',
+  };
+  const guidance = goalExerciseGuidance[validatedProfile.goal] ?? goalExerciseGuidance.general;
+
   const mmRes = await fetch('https://api.minimax.io/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${mmKey}`, 'Content-Type': 'application/json' },
@@ -47,7 +55,7 @@ export async function generateRoutineProposal(profile: unknown, token: string, a
       model: 'MiniMax-M2.7',
       messages: [
         { role: 'system', content: 'Eres un entrenador personal. Devuelve SOLO JSON sin explicaciones.' },
-        { role: 'user', content: `De estos ejercicios: ${availableNames}. Perfil: ${JSON.stringify(validatedProfile)}. Elige 5-8 ejercicios. Devuelve SOLO un array JSON con los nombres exactos.` },
+        { role: 'user', content: `Ejercicios disponibles: ${availableNames}.\n\nPerfil: ${JSON.stringify(validatedProfile)}\n\nObjetivo: ${guidance}\n\nSelecciona 5-8 ejercicios DEL CATÁLOGO que mejor se ajusten al objetivo. Devuelve SOLO un array JSON con los nombres exactos de los ejercicios.` },
       ],
     }),
   });
@@ -112,15 +120,21 @@ export async function handleProposalFeedback(
           Rutina actual: ${currentNames} (${prop.exercises.length} ejercicios, nombre: "${prop.name}").
           Usuario: "${message}"
 
+          Perfil actual: ${JSON.stringify(profile)}.
+          Rutina actual: ${currentNames} (${prop.exercises.length} ejercicios, nombre: "${prop.name}").
+          Usuario: "${message}"
+
           Determina qué quiere hacer:
           1. "approve" — si está conforme, quiere guardar, dice sí/correcto/está bien/me gusta/ok/guardar
           2. "rename" — si quiere cambiar el nombre (ej: "llámala X", "nombre: X", "ponle X")
           3. "modify" — si quiere cambiar los ejercicios (añadir/quitar/reemplazar)
+          4. "change_goal" — si quiere cambiar el objetivo de la rutina (ej: "y para perder grasa?", "mejor para cardio", "quiero una de fuerza")
 
           Devuelve JSON:
           - Si approve: {"intent":"approve"}
           - Si rename: {"intent":"rename","name":"nuevo nombre"}
           - Si modify: {"intent":"modify","exercises":["nombre1","nombre2",...]}
+          - Si change_goal: {"intent":"change_goal","goal":"fat_loss|strength|cardio|general"}
         `,
         },
       ],
@@ -130,7 +144,15 @@ export async function handleProposalFeedback(
   if (!mmRes.ok) throw new Error(`MiniMax API error: ${mmRes.status} ${mmText}`);
   const mmData = JSON.parse(mmText);
   const text = mmData?.choices?.[0]?.message?.content ?? '';
-  const parsed = parseMiniMaxJson(text) as { intent: string; name?: string; exercises?: string[] };
+  const parsed = parseMiniMaxJson(text) as { intent: string; name?: string; exercises?: string[]; goal?: string };
+
+  if (parsed.intent === 'change_goal' && parsed.goal && typeof parsed.goal === 'string' && ['strength', 'cardio', 'fat_loss', 'general'].includes(parsed.goal)) {
+    const parsedProfile = profile ? routineProfileSchema.parse(profile) : null;
+    if (parsedProfile) {
+      return { state: 'profile_ready', profile: { ...parsedProfile, goal: parsed.goal }, proposal };
+    }
+    return { action: 'chat', content: `Voy a prepararte una rutina para ${parsed.goal === 'fat_loss' ? 'perder grasa' : parsed.goal}. Cuéntame tu edad, peso, nivel y días de entrenamiento.` };
+  }
 
   if (parsed.intent === 'approve') {
     const client = createClient({ baseUrl: URL_BASE, anonKey });

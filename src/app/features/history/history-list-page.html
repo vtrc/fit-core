@@ -26,8 +26,10 @@
   }
 
   @if (loading()) {
-    <section class="card state" aria-live="polite">
-      <p>Cargando el historial de entrenamientos…</p>
+    <section class="workout-list">
+      <div class="skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:60%"></div><div class="skeleton skeleton-line" style="width:30%"></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:60%"></div><div class="skeleton skeleton-line" style="width:30%"></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:60%"></div><div class="skeleton skeleton-line" style="width:30%"></div></div>
     </section>
   } @else if (workouts().length === 0) {
     <app-empty-state

@@ -24,6 +24,17 @@ app-exercise-catalog {
   min-width: 0;
 }
 
+@media (max-width: 640px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  app-exercise-catalog {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -119,11 +130,24 @@ select {
   display: flex;
   gap: 0.35rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .rest-group select,
 .rest-group input {
   width: 5.5rem;
+}
+
+@media (max-width: 480px) {
+  .rest-group select,
+  .rest-group input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .rest-group {
+    gap: 0.25rem;
+  }
 }
 
 .rest-unit {
@@ -140,11 +164,17 @@ select {
   font-size: 1.25rem;
   line-height: 1;
   border-radius: var(--radius-md);
+  background: var(--fill-soft);
+  color: var(--ink);
 }
 
 .icon-button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.icon-button.danger {
+  color: var(--danger);
 }
 
 .metrics {
@@ -157,6 +187,41 @@ select {
 .form-actions button {
   width: 100%;
   margin-top: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .form-actions {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .exercise-card {
+    padding: var(--space-3);
+  }
+
+  .metrics {
+    gap: var(--space-2);
+    margin: var(--space-3) 0;
+  }
+
+  .section-heading {
+    margin-bottom: var(--space-3);
+  }
+
+  .field {
+    margin-bottom: var(--space-3);
+  }
+
+  input,
+  textarea,
+  select {
+    padding: 0.7rem 0.75rem;
+  }
 }
 
 .danger {

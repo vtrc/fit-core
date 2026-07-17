@@ -24,6 +24,7 @@ export class SwipeToDeleteDirective {
 
   private onStart(e: TouchEvent): void {
     this.startX = e.touches[0].clientX;
+    this.currentX = this.startX;
     this.isDragging = true;
     this.el.nativeElement.style.transition = 'none';
   }

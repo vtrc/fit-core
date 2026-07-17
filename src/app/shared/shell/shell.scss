@@ -1,48 +1,58 @@
 .shell {
-    --footer-height: calc(3.5rem + env(safe-area-inset-bottom));
-    min-height: 100dvh;
-    padding: 1rem 1.6rem;
-    padding-bottom: var(--footer-height);
-    background: var(--parchment);
+  --footer-height: calc(4rem + env(safe-area-inset-bottom));
+  min-height: 100dvh;
+  padding: 1rem 1rem;
+  padding-bottom: var(--footer-height);
+  background: var(--parchment);
 }
 
 .nav-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    display: flex;
-    border-top: 1px solid var(--border-default);
-    background: var(--paper);
-    padding-bottom: env(safe-area-inset-bottom);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  border-top: 1px solid var(--border-default);
+  background: var(--paper);
+  padding-bottom: env(safe-area-inset-bottom);
+  view-transition-name: nav;
 }
 
 .nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .2rem;
-    padding: .55rem 0 .4rem;
-    text-decoration: none;
-    color: var(--ink-muted);
-    font-size: .7rem;
-    border-radius: 0;
-    background: transparent;
-    transition: color .15s;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0;
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--ink-muted);
+  font-size: 0.65rem;
+  border-radius: 0;
+  background: transparent;
+  transition: color 0.15s;
 }
 
 .nav-item.active {
-    color: var(--ink);
+  color: var(--ink);
 }
 
 .nav-icon {
-    width: 1.5rem;
-    height: 1.5rem;
-    display: block;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: block;
 }
 
 .nav-label {
-    font-weight: 600;
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .shell {
+    padding: 1rem 1.6rem;
+    padding-bottom: var(--footer-height);
+  }
 }

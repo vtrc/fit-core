@@ -267,18 +267,21 @@
   height: 2.75rem;
   padding: 0;
   border-radius: var(--radius-md);
-  background: var(--fill-soft);
-  color: var(--ink);
-  transition: background 0.15s, color 0.15s;
+  background: var(--ink);
+  color: var(--paper);
+  transition: background 0.15s, transform 0.1s;
+}
+
+.timer-btn:active {
+  transform: scale(0.94);
+}
+
+.timer-btn:hover {
+  background: #283b32;
 }
 
 .timer-icon {
   line-height: 1;
-}
-
-.timer-btn:hover {
-  background: var(--ink);
-  color: var(--paper);
 }
 
 /* ── Timer modal ─────────────────────────────────────────── */
@@ -392,3 +395,44 @@
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .exercise-card {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .exercise-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .metric {
+    min-width: 0;
+  }
+
+  .check-wrap {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .check-visual {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .stats {
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .stat-card {
+    padding: var(--space-3);
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+}

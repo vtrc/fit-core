@@ -33,8 +33,9 @@ export async function handleRoutineMessage(
 
     Determina si el usuario quiere CREAR O MODIFICAR una rutina, o es conversación GENERAL.
 
-    RUTINA — si habla de crear/generar/modificar una rutina o da datos de perfil (edad/peso/objetivo/nivel/días):
+    RUTINA — si da datos de perfil (edad/peso/objetivo/nivel/días). Si el usuario mencionó un objetivo en la conversación anterior y NO lo está contradiciendo ahora, USA ese objetivo de la conversación:
       Extrae SOLO los campos que aparezcan (no inventes): age, weightKg, goal (strength|cardio|fat_loss|general), level (beginner|intermediate|advanced), daysPerWeek.
+      Importante: Si el usuario solo está copiando un formato de ejemplo (como "25 años, 70kg, fuerza, intermedio, 3 días"), el objetivo puede ser el que YA mencionó antes, no el del ejemplo.
       → {"intent":"routine","age":...,"weightKg":...,"goal":"...","level":"...","daysPerWeek":...}
 
     CHAT — si es saludo, consejo, motivación, pregunta general, etc:

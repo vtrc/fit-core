@@ -45,3 +45,14 @@ textarea {
 .save {
     width: 100%;
 }
+
+@media (max-width: 480px) {
+    .summary-card {
+        gap: var(--space-3);
+        padding: var(--space-4);
+    }
+
+    .summary-row {
+        padding-bottom: var(--space-2);
+    }
+}

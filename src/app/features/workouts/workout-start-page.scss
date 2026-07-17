@@ -17,3 +17,36 @@
 .section-heading h2 {
   margin: 0.35rem 0;
 }
+
+.routine-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 10rem;
+}
+
+.routine-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.routine-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.routine-actions > * {
+  flex: 1;
+}
+
+@media (max-width: 480px) {
+  .routine-card {
+    min-height: 8rem;
+  }
+
+  .routine-actions {
+    gap: var(--space-2);
+  }
+}

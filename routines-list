@@ -1,0 +1,99 @@
+- generic [ref=f2e4]:
+  - main [ref=f2e6]:
+    - generic [ref=f2e7]:
+      - generic [ref=f2e8]:
+        - paragraph [ref=f2e9]: RUTINAS
+        - heading "Tus rutinas." [level=1] [ref=f2e10]
+        - paragraph [ref=f2e11]: Crea, revisa y mejora sesiones reutilizables antes de entrenar.
+      - link "Crear rutina" [ref=f2e13] [cursor=pointer]:
+        - /url: /routines/new
+    - generic [ref=f2e14]:
+      - article [ref=f2e16]:
+        - generic [ref=f2e17]:
+          - paragraph [ref=f2e18]: Actualizada 17 jul 2026
+          - heading "Rutina de Fuerza - Nivel intermediate" [level=2] [ref=f2e19]
+          - paragraph [ref=f2e20]: Rutina personalizada para ganar fuerza entrenando 3 días por semana.
+        - generic [ref=f2e21]:
+          - link "Ver rutina" [ref=f2e22] [cursor=pointer]:
+            - /url: /routines/bc1ffce1-6bba-4a85-808b-bb1131548e00/edit
+          - button "Borrar" [ref=f2e23] [cursor=pointer]
+      - article [ref=f2e25]:
+        - generic [ref=f2e26]:
+          - paragraph [ref=f2e27]: Actualizada 17 jul 2026
+          - heading "Rutina de Fuerza - Nivel intermediate" [level=2] [ref=f2e28]
+          - paragraph [ref=f2e29]: Rutina personalizada para ganar fuerza entrenando 3 días por semana.
+        - generic [ref=f2e30]:
+          - link "Ver rutina" [ref=f2e31] [cursor=pointer]:
+            - /url: /routines/bb3877be-3ade-4798-90de-729e56616722/edit
+          - button "Borrar" [ref=f2e32] [cursor=pointer]
+      - article [ref=f2e34]:
+        - generic [ref=f2e35]:
+          - paragraph [ref=f2e36]: Actualizada 17 jul 2026
+          - heading "Rutina de Fuerza - Nivel intermediate" [level=2] [ref=f2e37]
+          - paragraph [ref=f2e38]: Rutina personalizada para ganar fuerza entrenando 3 días por semana.
+        - generic [ref=f2e39]:
+          - link "Ver rutina" [ref=f2e40] [cursor=pointer]:
+            - /url: /routines/5b465144-12f3-4998-b4ce-3c1a2fbad87d/edit
+          - button "Borrar" [ref=f2e41] [cursor=pointer]
+      - article [ref=f2e43]:
+        - generic [ref=f2e44]:
+          - paragraph [ref=f2e45]: Actualizada 17 jul 2026
+          - heading "Rutina de Fuerza - Nivel intermediate" [level=2] [ref=f2e46]
+          - paragraph [ref=f2e47]: Rutina personalizada para ganar fuerza entrenando 3 días por semana.
+        - generic [ref=f2e48]:
+          - link "Ver rutina" [ref=f2e49] [cursor=pointer]:
+            - /url: /routines/c412811d-bc58-425e-b325-7f77e602a654/edit
+          - button "Borrar" [ref=f2e50] [cursor=pointer]
+      - article [ref=f2e52]:
+        - generic [ref=f2e53]:
+          - paragraph [ref=f2e54]: Actualizada 17 jul 2026
+          - heading "Rutina de Fuerza - Nivel intermediate" [level=2] [ref=f2e55]
+          - paragraph [ref=f2e56]: Rutina personalizada para ganar fuerza entrenando 3 días por semana.
+        - generic [ref=f2e57]:
+          - link "Ver rutina" [ref=f2e58] [cursor=pointer]:
+            - /url: /routines/73b9f6ae-4798-4a24-be81-729406e91a87/edit
+          - button "Borrar" [ref=f2e59] [cursor=pointer]
+      - article [ref=f2e61]:
+        - generic [ref=f2e62]:
+          - paragraph [ref=f2e63]: Actualizada 17 jul 2026
+          - heading "Rutina de Fuerza - Nivel intermediate" [level=2] [ref=f2e64]
+          - paragraph [ref=f2e65]: Rutina personalizada para ganar fuerza entrenando 3 días por semana.
+        - generic [ref=f2e66]:
+          - link "Ver rutina" [ref=f2e67] [cursor=pointer]:
+            - /url: /routines/f0eeb76e-9f09-4b1f-91d4-85aac3bc5648/edit
+          - button "Borrar" [ref=f2e68] [cursor=pointer]
+      - article [ref=f2e70]:
+        - generic [ref=f2e71]:
+          - paragraph [ref=f2e72]: Actualizada 16 jul 2026
+          - heading "Rutina de Pérdida de Grasa - Nivel intermediate" [level=2] [ref=f2e73]
+          - paragraph [ref=f2e74]: Rutina personalizada para perder grasa entrenando 3 días por semana.
+        - generic [ref=f2e75]:
+          - link "Ver rutina" [ref=f2e76] [cursor=pointer]:
+            - /url: /routines/e1d1f9c1-fb62-43a6-a594-f791558bab77/edit
+          - button "Borrar" [ref=f2e77] [cursor=pointer]
+      - article [ref=f2e79]:
+        - generic [ref=f2e80]:
+          - paragraph [ref=f2e81]: Actualizada 16 jul 2026
+          - heading "Rutina de Fuerza - Nivel intermediate" [level=2] [ref=f2e82]
+          - paragraph [ref=f2e83]: Rutina personalizada para ganar fuerza entrenando 3 días por semana.
+        - generic [ref=f2e84]:
+          - link "Ver rutina" [ref=f2e85] [cursor=pointer]:
+            - /url: /routines/e207a965-9c8f-4930-883d-5e27c70d277b/edit
+          - button "Borrar" [ref=f2e86] [cursor=pointer]
+      - article [ref=f2e88]:
+        - generic [ref=f2e89]:
+          - paragraph [ref=f2e90]: Actualizada 15 jul 2026
+          - heading "Rutina 1" [level=2] [ref=f2e91]
+        - generic [ref=f2e92]:
+          - link "Ver rutina" [ref=f2e93] [cursor=pointer]:
+            - /url: /routines/5282ed8b-d645-4bbe-8bfc-fd690a943381/edit
+          - button "Borrar" [ref=f2e94] [cursor=pointer]
+  - navigation "Navegación principal" [ref=f2e95]:
+    - link "Rutinas" [ref=f2e96] [cursor=pointer]:
+      - /url: /routines
+    - link "Entrenamiento" [ref=f2e102] [cursor=pointer]:
+      - /url: /workouts/start
+    - link "Estadísticas" [ref=f2e107] [cursor=pointer]:
+      - /url: /statistics
+    - link "IA" [ref=f2e111] [cursor=pointer]:
+      - /url: /ai

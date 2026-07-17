@@ -26,8 +26,27 @@
   }
 
   @if (loading()) {
-    <section class="card state" aria-live="polite">
-      <p>Calculando estadísticas…</p>
+    <section class="metrics">
+      @for (_ of [1,2,3,4,5,6]; track $index) {
+        <article class="metric-card">
+          <div class="skeleton" style="height:0.75rem;width:60%"></div>
+          <div class="skeleton" style="height:1.6rem;width:40%;margin-top:0.25rem"></div>
+        </article>
+      }
+    </section>
+    <section class="grid" aria-hidden="true">
+      @for (_ of [1,2,3]; track $index) {
+        <div class="card">
+          <div class="skeleton" style="height:1.1rem;width:50%;margin-bottom:var(--space-4)"></div>
+          @for (_ of [1,2,3,4]; track $index) {
+            <div style="display:grid;grid-template-columns:4rem 1fr auto;gap:var(--space-3);align-items:center;margin-bottom:var(--space-3)">
+              <div class="skeleton" style="height:0.7rem"></div>
+              <div class="skeleton" style="height:0.75rem;border-radius:99px"></div>
+              <div class="skeleton" style="height:0.85rem;width:2.5rem"></div>
+            </div>
+          }
+        </div>
+      }
     </section>
   } @else if (overview(); as data) {
     @if (data.workoutCount === 0) {

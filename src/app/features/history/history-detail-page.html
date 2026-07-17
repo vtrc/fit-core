@@ -4,17 +4,19 @@
       <p class="eyebrow">DETALLE DEL ENTRENAMIENTO</p>
       <h1>Registro del entrenamiento.</h1>
     </div>
-    <a routerLink="/history">Volver al historial</a>
+    <a class="btn-secondary" routerLink="/history">Volver al historial</a>
   </header>
 
   @if (loading()) {
-    <section class="card state" aria-live="polite">
-      <p>Cargando los detalles del entrenamiento…</p>
+    <section class="card skeleton-card">
+      <div class="skeleton skeleton-line"></div>
+      <div class="skeleton skeleton-line" style="width:50%"></div>
+      <div class="skeleton skeleton-line" style="width:70%"></div>
     </section>
   } @else if (error(); as message) {
     <section class="card state">
       <p class="error" role="alert">{{ message }}</p>
-      <a routerLink="/history">Volver al historial</a>
+    <a class="btn-secondary" routerLink="/history">Volver al historial</a>
     </section>
   } @else if (workout(); as item) {
     <section class="card summary">

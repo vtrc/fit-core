@@ -194,6 +194,16 @@
 
 /* ── Responsive ──────────────────────────────────────────── */
 
+@media (max-width: 480px) {
+  .metric-value {
+    font-size: 1.3rem;
+  }
+
+  .metric-card {
+    padding: var(--space-3);
+  }
+}
+
 @media (min-width: 640px) {
   .metrics {
     grid-template-columns: repeat(3, 1fr);

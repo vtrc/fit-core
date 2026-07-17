@@ -115,9 +115,9 @@ export class WorkoutSessionPage {
     if (restSeconds === null) return '—';
     const min = Math.floor(restSeconds / 60);
     const sec = restSeconds % 60;
-    if (min > 0 && sec > 0) return `${min} min ${sec} s`;
-    if (min > 0) return `${min} min`;
-    if (sec > 0) return `${sec} s`;
+    if (min > 0 && sec > 0) return `${min}:${String(sec).padStart(2, '0')}`;
+    if (min > 0) return `${min}:00`;
+    if (sec > 0) return `0:${String(sec).padStart(2, '0')}`;
     return '—';
   }
 

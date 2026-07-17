@@ -12,7 +12,21 @@
   }
 
   @if (loading()) {
-    <section class="card state"><p>Cargando rutinas…</p></section>
+    <section class="grid" aria-label="Cargando rutinas">
+      @for (_ of [1,2,3]; track $index) {
+        <article class="card routine-card">
+          <div class="routine-body">
+            <div class="skeleton" style="height:0.7rem;width:35%"></div>
+            <div class="skeleton" style="height:1.25rem;width:60%;margin:var(--space-2) 0"></div>
+            <div class="skeleton" style="height:0.9rem;width:80%;margin-bottom:0.35rem"></div>
+            <div class="skeleton" style="height:0.9rem;width:45%"></div>
+          </div>
+          <div class="routine-actions">
+            <div class="skeleton" style="height:44px;border-radius:var(--radius-md)"></div>
+          </div>
+        </article>
+      }
+    </section>
   } @else if (routines().length === 0) {
     <app-empty-state
       title="Aún no tienes rutinas."
