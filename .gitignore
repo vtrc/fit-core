@@ -43,6 +43,9 @@ testem.log
 /typings
 __screenshots__/
 
+# Function build artifact (source in functions/minimax-chat/)
+functions/minimax-chat.ts
+
 # InsForge & AI agent local state
 .agent/
 .augment/
