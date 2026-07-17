@@ -48,11 +48,13 @@ export interface RoutineMessageResponse {
 @Injectable({ providedIn: 'root' })
 export class AiChatService {
   private readonly insforge = inject(InsforgeClientService);
-  private readonly endpoint = `${environment.functionsRunnerUrl}/minimax-chat`;
 
   async generateRoutine(profile: RoutineProfile): Promise<RoutineProposal> {
-    const { proposal } = await this.post<{ proposal: RoutineProposal }>({ action: 'generate_routine', profile });
-    return proposal;
+    const { data, error } = await this.insforge.client.functions.invoke<{ proposal: RoutineProposal }>('minimax-chat', {
+      body: { action: 'generate_routine', profile },
+    });
+    if (error) throw new Error(typeof error === 'string' ? error : error.message);
+    return data!.proposal;
   }
 
   async sendRoutineMessage(
@@ -61,23 +63,10 @@ export class AiChatService {
     profile?: RoutineProfile,
     messages?: ChatMessage[],
   ): Promise<RoutineMessageResponse> {
-    return this.post({ action: 'routine_message', message, proposal: currentProposal, profile, messages });
-  }
-
-  private async post<T>(body: unknown): Promise<T> {
-    await this.insforge.ready;
-    const token = this.insforge.getAccessToken();
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        apikey: environment.insforgeAnonKey,
-      },
-      body: JSON.stringify(body),
+    const { data, error } = await this.insforge.client.functions.invoke<RoutineMessageResponse>('minimax-chat', {
+      body: { action: 'routine_message', message, proposal: currentProposal, profile, messages },
     });
-    const result: T = await response.json();
-    if (!response.ok) throw new Error((result as { error?: string })?.error || `Error ${response.status}`);
-    return result;
+    if (error) throw new Error(typeof error === 'string' ? error : error.message);
+    return data!;
   }
 }
