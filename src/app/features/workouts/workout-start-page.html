@@ -44,6 +44,9 @@
           >
             {{ startingRoutineId() === routine.id ? 'Iniciando…' : 'Empezar' }}
           </button>
+          <button type="button" class="btn-secondary" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">
+            {{ deletingId() === routine.id ? 'Borrando…' : 'Borrar' }}
+          </button>
         </app-routine-card>
       }
     </section>

@@ -24,6 +24,7 @@ export class WorkoutStartPage {
   protected readonly error = signal<string | null>(null);
   protected readonly routines = signal<Routine[]>([]);
   protected readonly startingRoutineId = signal<string | null>(null);
+  protected readonly deletingId = signal<string | null>(null);
   protected readonly saving = this.workoutsService.saving;
 
   constructor() {
@@ -63,6 +64,25 @@ export class WorkoutStartPage {
       error: (error: unknown) => {
         this.error.set(this.toMessage(error, 'We could not start this routine.'));
         this.startingRoutineId.set(null);
+      },
+    });
+  }
+
+  protected deleteRoutine(id: string): void {
+    if (this.deletingId()) return;
+    if (!confirm('¿Eliminar esta rutina?')) return;
+
+    this.deletingId.set(id);
+    this.error.set(null);
+
+    this.routinesService.delete(id).subscribe({
+      next: () => {
+        this.routines.update((list) => list.filter((r) => r.id !== id));
+        this.deletingId.set(null);
+      },
+      error: (error: unknown) => {
+        this.error.set(this.toMessage(error, 'No se pudo eliminar la rutina.'));
+        this.deletingId.set(null);
       },
     });
   }

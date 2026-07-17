@@ -131,11 +131,11 @@ img {
 /* ── Page main content layout ────────────────────────────── */
 
 main:has(> app-page-header) {
-  > :not(app-page-header):not(.page-toolbar) {
+  > :not(app-page-header):not(.page-toolbar):not(.timer-overlay) {
     margin-inline: var(--shell-padding-x, 1rem) !important;
   }
 
-  > :nth-child(2):not(.page-toolbar),
+  > :nth-child(2):not(.page-toolbar):not(.timer-overlay),
   > .page-toolbar + * {
     margin-top: var(--space-4);
   }

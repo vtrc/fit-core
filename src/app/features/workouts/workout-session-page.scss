@@ -109,10 +109,6 @@
   border-left-color: var(--success);
 }
 
-.exercise-card:not(.completed):hover {
-  background: rgba(31, 48, 40, 0.02);
-  box-shadow: var(--elevation-card);
-}
 
 /* ── Checkbox ────────────────────────────────────────────── */
 

@@ -58,6 +58,7 @@
           [class.completed]="item.result !== null"
           role="option"
           [attr.aria-selected]="item.result !== null"
+          (click)="toggleComplete(item)"
         >
           <label class="check-wrap">
             <input
@@ -65,6 +66,7 @@
               class="check-input"
               [checked]="item.result !== null"
               (change)="toggleComplete(item)"
+              (click)="$event.stopPropagation()"
               [attr.aria-label]="'Marcar ' + item.exercise.name + ' como ' + (item.result !== null ? 'pendiente' : 'completado')"
             />
             <span class="check-visual" aria-hidden="true"></span>
@@ -121,7 +123,7 @@
           </div>
 
           @if (item.restSeconds !== null && item.restSeconds > 0) {
-            <button type="button" class="timer-btn" (click)="openTimer(item)" aria-label="Abrir temporizador de descanso" title="Temporizador">
+            <button type="button" class="timer-btn" (click)="openTimer(item); $event.stopPropagation()" aria-label="Abrir temporizador de descanso" title="Temporizador">
               <svg class="timer-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </button>
           }
