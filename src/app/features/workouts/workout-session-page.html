@@ -66,7 +66,6 @@
               class="check-input"
               [checked]="item.result !== null"
               (change)="toggleComplete(item)"
-              (click)="$event.stopPropagation()"
               [attr.aria-label]="'Marcar ' + item.exercise.name + ' como ' + (item.result !== null ? 'pendiente' : 'completado')"
             />
             <span class="check-visual" aria-hidden="true"></span>
