@@ -1,21 +1,28 @@
-# Task 2 Report — Shell mobile-friendly padding & nav tap targets
+# Task 2 Report: Install @angular/cdk and add updatePositions method
 
-**Status:** DONE
+## What was implemented
 
-## Changes
+1. **Installed `@angular/cdk`** as a runtime dependency via `npm install @angular/cdk`
+2. **Added `updatePositions()` method** to `RoutinesService` (`src/app/features/routines/routines.service.ts`), placed after `delete(id)`. The method accepts an array of `{ id: string; position: number }` items and sequentially updates each routine's position, scoped to the authenticated user.
 
-`src/app/shared/shell/shell.scss` — replaced entirely:
+## Build results
 
-- **Mobile padding**: `padding: 1rem 1rem` (was `1rem 1.6rem`), with `@media (min-width: 640px)` restoring `1.6rem` on desktop
-- **Footer height**: `--footer-height: calc(4rem + env(safe-area-inset-bottom))` (was `3.5rem`)
-- **Tap targets**: `.nav-item` now has `min-height: 44px`, `justify-content: center`, reduced gap to `0.15rem`, tighter padding `0.4rem 0`
-- **Nav label font**: reduced from `0.7rem` to `0.65rem`
-- **Icon**: reduced from `1.5rem` to `1.4rem`
+- **Build:** ✅ Succeeded (3.073 seconds)
+- **Warnings:** 4 pre-existing SCSS budget warnings (workout-session-page.scss, ai-chat-page.scss, and 2 others) — not related to this change.
 
-## Build
+## Files changed
 
-`npx ng build` — **PASSED** (only pre-existing SCSS budget warnings for unrelated files)
+- `package.json` — added `@angular/cdk` dependency
+- `src/app/features/routines/routines.service.ts` — added `updatePositions()` method (lines 344-366)
 
-## Commits
+## Self-review findings
 
-None — committed as part of the plan.
+- Method signature matches the brief: `updatePositions(items: { id: string; position: number }[]): Observable<void>`
+- Follows existing patterns: `from(this.requireUserId())` + `switchMap`, same error handling as `delete()`
+- Sequential `for...of` loop is consistent with the existing `reorderRoutineExercises` private method
+- All updates are scoped to the authenticated user via `.eq('user_id', userId)`
+- Method is public, placed logically after other public CRUD methods
+
+## Concerns
+
+- Sequential N+1 update pattern: each item in the array triggers a separate database update. This is fine for typical drag-and-drop (reordering < 20 items), but a batch approach would be more efficient. InsForge's SDK appears not to support multi-row `.update()` with per-row different values in a single call, so sequential is the pragmatic choice as specified in the brief.

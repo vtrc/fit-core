@@ -1,87 +1,130 @@
-### Task 3: Global responsive + skeleton styles
+### Task 3: Implement drag-and-drop on the routines list page
 
 **Files:**
-- Modify: `src/styles.scss`
+- Modify: `src/app/features/routines/routines-list-page.ts`
+- Modify: `src/app/features/routines/routines-list-page.html`
+- Modify: `src/app/features/routines/routines-list-page.scss`
 
-**Produces:** 480px breakpoint (hide lede, tighter hero). Skeleton shimmer keyframes + `.skeleton-card` / `.skeleton-line` classes for loading state.
+**Interfaces:**
+- Consumes: `RoutinesService.updatePositions()`, `Routine.position`
+- Produces: draggable routine card grid with persisted reorder
 
-- [ ] **After the `@media (max-width: 640px)` block (~line 229), add 480px breakpoint**
+- [ ] **Step 1: Add CDK DragDrop imports to the component**
 
-```scss
-@media (max-width: 480px) {
-  .hero .lede {
-    display: none;
-  }
+Edit `src/app/features/routines/routines-list-page.ts`:
 
-  .hero {
-    margin-bottom: var(--space-4);
-  }
+Import `CdkDropListGroup` and `CdkDropList, CdkDrag, CdkDropListModule`:
+
+```typescript
+import { CdkDropList, CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
+```
+
+Add to `@Component.imports`:
+```typescript
+imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, SwipeToDeleteDirective, PageHeaderComponent, CdkDropList, CdkDrag],
+```
+
+Add a `savingReorder` signal and the drop handler method + a snapshot for rollback:
+
+```typescript
+import type { Routine } from '../../core/domain/models';
+
+// ... existing code ...
+
+protected readonly savingReorder = signal(false);
+
+private routinesBeforeReorder: Routine[] = [];
+
+protected onDrop(event: CdkDragDrop<Routine[]>): void {
+  if (event.previousIndex === event.currentIndex) return;
+
+  this.routinesBeforeReorder = [...this.routines()];
+
+  this.routines.update((list) => {
+    const updated = [...list];
+    const [moved] = updated.splice(event.previousIndex, 1);
+    updated.splice(event.currentIndex, 0, moved);
+    return updated;
+  });
+
+  this.savingReorder.set(true);
+
+  const reordered = this.routines().map((r, i) => ({ id: r.id, position: i }));
+
+  this.routinesService.updatePositions(reordered).subscribe({
+    error: () => {
+      this.routines.set(this.routinesBeforeReorder);
+      this.savingReorder.set(false);
+    },
+    complete: () => {
+      this.savingReorder.set(false);
+    },
+  });
 }
 ```
 
-- [ ] **After the buttons section (~line 351), add skeleton styles**
+- [ ] **Step 2: Update the template with cdkDropList and cdkDrag**
+
+Edit `src/app/features/routines/routines-list-page.html`.
+
+Replace the `<section class="grid">` in the `@else` block (lines 43-56):
+
+```html
+<section
+  class="grid"
+  cdkDropList
+  (cdkDropListDropped)="onDrop($event)"
+>
+  @for (routine of routines(); track routine.id) {
+    <app-routine-card
+      cdkDrag
+      [cdkDragDisabled]="savingReorder()"
+      appSwipeToDelete
+      (swiped)="deleteRoutine(routine.id)"
+      [eyebrow]="'Actualizada ' + formatDate(routine.updatedAt)"
+      [name]="routine.name"
+      [description]="routine.description"
+    >
+      <a class="btn-primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
+      <button type="button" class="btn-secondary" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">Borrar</button>
+    </app-routine-card>
+  }
+</section>
+```
+
+No changes needed to the swipe directive — CDK drag events take priority over swipe touch handlers during drag.
+
+- [ ] **Step 3: Add drag-drop styles**
+
+Edit `src/app/features/routines/routines-list-page.scss`, append:
 
 ```scss
-/* ── Skeleton loading ──────────────────────────────────── */
+// ── Drag-and-drop ──────────────────────────────────────────
 
-.skeleton {
-  background: var(--fill-soft);
-  border-radius: var(--radius-md);
-  animation: shimmer 1.5s ease-in-out infinite;
-  background-image: linear-gradient(
-    90deg,
-    var(--fill-soft) 0%,
-    var(--fill-hover) 50%,
-    var(--fill-soft) 100%
-  );
-  background-size: 200% 100%;
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.cdk-drag-animating {
+  transition: transform 300ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-.skeleton-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  min-height: 10rem;
-  box-shadow: var(--elevation-card);
+.cdk-drag-preview {
+  box-shadow: var(--elevation-modal);
   border-radius: var(--radius-lg);
-  background: var(--paper);
+  opacity: 0.95;
 }
 
-.skeleton-card .skeleton-line {
-  height: 0.7rem;
-  border-radius: var(--radius-sm);
-}
-
-.skeleton-card .skeleton-line:first-child {
-  width: 35%;
-}
-
-.skeleton-card .skeleton-line:nth-child(2) {
-  width: 65%;
-  height: 1.2rem;
-}
-
-.skeleton-card .skeleton-line:nth-child(3) {
-  width: 45%;
-}
-
-.skeleton-card .skeleton-line:last-child {
-  width: 30%;
-  height: 2.5rem;
-  margin-top: auto;
+.cdk-drag-placeholder {
+  opacity: 0;
 }
 ```
 
-- [ ] **Verify build**
+- [ ] **Step 4: Commit**
 
 ```bash
-npx ng build
+git add src/app/features/routines/routines-list-page.ts src/app/features/routines/routines-list-page.html src/app/features/routines/routines-list-page.scss
+git commit -m "feat: implement drag-and-drop reorder for routines list"
 ```
 
 ---

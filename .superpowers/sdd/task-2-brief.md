@@ -1,76 +1,52 @@
-### Task 2: Shell — mobile padding, 44px nav tap targets
+### Task 2: Install `@angular/cdk` and add `updatePositions` method
 
 **Files:**
-- Modify: `src/app/shared/shell/shell.scss`
+- Modify: `package.json`
+- Modify: `src/app/features/routines/routines.service.ts`
 
-**Produces:** Reduced horizontal padding on mobile (1rem vs 1.6rem). Bottom nav taller (4rem) with 44px min-height items. Nav label text smaller (0.65rem) to compensate.
+**Interfaces:**
+- Consumes: `RoutineRow` with `position`, `Routine` with `position`
+- Produces: `RoutinesService.updatePositions(items: { id: string; position: number }[]): Observable<void>`
 
-- [ ] **Replace entire shell.scss**
+- [ ] **Step 1: Install @angular/cdk**
 
-```scss
-.shell {
-  --footer-height: calc(4rem + env(safe-area-inset-bottom));
-  min-height: 100dvh;
-  padding: 1rem 1rem;
-  padding-bottom: var(--footer-height);
-  background: var(--parchment);
-}
+```bash
+npm install @angular/cdk
+```
 
-.nav-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  display: flex;
-  border-top: 1px solid var(--border-default);
-  background: var(--paper);
-  padding-bottom: env(safe-area-inset-bottom);
-}
+- [ ] **Step 2: Add `updatePositions()` to `RoutinesService`**
 
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.15rem;
-  padding: 0.4rem 0;
-  min-height: 44px;
-  text-decoration: none;
-  color: var(--ink-muted);
-  font-size: 0.65rem;
-  border-radius: 0;
-  background: transparent;
-  transition: color 0.15s;
-}
+Add to `src/app/features/routines/routines.service.ts`, after `delete(id)` (line 341):
 
-.nav-item.active {
-  color: var(--ink);
-}
+```typescript
+updatePositions(items: { id: string; position: number }[]): Observable<void> {
+  return from(this.requireUserId()).pipe(
+    switchMap((userId) =>
+      from(
+        (async () => {
+          for (const item of items) {
+            const { error } = await this.insforge.client.database
+              .from('routines')
+              .update({ position: item.position })
+              .eq('id', item.id)
+              .eq('user_id', userId);
 
-.nav-icon {
-  width: 1.4rem;
-  height: 1.4rem;
-  display: block;
-}
-
-.nav-label {
-  font-weight: 600;
-}
-
-@media (min-width: 640px) {
-  .shell {
-    padding: 1rem 1.6rem;
-    padding-bottom: var(--footer-height);
-  }
+            if (error) {
+              throw error;
+            }
+          }
+        })(),
+      ),
+    ),
+  );
 }
 ```
 
-- [ ] **Verify build**
+- [ ] **Step 3: Commit**
 
 ```bash
-npx ng build
+git add package.json src/app/features/routines/routines.service.ts
+git commit -m "feat: add @angular/cdk and updatePositions service method"
 ```
 
 ---

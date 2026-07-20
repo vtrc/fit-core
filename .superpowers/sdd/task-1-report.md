@@ -1,18 +1,40 @@
-# Task 1 Report: Enable View Transitions
+# Task 1 Report — Add `position` column to routines table
 
-**Status:** DONE
+## What was implemented
 
-## Changes
+- **`migrations/20260720000000_add-routines-position.sql`**: SQL migration adding nullable `position integer` column to `public.routines` with a CTE-based backfill that assigns initial positions per user (ordered by most recently updated first).
+- **`src/app/core/domain/models.ts`**: Added `position: number | null` to the `Routine` interface.
+- **`src/app/features/routines/routines.service.ts`**:
+  - Added `position: number | null` to `RoutineRow` interface.
+  - Updated `mapRoutine()` to map `position`.
+  - `listMine()`: select includes `position`, ordered by `position ASC (nulls first false)` then `updated_at DESC`.
+  - `createRoutine()`: queries max position for the user, computes next, inserts with `position`, select includes `position`.
+  - `getDetail()`: select includes `position`.
+  - `updateRoutine()`: select includes `position`.
+  - `loadRoutineRow()`: select includes `position`.
 
-**File:** `src/app/app.config.ts`
+## Build results
 
-- Added `withViewTransitions` to the `@angular/router` import
-- Passed `withViewTransitions()` as the second argument to `provideRouter()`
+✅ Build passes with no errors. Two pre-existing SCSS budget warnings are unrelated.
 
-## Build Result
+## Files changed
 
-✅ **Build succeeded** — `npx ng build` completed in 6.9 seconds with no errors. Two pre-existing CSS budget warnings (ai-chat-page.scss, workout-session-page.scss) were present and unrelated to this change.
+```
+migrations/20260720000000_add-routines-position.sql            (new)
+src/app/core/domain/models.ts                                  (modified)
+src/app/features/routines/routines.service.ts                  (modified)
+```
+
+## Self-review findings
+
+- All selects that go through `mapRoutine()` now include `position` — checked `listMine`, `getDetail`, `createRoutine`, `updateRoutine`, `loadRoutineRow`.
+- `restoreRoutineParent` doesn't use `mapRoutine` so it doesn't need the column.
+- `delete` doesn't select, no changes needed.
 
 ## Commits
 
-No commits created (user did not request commit).
+- `a006a86` feat: add position column to routines table
+
+## Issues or concerns
+
+None.

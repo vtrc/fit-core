@@ -1,4 +1,4 @@
-import { Directive, ElementRef, EventEmitter, inject, Output } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
 @Directive({
   selector: '[appSwipeToDelete]',
@@ -7,25 +7,33 @@ import { Directive, ElementRef, EventEmitter, inject, Output } from '@angular/co
 export class SwipeToDeleteDirective {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  @Output() swiped = new EventEmitter<void>();
-
   private startX = 0;
-  private startY = 0;
   private currentX = 0;
   private isDragging = false;
-  private readonly threshold = 80;
+  private revealed = false;
+  private readonly threshold = 50;
 
   constructor() {
     const el = this.el.nativeElement;
-    el.addEventListener('touchstart', (e) => this.onStart(e), { passive: true });
+    el.addEventListener('touchstart', (e) => this.onStart(e), { passive: false });
     el.addEventListener('touchmove', (e) => this.onMove(e), { passive: true });
     el.addEventListener('touchend', () => this.onEnd());
     el.addEventListener('touchcancel', () => this.onCancel());
   }
 
   private onStart(e: TouchEvent): void {
+    if (this.revealed) {
+      e.preventDefault();
+      this.reset();
+      return;
+    }
+
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('.cdk-drag-handle')) {
+      return;
+    }
+
     this.startX = e.touches[0].clientX;
-    this.startY = e.touches[0].clientY;
     this.currentX = this.startX;
     this.isDragging = true;
     this.el.nativeElement.style.transition = 'none';
@@ -35,15 +43,9 @@ export class SwipeToDeleteDirective {
     if (!this.isDragging) return;
     this.currentX = e.touches[0].clientX;
     const diffX = this.startX - this.currentX;
-    const diffY = Math.abs(e.touches[0].clientY - this.startY);
-
-    if (diffY > Math.abs(diffX)) {
-      this.onCancel();
-      return;
-    }
 
     if (diffX > 0) {
-      this.el.nativeElement.style.transform = `translateX(${-Math.min(diffX, 120)}px)`;
+      this.el.nativeElement.style.transform = `translateX(${-Math.min(diffX, 90)}px)`;
     }
   }
 
@@ -52,18 +54,23 @@ export class SwipeToDeleteDirective {
     this.isDragging = false;
     const diff = this.startX - this.currentX;
     this.el.nativeElement.style.transition = 'transform 0.2s ease';
+
     if (diff > this.threshold) {
-      this.el.nativeElement.style.transform = 'translateX(-120px)';
-      this.swiped.emit();
-      setTimeout(() => {
-        this.el.nativeElement.style.transform = 'translateX(0)';
-      }, 400);
+      this.el.nativeElement.style.transform = 'translateX(-90px)';
+      this.revealed = true;
     } else {
       this.el.nativeElement.style.transform = 'translateX(0)';
     }
   }
 
   private onCancel(): void {
+    this.isDragging = false;
+    this.el.nativeElement.style.transition = 'transform 0.2s ease';
+    this.el.nativeElement.style.transform = 'translateX(0)';
+  }
+
+  reset(): void {
+    this.revealed = false;
     this.isDragging = false;
     this.el.nativeElement.style.transition = 'transform 0.2s ease';
     this.el.nativeElement.style.transform = 'translateX(0)';
