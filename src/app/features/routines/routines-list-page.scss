@@ -44,30 +44,8 @@
   }
 }
 
-// ── Swipe-to-delete reveal ────────────────────────────────
-
-.swipe-container {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius-lg);
-}
-
-.swipe-background {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: var(--space-5);
-  background: var(--danger);
-  color: white;
-  border-radius: var(--radius-lg);
-  z-index: 0;
-}
-
-.trash-icon {
-  width: 24px;
-  height: 24px;
+.cdk-drag {
+  touch-action: none;
 }
 
 .cdk-drop-list-dragging .cdk-drag {
@@ -76,10 +54,6 @@
 
 .cdk-drag-animating {
   transition: transform 300ms cubic-bezier(0, 0, 0.2, 1);
-}
-
-.cdk-drag {
-  touch-action: none;
 }
 
 .cdk-drag-preview {

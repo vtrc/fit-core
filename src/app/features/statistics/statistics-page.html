@@ -1,10 +1,6 @@
 <main class="page">
   <app-page-header eyebrow="ESTADÍSTICAS" title="Tu entrenamiento en cifras." lede="Todos los valores se calculan a partir de tu historial de entrenamientos." />
 
-  <div class="page-toolbar">
-    <a class="btn-primary" routerLink="/history">Ver historial</a>
-  </div>
-
   <form class="card filters" (submit)="onSubmit($event)" aria-label="Filtrar estadísticas por fecha">
     <div class="filters-row">
       <label><span>Desde</span><input type="date" [formField]="dateRangeForm.from" /></label>
@@ -49,7 +45,7 @@
         title="Todavía no hay estadísticas."
         description="Completa un entrenamiento para generar estos datos."
         actionText="Iniciar entrenamiento"
-        actionRoute="/workouts/start"
+        actionRoute="/routines"
       />
     } @else {
       <section class="metrics" aria-label="Totales de entrenamiento">

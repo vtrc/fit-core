@@ -89,6 +89,25 @@ export class HistoryService {
     );
   }
 
+  delete(id: string): Observable<void> {
+    return from(this.requireUserId()).pipe(
+      switchMap((userId) =>
+        from(
+          this.insforge.client.database
+            .from('workouts')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', userId)
+            .select('id'),
+        ).pipe(
+          map(({ error }) => {
+            if (error) throw error;
+          }),
+        ),
+      ),
+    );
+  }
+
   get(id: string): Observable<WorkoutDetails> {
     return from(this.requireUserId()).pipe(
       switchMap((userId) =>

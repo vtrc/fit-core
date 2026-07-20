@@ -1,29 +1,32 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { CdkDropList, CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
 import type { Routine } from '../../core/domain/models';
 import { RoutinesService } from './routines.service';
+import { EntrenamientosService } from '../workouts/workouts.service';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
 import { RoutineCardComponent } from '../../shared/routine-card/routine-card';
-import { SwipeToDeleteDirective } from './swipe-to-delete.directive';
 import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
   selector: 'app-routines-list-page',
   standalone: true,
-  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, SwipeToDeleteDirective, PageHeaderComponent, CdkDropList, CdkDrag],
+  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, PageHeaderComponent, CdkDropList, CdkDrag],
   templateUrl: './routines-list-page.html',
   styleUrl: './routines-list-page.scss',
 })
 export class RoutinesListPage {
   private readonly routinesService = inject(RoutinesService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  protected readonly workoutsService = inject(EntrenamientosService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly routines = signal<Routine[]>([]);
   protected readonly deletingId = signal<string | null>(null);
+  protected readonly startingRoutineId = signal<string | null>(null);
   protected readonly pullToRefresh = signal(false);
   protected readonly pullTransform = signal('');
   protected readonly pullTransition = signal('');
@@ -68,6 +71,34 @@ export class RoutinesListPage {
 
   protected formatDate(value: string): string {
     return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value));
+  }
+
+  protected startRoutine(event: Event, routine: Routine): void {
+    event.stopPropagation();
+
+    if (this.workoutsService.saving()) return;
+
+    this.startingRoutineId.set(routine.id);
+
+    this.routinesService.getDetail(routine.id).subscribe({
+      next: async (detail) => {
+        this.workoutsService.startFromRoutine(detail);
+        this.startingRoutineId.set(null);
+        await this.router.navigate(['/workouts/session']);
+      },
+      error: () => {
+        this.startingRoutineId.set(null);
+        this.error.set('No se pudo iniciar el entrenamiento.');
+      },
+    });
+  }
+
+  protected editRoutine(event: Event, id: string): void {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.drag-handle, .trash-btn, .routine-actions')) {
+      return;
+    }
+    this.router.navigate(['/routines', id, 'edit']);
   }
 
   protected deleteRoutine(id: string): void {

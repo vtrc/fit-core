@@ -1,14 +1,14 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
-import { RouterLink } from '@angular/router';
+
 
 import { type StatisticsOverview, StatisticsService } from './statistics.service';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
 import { PageHeaderComponent } from '../../shared/page-header/page-header';
 
 @Component({
-  selector: 'app-statistics-page', standalone: true, imports: [DecimalPipe, FormField, RouterLink, EmptyStateComponent, PageHeaderComponent],
+  selector: 'app-statistics-page', standalone: true, imports: [DecimalPipe, FormField, EmptyStateComponent, PageHeaderComponent],
   templateUrl: './statistics-page.html',
   styleUrl: './statistics-page.scss',
 })

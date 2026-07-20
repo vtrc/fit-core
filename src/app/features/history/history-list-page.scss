@@ -4,6 +4,45 @@
   margin-top: calc(-1 * var(--shell-padding-y, 1rem));
 }
 
+.swipe-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.swipe-background {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: var(--space-5);
+  background: var(--danger);
+  color: white;
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+}
+
+.swipe-container .workout-item {
+  position: relative;
+  cursor: pointer;
+}
+
+.trash-btn {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  pointer-events: auto;
+}
+
+.trash-icon {
+  width: 24px;
+  height: 24px;
+}
+
 .filters {
   margin-bottom: var(--space-4);
 }

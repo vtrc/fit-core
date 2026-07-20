@@ -1,10 +1,6 @@
 <main class="page">
   <app-page-header eyebrow="HISTORIAL" title="Tus entrenamientos." lede="Revisa tus sesiones registradas por fecha." />
 
-  <div class="page-toolbar">
-    <a class="btn-primary" routerLink="/statistics">Ver estadísticas</a>
-  </div>
-
   <form class="card filters" (submit)="onSubmit($event)" aria-label="Filtrar historial de entrenamientos">
     <div class="filters-row">
       <label><span>Desde</span><input type="date" [formField]="dateRangeForm.from" /></label>
@@ -31,44 +27,51 @@
       title="No se encontraron entrenamientos."
       description="Completa un entrenamiento para verlo en tu historial."
       actionText="Iniciar entrenamiento"
-      actionRoute="/workouts/start"
+      actionRoute="/routines"
     />
   } @else {
     <section class="workout-list" aria-label="Historial de entrenamientos">
       @for (workout of workouts(); track workout.id) {
-        <article class="workout-item">
-          <div class="workout-header">
-            <div>
-              <p class="eyebrow">{{ formatDate(workout.performedOn) }}</p>
-              <h2>{{ workout.routineName }}</h2>
-            </div>
-            <span class="completion-badge">{{ workout.completionPercentage }}%</span>
+        <div class="swipe-container">
+          <div class="swipe-background">
+            <button type="button" class="trash-btn" (click)="deleteWorkout(workout.id)" aria-label="Eliminar entrenamiento">
+              <svg class="trash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <line x1="10" y1="11" x2="10" y2="17" />
+                <line x1="14" y1="11" x2="14" y2="17" />
+              </svg>
+            </button>
           </div>
-
-          @if (workout.notes) {
-            <p class="workout-notes">{{ workout.notes }}</p>
-          }
-
-          <div class="workout-stats">
-            <div class="stat">
-              <span class="stat-value">{{ workout.completedCount }}</span>
-              <span class="stat-label">Completados</span>
+          <article class="workout-item" [appSwipeToDelete]="true" (click)="viewDetails(workout.id)">
+            <div class="workout-header">
+              <div>
+                <p class="eyebrow">{{ formatDate(workout.performedOn) }}</p>
+                <h2>{{ workout.routineName }}</h2>
+              </div>
+              <span class="completion-badge">{{ workout.completionPercentage }}%</span>
             </div>
-            <div class="stat">
-              <span class="stat-value">{{ workout.plannedCount }}</span>
-              <span class="stat-label">Total</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">{{ workout.skippedCount }}</span>
-              <span class="stat-label">Omitidos</span>
-            </div>
-          </div>
 
-          <a class="workout-link" [routerLink]="['/history', workout.id]" [attr.aria-label]="'Ver entrenamiento del ' + formatDate(workout.performedOn)">
-            Ver detalles
-            <span class="arrow">→</span>
-          </a>
-        </article>
+            @if (workout.notes) {
+              <p class="workout-notes">{{ workout.notes }}</p>
+            }
+
+            <div class="workout-stats">
+              <div class="stat">
+                <span class="stat-value">{{ workout.completedCount }}</span>
+                <span class="stat-label">Completados</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">{{ workout.plannedCount }}</span>
+                <span class="stat-label">Total</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">{{ workout.skippedCount }}</span>
+                <span class="stat-label">Omitidos</span>
+              </div>
+            </div>
+          </article>
+        </div>
       }
     </section>
   }
