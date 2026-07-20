@@ -40,9 +40,15 @@
       actionRoute="/routines/new"
     />
   } @else {
-    <section class="grid">
+    <section
+      class="grid"
+      cdkDropList
+      (cdkDropListDropped)="onDrop($event)"
+    >
       @for (routine of routines(); track routine.id) {
         <app-routine-card
+          cdkDrag
+          [cdkDragDisabled]="savingReorder()"
           appSwipeToDelete
           (swiped)="deleteRoutine(routine.id)"
           [eyebrow]="'Actualizada ' + formatDate(routine.updatedAt)"

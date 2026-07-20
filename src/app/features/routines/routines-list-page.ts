@@ -1,5 +1,6 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { CdkDropList, CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
 import type { Routine } from '../../core/domain/models';
 import { RoutinesService } from './routines.service';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state';
@@ -10,7 +11,7 @@ import { PageHeaderComponent } from '../../shared/page-header/page-header';
 @Component({
   selector: 'app-routines-list-page',
   standalone: true,
-  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, SwipeToDeleteDirective, PageHeaderComponent],
+  imports: [RouterLink, EmptyStateComponent, RoutineCardComponent, SwipeToDeleteDirective, PageHeaderComponent, CdkDropList, CdkDrag],
   templateUrl: './routines-list-page.html',
   styleUrl: './routines-list-page.scss',
 })
@@ -27,9 +28,12 @@ export class RoutinesListPage {
   protected readonly pullTransform = signal('');
   protected readonly pullTransition = signal('');
 
+  protected readonly savingReorder = signal(false);
+
   private touchStartY = 0;
   private touchCurrentY = 0;
   private isPulling = false;
+  private routinesBeforeReorder: Routine[] = [];
 
   protected readonly flashMessage = computed(() => {
     const deleted = this.route.snapshot.queryParamMap.get('deleted');
@@ -79,6 +83,33 @@ export class RoutinesListPage {
       error: (error: unknown) => {
         this.error.set(this.toMessage(error, 'No se pudo eliminar la rutina.'));
         this.deletingId.set(null);
+      },
+    });
+  }
+
+  protected onDrop(event: CdkDragDrop<Routine[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+
+    this.routinesBeforeReorder = [...this.routines()];
+
+    this.routines.update((list) => {
+      const updated = [...list];
+      const [moved] = updated.splice(event.previousIndex, 1);
+      updated.splice(event.currentIndex, 0, moved);
+      return updated;
+    });
+
+    this.savingReorder.set(true);
+
+    const reordered = this.routines().map((r, i) => ({ id: r.id, position: i }));
+
+    this.routinesService.updatePositions(reordered).subscribe({
+      error: () => {
+        this.routines.set(this.routinesBeforeReorder);
+        this.savingReorder.set(false);
+      },
+      complete: () => {
+        this.savingReorder.set(false);
       },
     });
   }
