@@ -73,63 +73,80 @@
     gap: var(--space-2);
 }
 
-.search-wrap {
+.filter-field {
     flex: 1;
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 2.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    transition: border-color .15s;
+    overflow: hidden;
 }
 
-.search-icon {
-    position: absolute;
-    left: .75rem;
-    top: 50%;
-    transform: translateY(-50%);
+.filter-field:focus-within {
+    border-color: var(--ink);
+}
+
+.field-icon {
+    flex-shrink: 0;
+    width: 2.25rem;
+    display: grid;
+    place-items: center;
     color: var(--ink-muted);
-    font-size: .95rem;
+    font-size: .85rem;
     pointer-events: none;
 }
 
-.search-input {
-    width: 100%;
-    padding: .55rem .75rem .55rem 2rem;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
-    font: inherit;
-    font-size: .9rem;
-    background: var(--paper);
+.field-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
     outline: none;
-    transition: border-color .15s;
-}
-
-.search-input:focus {
-    border-color: var(--ink);
-}
-
-.filter-chips {
-    flex-wrap: wrap;
-}
-
-.chip-field {
-    flex: 0 1 auto;
-    min-width: 7rem;
-}
-
-.chip-select,
-.chip-input {
-    width: 100%;
-    padding: .35rem .6rem;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
+    background: transparent;
     font: inherit;
-    font-size: .8rem;
-    background: var(--paper);
-    outline: none;
-    transition: border-color .15s;
+    font-size: .85rem;
+    padding: 0;
+    color: var(--ink);
+}
+
+.field-input::placeholder {
+    color: var(--ink-muted);
+}
+
+.field-select {
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: .25rem;
 }
 
-.chip-select:focus,
-.chip-input:focus {
-    border-color: var(--ink);
+.field-clear {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    font-size: .7rem;
+    padding: 0;
+    transition: color .15s;
+}
+
+@media (max-width: 480px) {
+    .filter-row {
+        flex-direction: column;
+    }
+
+    .filter-row .filter-field {
+        flex: none;
+    }
 }
 
 .loading-state {

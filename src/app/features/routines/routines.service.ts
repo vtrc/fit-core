@@ -119,7 +119,7 @@ type RoutineMetricKey =
   | 'resistance'
   | 'calories';
 
-const STRENGTH_METRICS = new Set<RoutineMetricKey>(['sets', 'repetitions', 'weight']);
+const STRENGTH_METRICS = new Set<RoutineMetricKey>(['sets', 'repetitions', 'weight', 'duration']);
 const CARDIO_METRICS = new Set<RoutineMetricKey>(['duration', 'distance', 'speed', 'incline', 'resistance', 'calories']);
 const METRIC_ALIASES = new Map<string, RoutineMetricKey>([
   ['set', 'sets'],
@@ -214,14 +214,15 @@ export function validateRoutineInput(input: CreateRoutineInput): string[] {
     }
 
     if (exercise.exerciseType === 'strength') {
-      if (exercise.plannedDurationSeconds !== null || exercise.plannedDistance !== null) {
-        errors.push(`${label} es un ejercicio de fuerza y no puede usar objetivos de cardio.`);
+      if (exercise.plannedDistance !== null) {
+        errors.push(`${label} es un ejercicio de fuerza y no puede usar objetivos de distancia.`);
       }
 
       if (
         exercise.plannedSets === null &&
         exercise.plannedRepetitions === null &&
         exercise.plannedWeight === null &&
+        exercise.plannedDurationSeconds === null &&
         exercise.restSeconds === null
       ) {
         errors.push(`${label} necesita al menos un objetivo de fuerza válido.`);

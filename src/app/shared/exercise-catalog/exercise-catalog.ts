@@ -1,7 +1,7 @@
-import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, debounced, effect, inject, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 
-import type { Exercise } from '../../core/domain/models';
+import type { Exercise, ExerciseType } from '../../core/domain/models';
 import { CatalogService, type CatalogFilter } from '../../core/catalog/catalog.service';
 
 @Component({
@@ -26,10 +26,11 @@ export class ExerciseCatalogComponent {
 
   protected readonly filterModel = signal({ query: '', typeFilter: '', muscleGroup: '', equipment: '' });
   protected readonly filterForm = form(this.filterModel);
+  protected readonly debouncedFilterModel = debounced(this.filterModel, 500);
 
   protected readonly filtered = computed(() => {
     const data = this.exercises();
-    const { query, typeFilter, muscleGroup, equipment } = this.filterModel();
+    const { query, typeFilter, muscleGroup, equipment } = this.debouncedFilterModel.value();
 
     return data.filter((e) => {
       if (typeFilter && e.type !== typeFilter) return false;
@@ -44,17 +45,18 @@ export class ExerciseCatalogComponent {
   });
 
   constructor() {
-    this.load();
-
     effect(() => {
-      const filters = this.filterModel();
-      void filters;
-      this.load();
+      const { typeFilter } = this.debouncedFilterModel.value();
+      this.load({ type: (typeFilter || undefined) as ExerciseType | undefined });
     });
   }
 
   protected toggleFilters(): void {
     this.showFilters.update((value) => !value);
+  }
+
+  protected clearField(field: 'query' | 'typeFilter' | 'muscleGroup' | 'equipment'): void {
+    this.filterModel.update((m) => ({ ...m, [field]: '' }));
   }
 
   protected add(exercise: Exercise): void {
@@ -63,26 +65,15 @@ export class ExerciseCatalogComponent {
   }
 
   protected refresh(): void {
-    this.load();
+    const { typeFilter } = this.filterModel();
+    this.load({ type: (typeFilter || undefined) as ExerciseType | undefined });
   }
 
-  private load(): void {
+  private load(filter: CatalogFilter = {}): void {
     this.loading.set(true);
     this.error.set(null);
 
-    const filters: CatalogFilter = {};
-
-    if (this.filterModel().typeFilter) {
-      filters.type = this.filterModel().typeFilter as 'strength' | 'cardio';
-    }
-
-    const mg = this.filterModel().muscleGroup.trim();
-    if (mg) filters.muscleGroup = mg;
-
-    const eq = this.filterModel().equipment.trim();
-    if (eq) filters.equipment = eq;
-
-    this.catalogService.listExercises(filters).subscribe({
+    this.catalogService.listExercises(filter).subscribe({
       next: (exercises) => {
         this.exercises.set(exercises);
         this.loading.set(false);

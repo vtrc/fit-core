@@ -1,5 +1,5 @@
 .shell {
-  --footer-height: calc(4rem + env(safe-area-inset-bottom));
+  --footer-height: calc(3rem + env(safe-area-inset-bottom));
   --shell-padding-x: 1rem;
   --shell-padding-y: 1rem;
   min-height: 100dvh;

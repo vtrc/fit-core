@@ -13,26 +13,41 @@
 
   @if (showFilters() && filterMode() !== 'none') {
     <div class="filter-panel">
-      <div class="filter-row">
-        <div class="search-wrap">
-          <span class="search-icon">⌕</span>
-          <input type="text" [formField]="filterForm.query" placeholder="Buscar ejercicio…" class="search-input" />
-        </div>
+      <div class="filter-field">
+        <span class="field-icon">⌕</span>
+        <input type="text" [formField]="filterForm.query" placeholder="Buscar ejercicio…" class="field-input" />
+        @if (filterModel().query) {
+          <button class="field-clear" (click)="clearField('query')" aria-label="Limpiar búsqueda" type="button">✕</button>
+        }
       </div>
-      <div class="filter-row filter-chips">
-        <div class="chip-field">
-          <select [formField]="filterForm.typeFilter" class="chip-select">
+      <div class="filter-row">
+        @if (filterMode() === 'full') {
+          <div class="filter-field">
+            <span class="field-icon">⚙</span>
+            <input type="text" [formField]="filterForm.equipment" placeholder="Equipamiento" class="field-input" />
+            @if (filterModel().equipment) {
+              <button class="field-clear" (click)="clearField('equipment')" aria-label="Limpiar equipamiento" type="button">✕</button>
+            }
+          </div>
+        }
+        <div class="filter-field">
+          <span class="field-icon">◉</span>
+          <select [formField]="filterForm.typeFilter" class="field-input field-select">
             <option value="">Todos</option>
             <option value="strength">Fuerza</option>
             <option value="cardio">Cardio</option>
           </select>
+          @if (filterModel().typeFilter) {
+            <button class="field-clear" (click)="clearField('typeFilter')" aria-label="Limpiar tipo" type="button">✕</button>
+          }
         </div>
         @if (filterMode() === 'full') {
-          <div class="chip-field">
-            <input type="text" [formField]="filterForm.muscleGroup" placeholder="Grupo muscular" class="chip-input" />
-          </div>
-          <div class="chip-field">
-            <input type="text" [formField]="filterForm.equipment" placeholder="Equipamiento" class="chip-input" />
+          <div class="filter-field">
+            <span class="field-icon">◎</span>
+            <input type="text" [formField]="filterForm.muscleGroup" placeholder="Grupo muscular" class="field-input" />
+            @if (filterModel().muscleGroup) {
+              <button class="field-clear" (click)="clearField('muscleGroup')" aria-label="Limpiar grupo muscular" type="button">✕</button>
+            }
           </div>
         }
       </div>

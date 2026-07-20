@@ -9,6 +9,7 @@ export interface CatalogFilter {
   muscleGroup?: string;
   equipment?: string;
   máquina?: string;
+  query?: string;
 }
 
 interface ExerciseRow {
@@ -25,24 +26,24 @@ interface ExerciseRow {
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
-  constructor(private readonly insforge: InsforgeClientService) {}
+  constructor(private readonly insforge: InsforgeClientService) { }
 
   listExercises(filter: CatalogFilter): Observable<Exercise[]> {
-    let query = this.insforge.client.database
+    const query = this.insforge.client.database
       .from('exercises')
       .select('id, name, type, equipment, image_url, muscle_groups, supported_metrics, created_at, updated_at');
 
     if (filter.type) {
-      query = query.eq('type', filter.type);
+      query.ilike('type', filter.type);
     }
 
     if (filter.muscleGroup) {
-      query = query.contains('muscle_groups', [filter.muscleGroup]);
+      query.contains('muscle_groups', [filter.muscleGroup]);
     }
 
     const equipment = filter.máquina ?? filter.equipment;
     if (equipment) {
-      query = query.eq('equipment', equipment);
+      query.ilike('equipment', equipment);
     }
 
     return from(query.order('name', { ascending: true })).pipe(
