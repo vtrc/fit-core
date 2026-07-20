@@ -106,6 +106,7 @@ export class RoutinesListPage {
     this.routinesService.updatePositions(reordered).subscribe({
       error: () => {
         this.routines.set(this.routinesBeforeReorder);
+        this.error.set('No se pudo guardar el orden.');
         this.savingReorder.set(false);
       },
       complete: () => {

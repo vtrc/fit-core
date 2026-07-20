@@ -346,19 +346,15 @@ export class RoutinesService {
     return from(this.requireUserId()).pipe(
       switchMap((userId) =>
         from(
-          (async () => {
-            for (const item of items) {
-              const { error } = await this.insforge.client.database
-                .from('routines')
-                .update({ position: item.position })
-                .eq('id', item.id)
-                .eq('user_id', userId);
-
-              if (error) {
-                throw error;
-              }
+          this.insforge.client.database
+            .from('routines')
+            .upsert(items.map((item) => ({ id: item.id, user_id: userId, position: item.position }))),
+        ).pipe(
+          map(({ error }) => {
+            if (error) {
+              throw error;
             }
-          })(),
+          }),
         ),
       ),
     );
