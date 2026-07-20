@@ -10,6 +10,7 @@ export class SwipeToDeleteDirective {
   @Output() swiped = new EventEmitter<void>();
 
   private startX = 0;
+  private startY = 0;
   private currentX = 0;
   private isDragging = false;
   private readonly threshold = 80;
@@ -24,6 +25,7 @@ export class SwipeToDeleteDirective {
 
   private onStart(e: TouchEvent): void {
     this.startX = e.touches[0].clientX;
+    this.startY = e.touches[0].clientY;
     this.currentX = this.startX;
     this.isDragging = true;
     this.el.nativeElement.style.transition = 'none';
@@ -32,9 +34,16 @@ export class SwipeToDeleteDirective {
   private onMove(e: TouchEvent): void {
     if (!this.isDragging) return;
     this.currentX = e.touches[0].clientX;
-    const diff = this.startX - this.currentX;
-    if (diff > 0) {
-      this.el.nativeElement.style.transform = `translateX(${-Math.min(diff, 120)}px)`;
+    const diffX = this.startX - this.currentX;
+    const diffY = Math.abs(e.touches[0].clientY - this.startY);
+
+    if (diffY > Math.abs(diffX)) {
+      this.onCancel();
+      return;
+    }
+
+    if (diffX > 0) {
+      this.el.nativeElement.style.transform = `translateX(${-Math.min(diffX, 120)}px)`;
     }
   }
 

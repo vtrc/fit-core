@@ -46,18 +46,29 @@
       (cdkDropListDropped)="onDrop($event)"
     >
       @for (routine of routines(); track routine.id) {
-        <app-routine-card
-          cdkDrag
-          [cdkDragDisabled]="savingReorder()"
-          appSwipeToDelete
-          (swiped)="deleteRoutine(routine.id)"
-          [eyebrow]="'Actualizada ' + formatDate(routine.updatedAt)"
-          [name]="routine.name"
-          [description]="routine.description"
-        >
-          <a class="btn-primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
-          <button type="button" class="btn-secondary" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">Borrar</button>
-        </app-routine-card>
+        <div class="swipe-container">
+          <div class="swipe-background">
+            <svg class="trash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <line x1="10" y1="11" x2="10" y2="17" />
+              <line x1="14" y1="11" x2="14" y2="17" />
+            </svg>
+          </div>
+          <app-routine-card
+            cdkDrag
+            [cdkDragDisabled]="savingReorder()"
+            [cdkDragStartDelay]="200"
+            appSwipeToDelete
+            (swiped)="deleteRoutine(routine.id)"
+            [eyebrow]="'Actualizada ' + formatDate(routine.updatedAt)"
+            [name]="routine.name"
+            [description]="routine.description"
+          >
+            <a class="btn-primary" [routerLink]="['/routines', routine.id, 'edit']">Ver rutina</a>
+            <button type="button" class="btn-secondary" (click)="deleteRoutine(routine.id)" [disabled]="deletingId() === routine.id">Borrar</button>
+          </app-routine-card>
+        </div>
       }
     </section>
   }
