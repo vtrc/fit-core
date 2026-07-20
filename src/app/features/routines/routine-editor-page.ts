@@ -167,6 +167,21 @@ export class RoutineEditarorPage {
     }));
   }
 
+  protected adjustNumber(index: number, field: NumericField, options: number[], direction: -1 | 1): void {
+    const current = this.draft().exercises[index]?.[field] ?? null;
+    const currentIndex = current === null ? -1 : options.indexOf(current);
+    const nextIndex = currentIndex < 0 ? (direction > 0 ? 0 : -1) : Math.max(-1, Math.min(options.length - 1, currentIndex + direction));
+    this.updateExerciseNumber(index, field, nextIndex < 0 ? '' : options[nextIndex]);
+  }
+
+  protected isFirstOption(value: number | string | null, options: number[]): boolean {
+    return value === null || value === '' || value === options[0];
+  }
+
+  protected isLastOption(value: number | string | null, options: number[]): boolean {
+    return value === options[options.length - 1];
+  }
+
   protected updateExerciseNotes(index: number, value: string): void {
     this.draft.update((draft) => ({
       ...draft,
@@ -210,6 +225,20 @@ export class RoutineEditarorPage {
         ),
       };
     });
+  }
+
+  protected adjustRestMinutes(index: number, direction: -1 | 1): void {
+    const current = this.restMinutes(this.draft().exercises[index]?.restSeconds ?? null);
+    const currentIndex = typeof current === 'number' ? this.restMinOptions.indexOf(current) : -1;
+    const nextIndex = currentIndex < 0 ? (direction > 0 ? 0 : -1) : Math.max(-1, Math.min(this.restMinOptions.length - 1, currentIndex + direction));
+    this.updateRestMinutes(index, nextIndex < 0 ? '' : this.restMinOptions[nextIndex]);
+  }
+
+  protected adjustRestSeconds(index: number, direction: -1 | 1): void {
+    const current = this.restSecondsPart(this.draft().exercises[index]?.restSeconds ?? null);
+    const currentIndex = typeof current === 'number' ? this.restSecOptions.indexOf(current) : -1;
+    const nextIndex = currentIndex < 0 ? (direction > 0 ? 0 : -1) : Math.max(-1, Math.min(this.restSecOptions.length - 1, currentIndex + direction));
+    this.updateRestSeconds(index, nextIndex < 0 ? '' : this.restSecOptions[nextIndex]);
   }
 
   protected displayNumber(value: number | null): string | number {

@@ -8,37 +8,89 @@
 }
 
 .dashboard {
-    height: 100%;
-    background: var(--parchment);
+    position: relative;
+    isolation: isolate;
     display: flex;
-    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background: var(--surface-dim);
 }
 
 .hero-img {
-    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: -2;
     width: 100%;
     height: 100%;
+    background: var(--surface-container-lowest);
     object-fit: cover;
+    object-position: center;
 }
 
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 50%);
+    z-index: -1;
+    background:
+        linear-gradient(180deg, rgba(18, 19, 23, .18) 0%, rgba(18, 19, 23, .34) 38%, var(--surface-dim) 100%),
+        linear-gradient(90deg, rgba(13, 14, 18, .64) 0%, rgba(13, 14, 18, .08) 72%);
+    pointer-events: none;
 }
 
 .hero-text {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: var(--space-8);
-    padding-bottom: 4rem;
-    color: #fff;
+    align-self: end;
+    width: min(100%, 880px);
+    padding: var(--space-8) var(--shell-padding-x, var(--space-5));
+    padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+    color: var(--on-surface);
 }
 
 .hero-text h1 {
-    margin: 0 0 var(--space-2);
-    font-size: clamp(3rem, 9vw, 7rem);
-    line-height: 0.9;
+    max-width: 10ch;
+    margin: 0 0 var(--space-3);
+    color: var(--on-surface);
+    font: 800 clamp(2.5rem, 9vw, 4rem)/.98 var(--font-display);
+    letter-spacing: -.04em;
+    text-wrap: balance;
+}
+
+.hero-lede {
+    max-width: 34rem;
+    color: var(--text-secondary);
+    font: 400 clamp(1rem, 2vw, 1.125rem)/1.5 var(--font-body);
+    text-wrap: pretty;
+}
+
+@media (min-width: 640px) {
+    .hero-text {
+        padding: var(--space-12) var(--space-8) calc(var(--space-12) + env(safe-area-inset-bottom));
+    }
+}
+
+@media (min-width: 1024px) {
+    .hero-text {
+        padding-left: clamp(var(--space-8), 8vw, 112px);
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-text {
+        padding-top: var(--space-6);
+        padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+    }
+
+    .hero-text h1 {
+        font-size: 2.25rem;
+    }
+
+    .hero-lede {
+        max-width: 28rem;
+        font-size: .9375rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-img {
+        object-position: center;
+    }
 }

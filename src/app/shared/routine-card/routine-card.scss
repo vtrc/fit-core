@@ -1,144 +1,143 @@
 :host {
-  display: block;
+    display: block;
 }
 
 :host-context(.cdk-drop-list-dragging) .drag-handle {
-  cursor: grabbing;
+    cursor: grabbing;
 }
 
 .routine-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  min-height: 10rem;
-  position: relative;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 160px;
+    padding: var(--space-5);
 }
 
 .routine-body h2 {
-  margin: var(--space-2) 0;
-  font-size: 1.25rem;
-  line-height: 1.3;
-  text-wrap: balance;
+    margin: var(--space-2) 0;
+    color: var(--on-surface);
+    font: 600 20px/1.3 var(--font-display);
+    text-wrap: balance;
 }
 
 .routine-desc {
-  color: var(--ink-secondary);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  display: -webkit-box;
-  overflow: hidden;
-  margin-bottom: 0;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+    display: -webkit-box;
+    overflow: hidden;
+    margin-bottom: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .routine-actions {
-  display: flex;
-  gap: var(--space-3);
+    display: flex;
+    gap: var(--space-3);
 }
 
-.routine-actions ::ng-deep > * {
-  flex: 1;
-  text-align: center;
-  padding: 0.65rem var(--space-3);
-  border-radius: var(--radius-md);
-  font-size: 0.88rem;
-  font-weight: 600;
-  min-height: 44px;
-  display: grid;
-  place-items: center;
+.routine-actions ::ng-deep>* {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.drag-handle,
+.trash-btn {
+    all: unset;
+    cursor: pointer;
 }
 
 .drag-handle {
-  all: unset;
-  cursor: grab;
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: var(--space-3);
-  color: var(--ink-tertiary);
-  z-index: 2;
-  touch-action: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    padding: var(--space-3);
+    color: var(--text-muted);
+    cursor: grab;
+    touch-action: none;
+}
 
-  &:active {
+.drag-handle:active {
     cursor: grabbing;
-  }
 }
 
 .grip-icon {
-  display: block;
-  width: 20px;
-  height: 20px;
-  opacity: 0.35;
-  transition: opacity 0.15s;
+    display: block;
+    width: 20px;
+    height: 20px;
+    opacity: .5;
+    transition: opacity 150ms ease-out;
 }
 
 .drag-handle:hover .grip-icon,
 .drag-handle:focus-visible .grip-icon {
-  opacity: 0.7;
+    opacity: 1;
+    color: var(--primary);
 }
 
 .has-drag-handle .routine-body {
-  padding-right: var(--space-8);
+    padding-right: var(--space-8);
 }
 
-// ── Swipe-to-delete reveal ────────────────────────────────
-
 .swipe-container {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius-lg);
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
 }
 
 .swipe-container:not(.swipeable) .swipe-background {
-  display: none;
+    display: none;
 }
 
 .swipe-background {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: var(--space-5);
-  background: var(--danger);
-  color: white;
-  border-radius: var(--radius-lg);
-  pointer-events: none;
-}
-
-:host-context(.cdk-drop-list-dragging) .swipe-background {
-  opacity: 0;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--danger-container);
+    color: var(--danger);
+    pointer-events: none;
 }
 
 .swipe-container .routine-card {
-  position: relative;
+    position: relative;
 }
 
 .trash-btn {
-  all: unset;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  pointer-events: auto;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    pointer-events: auto;
+    color: var(--danger);
 }
 
 .trash-icon {
-  width: 24px;
-  height: 24px;
+    width: 24px;
+    height: 24px;
 }
 
 @media (max-width: 480px) {
-  .routine-card {
-    padding: var(--space-4);
-    min-height: 8rem;
-  }
+    .routine-card {
+        min-height: 128px;
+        padding: var(--space-4);
+    }
 
-  .routine-actions {
-    gap: var(--space-2);
-  }
+    .routine-actions {
+        gap: var(--space-2);
+    }
 }

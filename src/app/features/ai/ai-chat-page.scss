@@ -98,28 +98,27 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-4);
-  background: var(--paper);
+  background: var(--surface-container);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--ink);
+  color: var(--on-surface);
   cursor: pointer;
   text-align: left;
   transition: all 0.15s;
-  box-shadow: var(--elevation-card);
 
   svg {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
-    color: var(--ink-muted);
+    color: var(--primary-dim);
   }
 
   &:hover {
-    border-color: var(--border-strong);
+    border-color: var(--primary-dim);
+    background: var(--surface-high);
     transform: translateY(-1px);
-    box-shadow: var(--elevation-card), 0 4px 12px rgba(31, 48, 40, 0.08);
   }
 
   &:active {
@@ -144,27 +143,27 @@
     flex-direction: row-reverse;
 
     .message-avatar {
-      background: var(--ink);
-      color: var(--paper);
+      background: var(--primary);
+      color: var(--on-primary);
     }
 
     .message-bubble {
-      background: var(--ink);
-      color: var(--paper);
+      background: var(--surface-high);
+      color: var(--on-surface);
       font-weight: 600;
     }
   }
 
   &.assistant {
     .message-avatar {
-      background: var(--fill-soft);
-      color: var(--rust);
+      background: var(--surface-high);
+      color: var(--primary);
     }
 
     .message-bubble {
-      background: var(--paper);
-      color: var(--ink);
-      box-shadow: var(--elevation-card);
+      background: var(--surface-container);
+      color: var(--on-surface);
+      border: 1px solid var(--border-subtle);
     }
   }
 
@@ -202,6 +201,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  border-radius: var(--radius-lg);
 }
 
 .message-bubble {

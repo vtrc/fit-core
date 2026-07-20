@@ -4,8 +4,6 @@
   margin-top: calc(-1 * var(--shell-padding-y, 1rem));
 }
 
-/* ── Metric cards ────────────────────────────────────────── */
-
 .metrics {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -13,15 +11,30 @@
   margin: var(--space-4) 0;
 }
 
+.skeleton-label { width: 60%; height: 12px; }
+.skeleton-value { width: 40%; height: 26px; margin-top: var(--space-1); }
+.skeleton-heading { width: 50%; height: 18px; margin-bottom: var(--space-4); }
+.skeleton-row { display: grid; grid-template-columns: 4rem 1fr auto; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3); }
+.skeleton-date { height: 11px; }
+.skeleton-bar { height: 12px; border-radius: 99px; }
+.skeleton-number { width: 2.5rem; height: 14px; }
+
 .metric-card {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  justify-content: space-around;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  min-height: 112px;
   padding: var(--space-4);
   border-radius: var(--radius-lg);
-  background: var(--paper);
-  box-shadow: var(--elevation-card);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-low);
+  transition: border-color 150ms ease-out, background-color 150ms ease-out;
+}
+
+.metric-card:hover {
+  border-color: var(--border-default);
+  background: var(--surface-container);
 }
 
 .metric-card:last-child:nth-child(odd) {
@@ -29,29 +42,26 @@
 }
 
 .metric-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--ink-muted);
+  color: var(--text-muted);
+  font: 500 11px/16px var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.1em;
 }
 
 .metric-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1.2;
+  color: var(--on-surface);
+  font: 800 clamp(28px, 4vw, 40px)/1 var(--font-display);
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 
 .metric-unit {
-  font-size: 0.85rem;
+  margin-left: 0.2em;
+  color: var(--text-secondary);
+  font: 500 11px/16px var(--font-mono);
   font-weight: 500;
-  color: var(--ink-secondary);
-  margin-left: 0.15em;
+  letter-spacing: 0;
 }
-
-/* ── Trend chart ─────────────────────────────────────────── */
 
 .trend {
   display: grid;
@@ -67,8 +77,8 @@
 }
 
 .trend-date {
-  font-size: 0.8rem;
-  color: var(--ink-secondary);
+  color: var(--text-secondary);
+  font: 500 11px/16px var(--font-mono);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -76,7 +86,7 @@
 .bar-track {
   height: 0.75rem;
   border-radius: 99px;
-  background: var(--fill-soft);
+  background: var(--surface-high);
   overflow: hidden;
 }
 
@@ -84,20 +94,17 @@
   height: 100%;
   min-width: 2px;
   border-radius: 99px;
-  background: var(--rust);
-  transition: width 0.3s ease;
+  background: var(--primary);
+  transition: width 180ms ease-out;
 }
 
 .trend-value {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink);
+  color: var(--on-surface);
+  font: 600 12px/16px var(--font-mono);
   min-width: 3rem;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-
-/* ── Muscle groups ───────────────────────────────────────── */
 
 .muscle-groups {
   display: grid;
@@ -117,20 +124,20 @@
 }
 
 .muscle-name {
-  font-size: 0.9rem;
+  color: var(--on-surface);
+  font-size: 14px;
   font-weight: 600;
-  color: var(--ink);
 }
 
 .muscle-count {
-  font-size: 0.75rem;
-  color: var(--ink-muted);
+  color: var(--text-muted);
+  font: 500 11px/16px var(--font-mono);
 }
 
 .muscle-bar-track {
   height: 0.5rem;
   border-radius: 99px;
-  background: var(--fill-soft);
+  background: var(--surface-high);
   overflow: hidden;
 }
 
@@ -138,11 +145,9 @@
   height: 100%;
   min-width: 4px;
   border-radius: 99px;
-  background: var(--rust);
-  transition: width 0.3s ease;
+  background: var(--primary);
+  transition: width 180ms ease-out;
 }
-
-/* ── Best results ────────────────────────────────────────── */
 
 .best-results {
   display: grid;
@@ -169,36 +174,54 @@
 }
 
 .result-exercise {
-  font-size: 0.9rem;
+  color: var(--on-surface);
+  font-size: 14px;
   font-weight: 600;
-  color: var(--ink);
 }
 
 .result-unit {
-  font-size: 0.75rem;
-  color: var(--ink-muted);
+  color: var(--text-muted);
+  font: 500 11px/16px var(--font-mono);
 }
 
 .result-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--rust);
+  color: var(--primary);
+  font: 700 18px/24px var(--font-display);
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Empty text ──────────────────────────────────────────── */
-
 .empty-text {
-  color: var(--ink-muted);
-  font-size: 0.9rem;
   margin: var(--space-4) 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  text-wrap: pretty;
 }
 
-/* ── Responsive ──────────────────────────────────────────── */
+.filters {
+  background: var(--surface-container);
+}
+
+.filters-row label > span {
+  color: var(--text-secondary);
+  font: 500 11px/16px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.banner.error {
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+  background: color-mix(in srgb, var(--danger-container) 45%, var(--surface-low));
+  color: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metric-card, .bar, .muscle-bar { transition: none; }
+}
 
 @media (max-width: 480px) {
   .metric-value {
-    font-size: 1.3rem;
+    font-size: 28px;
   }
 
   .metric-card {
@@ -219,5 +242,14 @@
 @media (min-width: 1024px) {
   .metrics {
     grid-template-columns: repeat(5, 1fr);
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .grid > section:first-child {
+    grid-row: span 2;
   }
 }

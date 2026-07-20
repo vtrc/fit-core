@@ -61,16 +61,21 @@ select {
   width: 100%;
   border: 1px solid var(--border-input);
   border-radius: var(--radius-md);
-  padding: 0.8rem 0.9rem;
+  padding: var(--space-3);
   font: inherit;
-  background: var(--paper);
+  background: var(--surface-dim);
+  color: var(--on-surface);
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
 }
+
+input:hover, textarea:hover, select:hover { border-color: var(--border-strong); }
+input:focus, textarea:focus, select:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px var(--focus-ring); }
 
 .field-error input,
 .field-error textarea,
 .field-error select {
   border-color: var(--danger);
-  background: var(--danger-bg);
+  background: rgba(147, 0, 10, 0.22);
 }
 
 .field-error-msg {
@@ -89,10 +94,10 @@ select {
 }
 
 .exercise-card {
-  box-shadow: var(--elevation-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  background: var(--paper);
+  background: var(--surface-container);
 }
 
 .exercise-header {
@@ -110,6 +115,9 @@ select {
 .exercise-header p {
   overflow-wrap: anywhere;
 }
+
+.exercise-header h3 { color: var(--on-surface); font: 600 1.1rem/1.3 var(--font-display); }
+.exercise-header > div:first-child > p:not(.eyebrow) { color: var(--text-muted); font-size: 0.8rem; }
 
 .stack {
   display: grid;
@@ -130,9 +138,55 @@ select {
   flex-wrap: wrap;
 }
 
+.select-stepper {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 2.5rem;
+  align-items: stretch;
+  gap: 0;
+}
+
+.select-stepper select {
+  min-width: 0;
+  border-radius: 0;
+}
+
+.stepper-button {
+  display: grid;
+  place-items: center;
+  min-width: 2.5rem;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--border-input);
+  background: var(--surface-high);
+  color: var(--primary);
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.stepper-button:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.stepper-button:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.stepper-button:hover:not(:disabled) {
+  background: var(--surface-highest);
+}
+
+.stepper-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .rest-group select,
 .rest-group input {
   width: 5.5rem;
+}
+
+.rest-group .select-stepper {
+  flex: 1 1 10rem;
 }
 
 @media (max-width: 480px) {
@@ -142,13 +196,17 @@ select {
     min-width: 0;
   }
 
+  .rest-group .select-stepper {
+    flex-basis: 100%;
+  }
+
   .rest-group {
     gap: 0.25rem;
   }
 }
 
 .rest-unit {
-  color: var(--ink-muted);
+  color: var(--text-muted);
   font-size: 0.82rem;
 }
 
@@ -161,8 +219,18 @@ select {
   font-size: 1.25rem;
   line-height: 1;
   border-radius: var(--radius-md);
-  background: var(--fill-soft);
-  color: var(--ink);
+  border: 1px solid var(--border-default);
+  background: var(--surface-high);
+  color: var(--on-surface);
+}
+
+.icon-button:not(.danger) {
+  border-color: var(--primary-dim);
+  color: var(--primary);
+}
+
+.icon-button:not(.danger):hover:not(:disabled) {
+  background: var(--surface-highest);
 }
 
 .icon-button:disabled {
@@ -222,7 +290,7 @@ select {
 }
 
 .danger {
-  background: var(--danger-bg);
+  background: rgba(147, 0, 10, 0.22);
   color: var(--danger);
 }
 
@@ -233,7 +301,8 @@ select {
 }
 
 .banner.error {
-  background: var(--danger-bg);
+  border-color: rgba(255, 180, 171, 0.24);
+  background: rgba(147, 0, 10, 0.22);
 }
 
 .banner ul {
@@ -245,5 +314,9 @@ select {
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  background: var(--paper);
+  background: var(--surface-low);
 }
+
+.section-heading h2 { color: var(--on-surface); font: 700 1.35rem/1.2 var(--font-display); }
+.section-heading p { color: var(--text-muted); font: 500 0.7rem/1rem var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.empty-inline { padding: var(--space-5); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); background: var(--surface-container); color: var(--text-muted); }

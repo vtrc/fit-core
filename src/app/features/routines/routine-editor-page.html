@@ -82,47 +82,67 @@
                     <div class="metrics">
                       <label class="field" [class.field-error]="hasExerciseError($index, 'plannedSets')">
                         <span>Series</span>
-                        <select [name]="'sets-' + $index" [ngModel]="displayNumber(item.plannedSets)" (ngModelChange)="updateExerciseNumber($index, 'plannedSets', $event)">
+                        <div class="select-stepper">
+                          <button type="button" class="stepper-button" (click)="adjustNumber($index, 'plannedSets', seriesOptions, -1)" [disabled]="isFirstOption(item.plannedSets, seriesOptions)" aria-label="Reducir series">−</button>
+                          <select [name]="'sets-' + $index" [ngModel]="displayNumber(item.plannedSets)" (ngModelChange)="updateExerciseNumber($index, 'plannedSets', $event)">
                           <option value="">—</option>
                           @for (v of seriesOptions; track v) {
                             <option [value]="v">{{ v }}</option>
                           }
-                        </select>
+                          </select>
+                          <button type="button" class="stepper-button" (click)="adjustNumber($index, 'plannedSets', seriesOptions, 1)" [disabled]="isLastOption(item.plannedSets, seriesOptions)" aria-label="Aumentar series">+</button>
+                        </div>
                       </label>
                       <label class="field" [class.field-error]="hasExerciseError($index, 'plannedRepetitions')">
                         <span>Repeticiones</span>
-                         <select [name]="'reps-' + $index" [ngModel]="displayNumber(item.plannedRepetitions)" (ngModelChange)="updateExerciseNumber($index, 'plannedRepetitions', $event)">
+                        <div class="select-stepper">
+                          <button type="button" class="stepper-button" (click)="adjustNumber($index, 'plannedRepetitions', repOptions, -1)" [disabled]="isFirstOption(item.plannedRepetitions, repOptions)" aria-label="Reducir repeticiones">−</button>
+                          <select [name]="'reps-' + $index" [ngModel]="displayNumber(item.plannedRepetitions)" (ngModelChange)="updateExerciseNumber($index, 'plannedRepetitions', $event)">
                           <option value="">—</option>
                           @for (v of repOptions; track v) {
                             <option [value]="v">{{ v }}</option>
                           }
-                        </select>
+                          </select>
+                          <button type="button" class="stepper-button" (click)="adjustNumber($index, 'plannedRepetitions', repOptions, 1)" [disabled]="isLastOption(item.plannedRepetitions, repOptions)" aria-label="Aumentar repeticiones">+</button>
+                        </div>
                       </label>
                       <label class="field">
                         <span>Peso (kg)</span>
-                        <select [name]="'weight-' + $index" [ngModel]="displayNumber(item.plannedWeight)" (ngModelChange)="updateExerciseNumber($index, 'plannedWeight', $event)">
+                        <div class="select-stepper">
+                          <button type="button" class="stepper-button" (click)="adjustNumber($index, 'plannedWeight', pesoOptions, -1)" [disabled]="isFirstOption(item.plannedWeight, pesoOptions)" aria-label="Reducir peso">−</button>
+                          <select [name]="'weight-' + $index" [ngModel]="displayNumber(item.plannedWeight)" (ngModelChange)="updateExerciseNumber($index, 'plannedWeight', $event)">
                           <option value="">—</option>
                           @for (v of pesoOptions; track v) {
                             <option [value]="v">{{ v }}</option>
                           }
-                        </select>
+                          </select>
+                          <button type="button" class="stepper-button" (click)="adjustNumber($index, 'plannedWeight', pesoOptions, 1)" [disabled]="isLastOption(item.plannedWeight, pesoOptions)" aria-label="Aumentar peso">+</button>
+                        </div>
                       </label>
                       <label class="field">
                         <span>Descanso</span>
                         <div class="rest-group">
-                          <select [name]="'restMin-' + $index" [ngModel]="restMinutes(item.restSeconds)" (ngModelChange)="updateRestMinutes($index, $event)">
+                           <div class="select-stepper">
+                             <button type="button" class="stepper-button" (click)="adjustRestMinutes($index, -1)" [disabled]="isFirstOption(restMinutes(item.restSeconds), restMinOptions)" aria-label="Reducir minutos de descanso">−</button>
+                             <select [name]="'restMin-' + $index" [ngModel]="restMinutes(item.restSeconds)" (ngModelChange)="updateRestMinutes($index, $event)">
                             <option value="">—</option>
                             @for (v of restMinOptions; track v) {
                               <option [value]="v">{{ v }}</option>
                             }
-                          </select>
+                             </select>
+                             <button type="button" class="stepper-button" (click)="adjustRestMinutes($index, 1)" [disabled]="isLastOption(restMinutes(item.restSeconds), restMinOptions)" aria-label="Aumentar minutos de descanso">+</button>
+                           </div>
                           <span class="rest-unit">min</span>
-                          <select [name]="'restSec-' + $index" [ngModel]="restSecondsPart(item.restSeconds)" (ngModelChange)="updateRestSeconds($index, $event)">
+                           <div class="select-stepper">
+                             <button type="button" class="stepper-button" (click)="adjustRestSeconds($index, -1)" [disabled]="isFirstOption(restSecondsPart(item.restSeconds), restSecOptions)" aria-label="Reducir segundos de descanso">−</button>
+                             <select [name]="'restSec-' + $index" [ngModel]="restSecondsPart(item.restSeconds)" (ngModelChange)="updateRestSeconds($index, $event)">
                             <option value="">—</option>
                             @for (v of restSecOptions; track v) {
                               <option [value]="v">{{ v.toString().padStart(2, '0') }}</option>
                             }
-                          </select>
+                             </select>
+                             <button type="button" class="stepper-button" (click)="adjustRestSeconds($index, 1)" [disabled]="isLastOption(restSecondsPart(item.restSeconds), restSecOptions)" aria-label="Aumentar segundos de descanso">+</button>
+                           </div>
                           <span class="rest-unit">seg</span>
                         </div>
                       </label>

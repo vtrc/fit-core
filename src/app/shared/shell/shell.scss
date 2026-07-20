@@ -1,61 +1,62 @@
 .shell {
-  --footer-height: calc(3rem + env(safe-area-inset-bottom));
-  --shell-padding-x: 1rem;
-  --shell-padding-y: 1rem;
-  min-height: 100dvh;
-  padding: var(--shell-padding-y) var(--shell-padding-x);
-  padding-bottom: var(--footer-height);
-  background: var(--parchment);
-  overflow-x: clip;
+    --footer-height: calc(56px + env(safe-area-inset-bottom));
+    --shell-padding-x: 20px;
+    --shell-padding-y: 16px;
+    min-height: 100dvh;
+    padding: var(--shell-padding-y) var(--shell-padding-x) var(--footer-height);
+    background: var(--surface);
+    overflow-x: clip;
 }
 
 .nav-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  display: flex;
-  border-top: 1px solid var(--border-default);
-  background: var(--paper);
-  padding-bottom: env(safe-area-inset-bottom);
-  view-transition-name: nav;
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 50;
+    display: flex;
+    border-top: 1px solid var(--border-default);
+    background: rgba(18, 19, 23, .96);
+    padding-bottom: env(safe-area-inset-bottom);
+    view-transition-name: nav;
 }
 
 .nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.15rem;
-  padding: 0.4rem 0;
-  min-height: 44px;
-  text-decoration: none;
-  color: var(--ink-muted);
-  font-size: 0.65rem;
-  border-radius: 0;
-  background: transparent;
-  transition: color 0.15s;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 56px;
+    padding: 4px 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font: 500 11px/16px var(--font-mono);
+    text-decoration: none;
+    transition: color 150ms ease-out, background-color 150ms ease-out;
+}
+
+.nav-item:hover {
+    background: var(--surface-container);
+    color: var(--on-surface);
 }
 
 .nav-item.active {
-  color: var(--ink);
+    color: var(--primary);
 }
 
 .nav-icon {
-  width: 1.4rem;
-  height: 1.4rem;
-  display: block;
+    width: 22px;
+    height: 22px;
+    display: block;
 }
 
 .nav-label {
-  font-weight: 600;
+    font-weight: 500;
 }
 
 @media (min-width: 640px) {
-  .shell {
-    --shell-padding-x: 1.6rem;
-    padding-bottom: var(--footer-height);
-  }
+    .shell {
+        --shell-padding-x: 26px;
+    }
 }

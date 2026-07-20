@@ -20,7 +20,7 @@
     <section class="card summary">
       <div class="summary-header">
         <div>
-          <p class="eyebrow">{{ formatDate(item.performedOn) }}</p>
+          <time class="eyebrow" [attr.datetime]="item.performedOn">{{ formatDate(item.performedOn) }}</time>
           <h2>{{ item.routineName }}</h2>
         </div>
         <span class="completion-badge">{{ item.completionPercentage }}%</span>

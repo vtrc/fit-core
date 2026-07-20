@@ -46,7 +46,7 @@
           <article class="workout-item" [appSwipeToDelete]="true" (click)="viewDetails(workout.id)">
             <div class="workout-header">
               <div>
-                <p class="eyebrow">{{ formatDate(workout.performedOn) }}</p>
+                <time class="eyebrow" [attr.datetime]="workout.performedOn">{{ formatDate(workout.performedOn) }}</time>
                 <h2>{{ workout.routineName }}</h2>
               </div>
               <span class="completion-badge">{{ workout.completionPercentage }}%</span>
