@@ -21,6 +21,7 @@ export interface Routine {
   userId: UUID;
   name: string;
   description: string | null;
+  position: number | null;
   createdAt: ISODateTimeString;
   updatedAt: ISODateTimeString;
 }

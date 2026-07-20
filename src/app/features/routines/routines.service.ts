@@ -39,6 +39,7 @@ interface RoutineRow {
   user_id: string;
   name: string;
   description: string | null;
+  position: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -262,7 +263,8 @@ export class RoutinesService {
     return from(
       this.insforge.client.database
         .from('routines')
-        .select('id, user_id, name, description, created_at, updated_at')
+        .select('id, user_id, name, description, position, created_at, updated_at')
+        .order('position', { ascending: true, nullsFirst: false })
         .order('updated_at', { ascending: false }),
     ).pipe(
       map(({ data, error }) => {
@@ -279,7 +281,7 @@ export class RoutinesService {
     return from(
       this.insforge.client.database
         .from('routines')
-        .select('id, user_id, name, description, created_at, updated_at')
+        .select('id, user_id, name, description, position, created_at, updated_at')
         .eq('id', id)
         .single(),
     ).pipe(
@@ -356,6 +358,16 @@ export class RoutinesService {
   private async createRoutine(userId: string, input: CreateRoutineInput): Promise<Routine> {
     this.assertValidInput(input);
 
+    const maxPosResult = await this.insforge.client.database
+      .from('routines')
+      .select('position')
+      .eq('user_id', userId)
+      .order('position', { ascending: false, nullsFirst: false })
+      .limit(1);
+
+    const maxPosition = (maxPosResult.data?.[0]?.position as number | null) ?? -1;
+    const nextPosition = maxPosition + 1;
+
     const { data, error } = await this.insforge.client.database
       .from('routines')
       .insert([
@@ -363,9 +375,10 @@ export class RoutinesService {
           user_id: userId,
           name: input.name.trim(),
           description: this.normalizeText(input.description),
+          position: nextPosition,
         },
       ])
-      .select('id, user_id, name, description, created_at, updated_at')
+      .select('id, user_id, name, description, position, created_at, updated_at')
       .single();
 
     if (error) {
@@ -396,7 +409,7 @@ export class RoutinesService {
       })
       .eq('id', id)
       .eq('user_id', userId)
-      .select('id, user_id, name, description, created_at, updated_at')
+      .select('id, user_id, name, description, position, created_at, updated_at')
       .single();
 
     if (error) {
@@ -480,7 +493,7 @@ export class RoutinesService {
   private async loadRoutineRow(userId: string, id: string): Promise<RoutineRow> {
     const { data, error } = await this.insforge.client.database
       .from('routines')
-      .select('id, user_id, name, description, created_at, updated_at')
+      .select('id, user_id, name, description, position, created_at, updated_at')
       .eq('id', id)
       .eq('user_id', userId)
       .single();
@@ -688,6 +701,7 @@ export class RoutinesService {
       userId: row.user_id,
       name: row.name,
       description: row.description,
+      position: row.position,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
