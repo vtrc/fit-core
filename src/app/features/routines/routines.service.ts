@@ -342,6 +342,28 @@ export class RoutinesService {
     );
   }
 
+  updatePositions(items: { id: string; position: number }[]): Observable<void> {
+    return from(this.requireUserId()).pipe(
+      switchMap((userId) =>
+        from(
+          (async () => {
+            for (const item of items) {
+              const { error } = await this.insforge.client.database
+                .from('routines')
+                .update({ position: item.position })
+                .eq('id', item.id)
+                .eq('user_id', userId);
+
+              if (error) {
+                throw error;
+              }
+            }
+          })(),
+        ),
+      ),
+    );
+  }
+
   private async requireUserId(): Promise<string> {
     if (this.auth.loading()) {
       await this.auth.restoreSession();
