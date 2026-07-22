@@ -22,7 +22,7 @@ function generateDescription(profile: { goal: string; daysPerWeek: number }): st
   return `Rutina personalizada para ${goalText} entrenando ${days} día${days > 1 ? 's' : ''} por semana.`;
 }
 
-export async function generateRoutineProposal(profile: unknown, token: string, anonKey: string): Promise<unknown> {
+export async function generateRoutineProposal(profile: unknown, token: string, anonKey: string, userMessage?: string): Promise<unknown> {
   const validatedProfile = routineProfileSchema.parse(profile);
 
   const client = createClient({ baseUrl: URL_BASE, anonKey });
@@ -55,7 +55,7 @@ export async function generateRoutineProposal(profile: unknown, token: string, a
       model: 'MiniMax-M2.7',
       messages: [
         { role: 'system', content: 'Eres un entrenador personal. Devuelve SOLO JSON sin explicaciones.' },
-        { role: 'user', content: `Ejercicios disponibles: ${availableNames}.\n\nPerfil: ${JSON.stringify(validatedProfile)}\n\nObjetivo: ${guidance}\n\nSelecciona 5-8 ejercicios DEL CATÁLOGO que mejor se ajusten al objetivo. Devuelve SOLO un array JSON con los nombres exactos de los ejercicios.` },
+        { role: 'user', content: `Ejercicios disponibles: ${availableNames}.\n\nPerfil: ${JSON.stringify(validatedProfile)}\n\n${userMessage ? `El usuario dice específicamente: "${userMessage}"\n\n` : ''}Objetivo: ${guidance}\n\nSelecciona 5-8 ejercicios DEL CATÁLOGO que mejor se ajusten al objetivo y a lo que pide el usuario. Devuelve SOLO un array JSON con los nombres exactos de los ejercicios.` },
       ],
     }),
   });
@@ -87,6 +87,7 @@ export async function handleProposalFeedback(
   profile: unknown,
   token: string,
   anonKey: string,
+  persistApproval = true,
 ): Promise<unknown> {
   const prop = proposal as {
     name: string;
@@ -155,6 +156,7 @@ export async function handleProposalFeedback(
   }
 
   if (parsed.intent === 'approve') {
+    if (!persistApproval) return { action: 'approve' };
     const client = createClient({ baseUrl: URL_BASE, anonKey });
     client.setAccessToken(token);
     const id = await saveRoutineToDb(client, userId, prop as ApprovedRoutine);

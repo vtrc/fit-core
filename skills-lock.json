@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "ai-sdk": {
+      "source": "vercel/ai",
+      "sourceType": "github",
+      "skillPath": "skills/use-ai-sdk/SKILL.md",
+      "computedHash": "0883204d11b055e968dee697c5858e68064c27dfd4deb6310212895daa65c5ad"
+    },
     "angular-developer": {
       "source": "angular/skills",
       "sourceType": "github",
@@ -13,11 +19,23 @@
       "skillPath": "angular-new-app/SKILL.md",
       "computedHash": "49bd84ab08bd3498c52f476bed48fbb942dc6dbc0925607e84549adbed34bccf"
     },
+    "hallmark": {
+      "source": "nutlope/hallmark",
+      "sourceType": "github",
+      "skillPath": "skills/hallmark/SKILL.md",
+      "computedHash": "8a8ecafd613f09e701330b5aa4a591ac539abb2605596df4a2394f03628d1d76"
+    },
     "interface-design": {
       "source": "dammyjay93/interface-design",
       "sourceType": "github",
       "skillPath": ".claude/skills/interface-design/SKILL.md",
       "computedHash": "340cc79a1558f09371aa3eb689952a8b777c1d7362c24226e99693606a80828e"
+    },
+    "migrate-ai-sdk-v6-to-v7": {
+      "source": "vercel/ai",
+      "sourceType": "github",
+      "skillPath": "skills/migrate-ai-sdk-v6-to-v7/SKILL.md",
+      "computedHash": "92a68769c5a82e6bd35cb8fe13537a80f6341742306d6a23c52afb6c1f7b5ab9"
     }
   }
 }

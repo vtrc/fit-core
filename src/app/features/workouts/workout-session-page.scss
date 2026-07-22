@@ -109,11 +109,6 @@
   cursor: pointer;
 }
 
-.exercise-card:hover {
-  border-left-color: var(--primary-dim);
-  background: var(--surface-container);
-}
-
 .exercise-card.completed {
   background: rgba(195, 244, 0, 24%);
   border-left-color: var(--primary);

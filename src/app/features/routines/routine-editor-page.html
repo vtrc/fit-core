@@ -72,9 +72,9 @@
                        <p>{{ item.exercise.equipment || 'Equipamiento general' }}</p>
                     </div>
                     <div class="stack actions">
-                       <button type="button" class="icon-button" (click)="moveExercise($index, -1)" [disabled]="$index === 0" aria-label="Subir ejercicio" title="Subir ejercicio">↑</button>
-                       <button type="button" class="icon-button" (click)="moveExercise($index, 1)" [disabled]="$index === draft().exercises.length - 1" aria-label="Bajar ejercicio" title="Bajar ejercicio">↓</button>
-                       <button type="button" class="icon-button danger" (click)="removeExercise($index)" aria-label="Eliminar ejercicio" title="Eliminar ejercicio">×</button>
+                       <button type="button" class="btn-primary icon-button" (click)="moveExercise($index, -1)" [disabled]="$index === 0" aria-label="Subir ejercicio" title="Subir ejercicio">↑</button>
+                       <button type="button" class="btn-primary icon-button" (click)="moveExercise($index, 1)" [disabled]="$index === draft().exercises.length - 1" aria-label="Bajar ejercicio" title="Bajar ejercicio">↓</button>
+                       <button type="button" class="btn-danger icon-button" (click)="removeExercise($index)" aria-label="Eliminar ejercicio" title="Eliminar ejercicio">×</button>
                     </div>
                   </div>
 
