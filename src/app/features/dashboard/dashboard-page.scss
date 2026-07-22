@@ -52,6 +52,8 @@
     font: 800 clamp(2.5rem, 9vw, 4rem)/.98 var(--font-display);
     letter-spacing: -.04em;
     text-wrap: balance;
+    overflow-wrap: anywhere;
+    min-width: 0;
 }
 
 .hero-lede {
